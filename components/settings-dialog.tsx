@@ -35,7 +35,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [newIdeaKeyEnabled, setNewIdeaKeyEnabled] = useShortcutPreference("brainbox-shortcut-new-idea")
   const [themeToggleKeyEnabled, setThemeToggleKeyEnabled] = useShortcutPreference("brainbox-shortcut-theme-toggle")
   const [settingsKeyEnabled, setSettingsKeyEnabled] = useShortcutPreference("brainbox-shortcut-settings")
-  const [helperViewerEnabled, setHelperViewerEnabled] = useShortcutPreference("brainbox-shortcut-helper-viewer")
   const [section, setSection] = useState<SettingsSection>("appearance")
   const [isMobile, setIsMobile] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -61,22 +60,32 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     }
   }, [isMobile, section])
 
+  const hotkeyKey = (hotkey: ShortcutDefinition["hotkeys"][number]) =>
+    typeof hotkey === "string" ? hotkey : JSON.stringify(hotkey)
+
   const renderShortcutKeys = (hotkeys: ShortcutDefinition["hotkeys"]) => (
     <KbdGroup className="flex-wrap justify-end">
       {hotkeys.map((hotkey) => (
-        <Kbd key={hotkey}>{formatForDisplay(hotkey)}</Kbd>
+        <Kbd key={hotkeyKey(hotkey)}>{formatForDisplay(hotkey)}</Kbd>
       ))}
     </KbdGroup>
   )
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-50">
-          <Settings className="size-5" />
-          <span className="sr-only">Settings</span>
-        </Button>
-      </DialogTrigger>
+      <div className="fixed top-4 left-4 z-50 flex items-center gap-2">
+        <DialogTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <Settings className="size-5" />
+            <span className="sr-only">Settings</span>
+          </Button>
+        </DialogTrigger>
+        <KbdGroup className="hidden sm:inline-flex">
+          {[...SHORTCUTS.settings.hotkeys, ...SHORTCUTS.help.hotkeys].map((hotkey) => (
+            <Kbd key={hotkeyKey(hotkey)}>{formatForDisplay(hotkey)}</Kbd>
+          ))}
+        </KbdGroup>
+      </div>
       <DialogContent className="grid-rows-[auto_minmax(0,1fr)] w-[95vw] max-w-[95vw] h-[85vh] max-h-[85vh] sm:w-[820px] sm:max-w-[820px] sm:h-[620px] sm:max-h-[620px] overflow-hidden p-0">
         <DialogHeader>
           <DialogTitle className="px-6 pt-6">Settings</DialogTitle>
@@ -246,20 +255,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <p className="text-sm">Shortcut helper viewer</p>
-                      <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
-                        <span>Press</span>
-                        {renderShortcutKeys(SHORTCUTS.toggleHelpViewer.hotkeys)}
-                        <span>to show or hide the helper button</span>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={helperViewerEnabled}
-                      onCheckedChange={setHelperViewerEnabled}
-                    />
-                  </div>
                 </div>
 
                 <div className="space-y-3 pt-2 border-t">
@@ -270,7 +265,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       SHORTCUTS.toggleTheme,
                       SHORTCUTS.settings,
                       SHORTCUTS.help,
-                      SHORTCUTS.toggleHelpViewer,
                       SHORTCUTS.inbox,
                       SHORTCUTS.archived,
                       SHORTCUTS.trash,

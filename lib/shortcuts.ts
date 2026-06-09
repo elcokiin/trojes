@@ -1,20 +1,18 @@
 "use client"
 
-import type { Hotkey } from "@tanstack/react-hotkeys"
+import type { RegisterableHotkey } from "@tanstack/react-hotkeys"
 
 export type ShortcutPreferenceKey =
   | "brainbox-keyboard-nav"
   | "brainbox-shortcut-new-idea"
   | "brainbox-shortcut-theme-toggle"
   | "brainbox-shortcut-settings"
-  | "brainbox-shortcut-helper-viewer"
 
 export type ShortcutId =
   | "newIdea"
   | "toggleTheme"
   | "settings"
   | "help"
-  | "toggleHelpViewer"
   | "inbox"
   | "archived"
   | "trash"
@@ -31,7 +29,7 @@ export type ShortcutId =
 export interface ShortcutDefinition {
   id: ShortcutId
   label: string
-  hotkeys: Hotkey[]
+  hotkeys: RegisterableHotkey[]
   category: "Capture" | "Navigation" | "Views" | "System" | "Editing"
   preferenceKey?: ShortcutPreferenceKey
 }
@@ -41,7 +39,6 @@ export const SHORTCUT_DEFAULTS: Record<ShortcutPreferenceKey, boolean> = {
   "brainbox-shortcut-new-idea": true,
   "brainbox-shortcut-theme-toggle": true,
   "brainbox-shortcut-settings": true,
-  "brainbox-shortcut-helper-viewer": true,
 }
 
 export const SHORTCUTS = {
@@ -69,15 +66,8 @@ export const SHORTCUTS = {
   help: {
     id: "help",
     label: "Shortcut help",
-    hotkeys: ["F1"],
+    hotkeys: [{ key: "?" }],
     category: "System",
-  },
-  toggleHelpViewer: {
-    id: "toggleHelpViewer",
-    label: "Show shortcut helper",
-    hotkeys: ["K"],
-    category: "System",
-    preferenceKey: "brainbox-shortcut-helper-viewer",
   },
   inbox: {
     id: "inbox",
@@ -110,7 +100,7 @@ export const SHORTCUTS = {
   navUp: {
     id: "navUp",
     label: "Navigate up",
-    hotkeys: ["ArrowUp"],
+    hotkeys: ["K", "ArrowUp"],
     category: "Navigation",
     preferenceKey: "brainbox-keyboard-nav",
   },
