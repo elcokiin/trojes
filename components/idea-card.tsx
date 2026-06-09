@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { useHotkey } from "@tanstack/react-hotkeys"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal, Archive, Inbox, Trash2, MessageSquare, Globe, Pin, PinOff, Palette, Check, AlertTriangle } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { SHORTCUTS } from "@/lib/shortcuts"
 
 export interface Idea {
   id: string
@@ -120,18 +122,11 @@ export function IdeaCard({
     }
   }, [isSelected])
 
-  useEffect(() => {
-    if (!isSelected) return
-
-    const handleEnter = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && isSelected) {
-        setMenuOpen(true)
-      }
-    }
-
-    window.addEventListener("keydown", handleEnter)
-    return () => window.removeEventListener("keydown", handleEnter)
-  }, [isSelected])
+  useHotkey(SHORTCUTS.openActions.hotkeys[0], () => setMenuOpen(true), {
+    enabled: isSelected,
+    ignoreInputs: true,
+    preventDefault: true,
+  })
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)

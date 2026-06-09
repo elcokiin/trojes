@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useCallback } from "react"
 import useSWR from "swr"
 import { IdeaCard, type Idea } from "@/components/idea-card"
 import { QuickCapture } from "@/components/quick-capture"
@@ -15,6 +15,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
 import { Inbox, Archive, Trash2, Pin } from "lucide-react"
+import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
 
 const fetcher = async (url: string) => {
   const res = await fetch(url)
@@ -29,13 +30,14 @@ const fetcher = async (url: string) => {
 interface IdeasListProps {
   status: "inbox" | "archived" | "deleted"
   onOpenCapture?: () => void
+  active?: boolean
 }
 
-export function IdeasList({ status, onOpenCapture }: IdeasListProps) {
+export function IdeasList({ status, onOpenCapture, active = true }: IdeasListProps) {
   const [selectedIndex, setSelectedIndex] = useState(-1)
-  const [keyboardEnabled, setKeyboardEnabled] = useState(true)
-  const [newIdeaKeyEnabled, setNewIdeaKeyEnabled] = useState(true)
   const [captureOpen, setCaptureOpen] = useState(false)
+  const [keyboardEnabled] = useShortcutPreference("brainbox-keyboard-nav")
+  const [newIdeaKeyEnabled] = useShortcutPreference("brainbox-shortcut-new-idea")
 
   const { data, error, isLoading, mutate } = useSWR<{ ideas: Idea[] }>(
     `/api/ideas?status=${status}`,
@@ -46,30 +48,6 @@ export function IdeasList({ status, onOpenCapture }: IdeasListProps) {
   const ideas = data?.ideas ?? []
   const pinnedIdeas = ideas.filter(idea => idea.pinned)
   const unpinnedIdeas = ideas.filter(idea => !idea.pinned)
-
-  useEffect(() => {
-    const stored = localStorage.getItem("brainbox-keyboard-nav")
-    if (stored !== null) setKeyboardEnabled(stored === "true")
-
-    const storedNewIdeaKey = localStorage.getItem("brainbox-shortcut-new-idea")
-    if (storedNewIdeaKey !== null) setNewIdeaKeyEnabled(storedNewIdeaKey === "true")
-
-    const handleToggle = (e: Event) => {
-      const custom = e as CustomEvent
-      setKeyboardEnabled(custom.detail)
-    }
-    const handleNewIdeaToggle = (e: Event) => {
-      const custom = e as CustomEvent
-      setNewIdeaKeyEnabled(custom.detail)
-    }
-
-    window.addEventListener("brainbox-keyboard-nav", handleToggle)
-    window.addEventListener("brainbox-shortcut-new-idea", handleNewIdeaToggle)
-    return () => {
-      window.removeEventListener("brainbox-keyboard-nav", handleToggle)
-      window.removeEventListener("brainbox-shortcut-new-idea", handleNewIdeaToggle)
-    }
-  }, [])
 
   const handleNew = useCallback(() => {
     if (status === "inbox") {
@@ -83,7 +61,7 @@ export function IdeasList({ status, onOpenCapture }: IdeasListProps) {
     selectedIndex,
     onSelect: setSelectedIndex,
     onNew: newIdeaKeyEnabled ? handleNew : undefined,
-    enabled: keyboardEnabled && !captureOpen,
+    enabled: active && keyboardEnabled && !captureOpen,
   })
 
   const handleCapture = async (content: string) => {

@@ -1,12 +1,16 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState } from "react"
+import { useHotkeys, type UseHotkeyDefinition } from "@tanstack/react-hotkeys"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { IdeasList } from "@/components/ideas-list"
 import { SettingsDialog } from "@/components/settings-dialog"
+import { ShortcutHelp } from "@/components/shortcut-help"
 import { Inbox, Archive, Trash2 } from "lucide-react"
 import { UserMenu } from "@/components/user-menu"
 import { useTheme } from "@/components/theme-provider"
+import { SHORTCUTS } from "@/lib/shortcuts"
+import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
 
 type TabValue = "inbox" | "archived" | "deleted"
 
@@ -21,103 +25,54 @@ interface DashboardProps {
 export function Dashboard({ user }: DashboardProps) {
   const [activeTab, setActiveTab] = useState<TabValue>("inbox")
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [keyboardEnabled, setKeyboardEnabled] = useState(true)
-  const [themeToggleKeyEnabled, setThemeToggleKeyEnabled] = useState(true)
-  const [settingsKeyEnabled, setSettingsKeyEnabled] = useState(true)
   const { resolvedTheme, setTheme } = useTheme()
+  const [keyboardEnabled] = useShortcutPreference("brainbox-keyboard-nav")
+  const [themeToggleKeyEnabled] = useShortcutPreference("brainbox-shortcut-theme-toggle")
+  const [settingsKeyEnabled] = useShortcutPreference("brainbox-shortcut-settings")
 
-  useEffect(() => {
-    const stored = localStorage.getItem("brainbox-keyboard-nav")
-    if (stored !== null) setKeyboardEnabled(stored === "true")
+  const hotkeys: Array<UseHotkeyDefinition> = [
+    {
+      hotkey: SHORTCUTS.inbox.hotkeys[0],
+      callback: () => setActiveTab("inbox"),
+      options: { enabled: keyboardEnabled },
+    },
+    {
+      hotkey: SHORTCUTS.archived.hotkeys[0],
+      callback: () => setActiveTab("archived"),
+      options: { enabled: keyboardEnabled },
+    },
+    {
+      hotkey: SHORTCUTS.trash.hotkeys[0],
+      callback: () => setActiveTab("deleted"),
+      options: { enabled: keyboardEnabled },
+    },
+    {
+      hotkey: SHORTCUTS.settings.hotkeys[0],
+      callback: () => setSettingsOpen((prev) => !prev),
+      options: { enabled: keyboardEnabled && settingsKeyEnabled },
+    },
+    {
+      hotkey: SHORTCUTS.settings.hotkeys[1],
+      callback: () => setSettingsOpen((prev) => !prev),
+      options: { enabled: keyboardEnabled && settingsKeyEnabled },
+    },
+    {
+      hotkey: SHORTCUTS.toggleTheme.hotkeys[0],
+      callback: () => setTheme(resolvedTheme === "dark" ? "light" : "dark"),
+      options: { enabled: keyboardEnabled && themeToggleKeyEnabled },
+    },
+  ]
 
-    const storedThemeKey = localStorage.getItem("brainbox-shortcut-theme-toggle")
-    if (storedThemeKey !== null) setThemeToggleKeyEnabled(storedThemeKey === "true")
-
-    const storedSettingsKey = localStorage.getItem("brainbox-shortcut-settings")
-    if (storedSettingsKey !== null) setSettingsKeyEnabled(storedSettingsKey === "true")
-
-    const handleToggle = (e: Event) => {
-      const custom = e as CustomEvent<boolean>
-      setKeyboardEnabled(custom.detail)
-    }
-
-    const handleThemeKeyToggle = (e: Event) => {
-      const custom = e as CustomEvent<boolean>
-      setThemeToggleKeyEnabled(custom.detail)
-    }
-
-    const handleSettingsKeyToggle = (e: Event) => {
-      const custom = e as CustomEvent<boolean>
-      setSettingsKeyEnabled(custom.detail)
-    }
-
-    window.addEventListener("brainbox-keyboard-nav", handleToggle)
-    window.addEventListener("brainbox-shortcut-theme-toggle", handleThemeKeyToggle)
-    window.addEventListener("brainbox-shortcut-settings", handleSettingsKeyToggle)
-
-    return () => {
-      window.removeEventListener("brainbox-keyboard-nav", handleToggle)
-      window.removeEventListener("brainbox-shortcut-theme-toggle", handleThemeKeyToggle)
-      window.removeEventListener("brainbox-shortcut-settings", handleSettingsKeyToggle)
-    }
-  }, [])
-
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    // Ignore when typing in inputs
-    const target = e.target as HTMLElement
-    if (
-      target.tagName === "INPUT" ||
-      target.tagName === "TEXTAREA" ||
-      target.isContentEditable
-    ) {
-      return
-    }
-
-    if (!keyboardEnabled) {
-      return
-    }
-
-    // Ctrl+1, Ctrl+2, Ctrl+3 for tab switching
-    if (e.ctrlKey || e.metaKey) {
-      switch (e.key) {
-        case "1":
-          e.preventDefault()
-          setActiveTab("inbox")
-          break
-        case "2":
-          e.preventDefault()
-          setActiveTab("archived")
-          break
-        case "3":
-          e.preventDefault()
-          setActiveTab("deleted")
-          break
-      }
-      return
-    }
-
-    // 'p' or ',' toggles settings
-    if (settingsKeyEnabled && (e.key.toLowerCase() === "p" || e.key === ",")) {
-      e.preventDefault()
-      setSettingsOpen((prev) => !prev)
-      return
-    }
-
-    // 'd' toggles light/dark theme
-    if (themeToggleKeyEnabled && e.key.toLowerCase() === "d") {
-      e.preventDefault()
-      setTheme(resolvedTheme === "dark" ? "light" : "dark")
-    }
-  }, [keyboardEnabled, resolvedTheme, setTheme, settingsKeyEnabled, themeToggleKeyEnabled])
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [handleKeyDown])
+  useHotkeys(hotkeys, {
+    ignoreInputs: true,
+    preventDefault: true,
+    stopPropagation: true,
+  })
 
   return (
     <div className="min-h-screen bg-background">
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <ShortcutHelp />
       
       {/* User menu in top right */}
       <div className="fixed top-4 right-4 z-50">
@@ -142,15 +97,15 @@ export function Dashboard({ user }: DashboardProps) {
           </TabsList>
 
           <TabsContent value="inbox">
-            <IdeasList status="inbox" />
+            <IdeasList status="inbox" active={activeTab === "inbox"} />
           </TabsContent>
 
           <TabsContent value="archived">
-            <IdeasList status="archived" />
+            <IdeasList status="archived" active={activeTab === "archived"} />
           </TabsContent>
 
           <TabsContent value="deleted">
-            <IdeasList status="deleted" />
+            <IdeasList status="deleted" active={activeTab === "deleted"} />
           </TabsContent>
         </Tabs>
       </main>

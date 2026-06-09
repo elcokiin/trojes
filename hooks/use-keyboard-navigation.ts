@@ -1,6 +1,8 @@
 "use client"
 
-import { useEffect, useCallback } from "react"
+import { useMemo } from "react"
+import { useHotkeys, type UseHotkeyDefinition } from "@tanstack/react-hotkeys"
+import { SHORTCUTS } from "@/lib/shortcuts"
 
 interface UseKeyboardNavigationOptions {
   itemCount: number
@@ -19,83 +21,96 @@ export function useKeyboardNavigation({
   onNew,
   enabled = true,
 }: UseKeyboardNavigationOptions) {
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (!enabled) return
+  const hotkeys = useMemo<Array<UseHotkeyDefinition>>(() => {
+    const hasItems = itemCount > 0
+    const registrations: Array<UseHotkeyDefinition> = [
+      {
+        hotkey: SHORTCUTS.navDown.hotkeys[0],
+        callback: () => {
+          if (!hasItems) return
+          onSelect(selectedIndex < itemCount - 1 ? selectedIndex + 1 : 0)
+        },
+      },
+      {
+        hotkey: SHORTCUTS.navDown.hotkeys[1],
+        callback: () => {
+          if (!hasItems) return
+          onSelect(selectedIndex < itemCount - 1 ? selectedIndex + 1 : 0)
+        },
+      },
+      {
+        hotkey: SHORTCUTS.navUp.hotkeys[0],
+        callback: () => {
+          if (!hasItems) return
+          onSelect(selectedIndex > 0 ? selectedIndex - 1 : itemCount - 1)
+        },
+      },
+      {
+        hotkey: SHORTCUTS.navUp.hotkeys[1],
+        callback: () => {
+          if (!hasItems) return
+          onSelect(selectedIndex > 0 ? selectedIndex - 1 : itemCount - 1)
+        },
+      },
+      {
+        hotkey: SHORTCUTS.navLeft.hotkeys[0],
+        callback: () => {
+          if (!hasItems) return
+          onSelect(Math.max(0, selectedIndex - 3))
+        },
+      },
+      {
+        hotkey: SHORTCUTS.navLeft.hotkeys[1],
+        callback: () => {
+          if (!hasItems) return
+          onSelect(Math.max(0, selectedIndex - 3))
+        },
+      },
+      {
+        hotkey: SHORTCUTS.navRight.hotkeys[0],
+        callback: () => {
+          if (!hasItems) return
+          onSelect(Math.min(itemCount - 1, selectedIndex + 3))
+        },
+      },
+      {
+        hotkey: SHORTCUTS.navRight.hotkeys[1],
+        callback: () => {
+          if (!hasItems) return
+          onSelect(Math.min(itemCount - 1, selectedIndex + 3))
+        },
+      },
+      {
+        hotkey: SHORTCUTS.deselect.hotkeys[0],
+        callback: () => onSelect(-1),
+      },
+    ]
 
-      // Ignore when typing in inputs
-      const target = e.target as HTMLElement
-      if (
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.isContentEditable
-      ) {
-        return
-      }
+    if (onNew) {
+      registrations.push({
+        hotkey: SHORTCUTS.newIdea.hotkeys[0],
+        callback: () => onNew(),
+      })
+    }
 
-      // Ignore when Ctrl/Meta/Alt is pressed to avoid conflicts with browser shortcuts
-      if (e.ctrlKey || e.metaKey || e.altKey) {
-        return
-      }
+    if (onAction) {
+      registrations.push({
+        hotkey: SHORTCUTS.openActions.hotkeys[0],
+        callback: () => {
+          if (selectedIndex >= 0) onAction(selectedIndex)
+        },
+      })
+    }
 
-      switch (e.key.toLowerCase()) {
-        case "n":
-          e.preventDefault()
-          onNew?.()
-          break
-        case "j":
-        case "arrowdown":
-          e.preventDefault()
-          if (itemCount > 0) {
-            const next = selectedIndex < itemCount - 1 ? selectedIndex + 1 : 0
-            onSelect(next)
-          }
-          break
-        case "k":
-        case "arrowup":
-          e.preventDefault()
-          if (itemCount > 0) {
-            const prev = selectedIndex > 0 ? selectedIndex - 1 : itemCount - 1
-            onSelect(prev)
-          }
-          break
-        case "h":
-        case "arrowleft":
-          e.preventDefault()
-          // Move to previous column in masonry (approximate: go back 2-3 items)
-          if (itemCount > 0) {
-            const prev = Math.max(0, selectedIndex - 3)
-            onSelect(prev)
-          }
-          break
-        case "l":
-        case "arrowright":
-          e.preventDefault()
-          // Move to next column in masonry (approximate: go forward 2-3 items)
-          if (itemCount > 0) {
-            const next = Math.min(itemCount - 1, selectedIndex + 3)
-            onSelect(next)
-          }
-          break
-        case "enter":
-          e.preventDefault()
-          if (selectedIndex >= 0) {
-            onAction?.(selectedIndex)
-          }
-          break
-        case "escape":
-          e.preventDefault()
-          onSelect(-1)
-          break
-      }
-    },
-    [enabled, itemCount, selectedIndex, onSelect, onAction, onNew]
-  )
+    return registrations
+  }, [itemCount, onAction, onNew, onSelect, selectedIndex])
 
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [handleKeyDown])
+  useHotkeys(hotkeys, {
+    enabled,
+    ignoreInputs: true,
+    preventDefault: true,
+    stopPropagation: true,
+  })
 
   return { selectedIndex }
 }

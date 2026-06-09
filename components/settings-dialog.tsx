@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { formatForDisplay } from "@tanstack/react-hotkeys"
 import { useTheme } from "@/components/theme-provider"
 import {
   Dialog,
@@ -18,6 +19,8 @@ import { Kbd } from "@/components/ui/kbd"
 import { cn } from "@/lib/utils"
 import { ApiKeysManager } from "@/components/api-keys-manager"
 import { PwaInstallManager } from "@/components/pwa-install-manager"
+import { SHORTCUTS, type ShortcutDefinition } from "@/lib/shortcuts"
+import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
 
 interface SettingsDialogProps {
   open?: boolean
@@ -28,10 +31,10 @@ type SettingsSection = "appearance" | "keyboard" | "api" | "install"
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const { theme, setTheme } = useTheme()
-  const [keyboardNav, setKeyboardNav] = useState(true)
-  const [newIdeaKeyEnabled, setNewIdeaKeyEnabled] = useState(true)
-  const [themeToggleKeyEnabled, setThemeToggleKeyEnabled] = useState(true)
-  const [settingsKeyEnabled, setSettingsKeyEnabled] = useState(true)
+  const [keyboardNav, setKeyboardNav] = useShortcutPreference("brainbox-keyboard-nav")
+  const [newIdeaKeyEnabled, setNewIdeaKeyEnabled] = useShortcutPreference("brainbox-shortcut-new-idea")
+  const [themeToggleKeyEnabled, setThemeToggleKeyEnabled] = useShortcutPreference("brainbox-shortcut-theme-toggle")
+  const [settingsKeyEnabled, setSettingsKeyEnabled] = useShortcutPreference("brainbox-shortcut-settings")
   const [section, setSection] = useState<SettingsSection>("appearance")
   const [isMobile, setIsMobile] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -48,18 +51,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
     media.addEventListener("change", onMediaChange)
 
-    const storedNav = localStorage.getItem("brainbox-keyboard-nav")
-    if (storedNav !== null) setKeyboardNav(storedNav === "true")
-
-    const storedNewIdeaKey = localStorage.getItem("brainbox-shortcut-new-idea")
-    if (storedNewIdeaKey !== null) setNewIdeaKeyEnabled(storedNewIdeaKey === "true")
-
-    const storedThemeKey = localStorage.getItem("brainbox-shortcut-theme-toggle")
-    if (storedThemeKey !== null) setThemeToggleKeyEnabled(storedThemeKey === "true")
-
-    const storedSettingsKey = localStorage.getItem("brainbox-shortcut-settings")
-    if (storedSettingsKey !== null) setSettingsKeyEnabled(storedSettingsKey === "true")
-
     return () => media.removeEventListener("change", onMediaChange)
   }, [])
 
@@ -69,16 +60,13 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     }
   }, [isMobile, section])
 
-  const toggleKeyboardNav = (enabled: boolean) => {
-    setKeyboardNav(enabled)
-    localStorage.setItem("brainbox-keyboard-nav", String(enabled))
-    window.dispatchEvent(new CustomEvent("brainbox-keyboard-nav", { detail: enabled }))
-  }
-
-  const toggleShortcut = (key: string, enabled: boolean) => {
-    localStorage.setItem(key, String(enabled))
-    window.dispatchEvent(new CustomEvent(key, { detail: enabled }))
-  }
+  const renderShortcutKeys = (hotkeys: ShortcutDefinition["hotkeys"]) => (
+    <div className="flex flex-wrap justify-end gap-1">
+      {hotkeys.map((hotkey) => (
+        <Kbd key={hotkey}>{formatForDisplay(hotkey)}</Kbd>
+      ))}
+    </div>
+  )
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -205,7 +193,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   </div>
                   <Switch
                     checked={keyboardNav}
-                    onCheckedChange={toggleKeyboardNav}
+                    onCheckedChange={setKeyboardNav}
                   />
                 </div>
 
@@ -215,48 +203,45 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <p className="text-sm">New idea key</p>
-                      <p className="text-xs text-muted-foreground">
-                        Enable <Kbd>n</Kbd> to open quick capture
-                      </p>
+                      <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+                        <span>Enable</span>
+                        {renderShortcutKeys(SHORTCUTS.newIdea.hotkeys)}
+                        <span>to open quick capture</span>
+                      </div>
                     </div>
                     <Switch
                       checked={newIdeaKeyEnabled}
-                      onCheckedChange={(enabled) => {
-                        setNewIdeaKeyEnabled(enabled)
-                        toggleShortcut("brainbox-shortcut-new-idea", enabled)
-                      }}
+                      onCheckedChange={setNewIdeaKeyEnabled}
                     />
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <p className="text-sm">Theme toggle key</p>
-                      <p className="text-xs text-muted-foreground">
-                        Enable <Kbd>d</Kbd> to switch light/dark
-                      </p>
+                      <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+                        <span>Enable</span>
+                        {renderShortcutKeys(SHORTCUTS.toggleTheme.hotkeys)}
+                        <span>to switch light/dark</span>
+                      </div>
                     </div>
                     <Switch
                       checked={themeToggleKeyEnabled}
-                      onCheckedChange={(enabled) => {
-                        setThemeToggleKeyEnabled(enabled)
-                        toggleShortcut("brainbox-shortcut-theme-toggle", enabled)
-                      }}
+                      onCheckedChange={setThemeToggleKeyEnabled}
                     />
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <p className="text-sm">Settings key</p>
-                      <p className="text-xs text-muted-foreground">
-                        Enable <Kbd>p</Kbd> or <Kbd>,</Kbd> to open/close settings
-                      </p>
+                      <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+                        <span>Enable</span>
+                        {renderShortcutKeys(SHORTCUTS.settings.hotkeys)}
+                        <span>to open/close settings</span>
+                      </div>
                     </div>
                     <Switch
                       checked={settingsKeyEnabled}
-                      onCheckedChange={(enabled) => {
-                        setSettingsKeyEnabled(enabled)
-                        toggleShortcut("brainbox-shortcut-settings", enabled)
-                      }}
+                      onCheckedChange={setSettingsKeyEnabled}
                     />
                   </div>
                 </div>
@@ -264,66 +249,28 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 <div className="space-y-3 pt-2 border-t">
                   <Label className="text-sm font-medium">Keyboard Shortcuts</Label>
                   <div className="grid gap-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">New idea</span>
-                      <Kbd>n</Kbd>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Toggle theme</span>
-                      <Kbd>d</Kbd>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Settings</span>
-                      <div className="flex gap-1">
-                        <Kbd>p</Kbd>
-                        <Kbd>,</Kbd>
+                    {[
+                      SHORTCUTS.newIdea,
+                      SHORTCUTS.toggleTheme,
+                      SHORTCUTS.settings,
+                      SHORTCUTS.help,
+                      SHORTCUTS.inbox,
+                      SHORTCUTS.archived,
+                      SHORTCUTS.trash,
+                      SHORTCUTS.navDown,
+                      SHORTCUTS.navUp,
+                      SHORTCUTS.navLeft,
+                      SHORTCUTS.navRight,
+                      SHORTCUTS.openActions,
+                      SHORTCUTS.deselect,
+                      SHORTCUTS.saveCapture,
+                      SHORTCUTS.cancelCapture,
+                    ].map((shortcut) => (
+                      <div key={shortcut.id} className="flex items-center justify-between gap-3">
+                        <span className="text-muted-foreground">{shortcut.label}</span>
+                        {renderShortcutKeys(shortcut.hotkeys)}
                       </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Inbox</span>
-                      <div className="flex gap-1">
-                        <Kbd>Ctrl</Kbd>
-                        <Kbd>1</Kbd>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Archived</span>
-                      <div className="flex gap-1">
-                        <Kbd>Ctrl</Kbd>
-                        <Kbd>2</Kbd>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Trash</span>
-                      <div className="flex gap-1">
-                        <Kbd>Ctrl</Kbd>
-                        <Kbd>3</Kbd>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Navigate down</span>
-                      <Kbd>j</Kbd>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Navigate up</span>
-                      <Kbd>k</Kbd>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Navigate left</span>
-                      <Kbd>h</Kbd>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Navigate right</span>
-                      <Kbd>l</Kbd>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Open actions</span>
-                      <Kbd>Enter</Kbd>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Deselect</span>
-                      <Kbd>Esc</Kbd>
-                    </div>
+                    ))}
                   </div>
                 </div>
               </>

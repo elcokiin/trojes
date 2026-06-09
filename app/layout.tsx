@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/next'
 import { ThemeProvider } from '@/components/theme-provider'
 import { SessionProvider } from '@/components/session-provider'
 import { PwaRegister } from '@/components/pwa-register'
+import { HotkeysRootProvider } from '@/components/hotkeys-root-provider'
 import './globals.css'
 
 const _inter = Inter({ subsets: ["latin"] });
@@ -47,7 +48,9 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <SessionProvider>
           <ThemeProvider>
-            {children}
+            <HotkeysRootProvider>
+              {children}
+            </HotkeysRootProvider>
           </ThemeProvider>
         </SessionProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}

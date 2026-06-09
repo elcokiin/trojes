@@ -1,13 +1,14 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import { formatForDisplay, useHotkey } from "@tanstack/react-hotkeys"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Spinner } from "@/components/ui/spinner"
 import { Kbd } from "@/components/ui/kbd"
 import { Plus, Send } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { SHORTCUTS } from "@/lib/shortcuts"
 
 interface QuickCaptureProps {
   onCapture: (content: string) => Promise<void>
@@ -48,15 +49,19 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
     setContent("")
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault()
-      handleSubmit()
-    }
-    if (e.key === "Escape") {
-      handleClose()
-    }
-  }
+  useHotkey(SHORTCUTS.saveCapture.hotkeys[0], () => handleSubmit(), {
+    enabled: isExpanded,
+    target: textareaRef,
+    ignoreInputs: false,
+    preventDefault: true,
+  })
+
+  useHotkey(SHORTCUTS.cancelCapture.hotkeys[0], () => handleClose(), {
+    enabled: isExpanded,
+    target: textareaRef,
+    ignoreInputs: false,
+    preventDefault: true,
+  })
 
   if (!isExpanded) {
     return (
@@ -67,7 +72,7 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
       >
         <Plus className="size-4" />
         <span>Capture a new idea...</span>
-        <Kbd className="ml-auto">n</Kbd>
+        <Kbd className="ml-auto">{formatForDisplay(SHORTCUTS.newIdea.hotkeys[0])}</Kbd>
       </Button>
     )
   }
@@ -79,16 +84,15 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
           ref={textareaRef}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          onKeyDown={handleKeyDown}
           placeholder="What's on your mind?"
           className="min-h-[100px] resize-none border-0 p-0 focus-visible:ring-0 text-base"
           disabled={isSubmitting}
         />
         <div className="flex items-center justify-between">
           <p className="text-xs text-muted-foreground flex items-center gap-1">
-            <Kbd>Esc</Kbd> cancel
+            <Kbd>{formatForDisplay(SHORTCUTS.cancelCapture.hotkeys[0])}</Kbd> cancel
             <span className="mx-1">/</span>
-            <Kbd>Cmd/Ctrl+Enter</Kbd> save
+            <Kbd>{formatForDisplay(SHORTCUTS.saveCapture.hotkeys[0])}</Kbd> save
           </p>
           <div className="flex gap-2">
             <Button
