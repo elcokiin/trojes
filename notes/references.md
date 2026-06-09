@@ -7,18 +7,38 @@ articles, package references, design references, or URLs provided by the user.
 When adding a reference, include the source, why it matters, and which part of
 Troje it may influence.
 
+## Organization Strategy
+
+References are organized first by artifact type, then by purpose or domain when
+needed. This keeps storage rules clear: images can be committed with local
+descriptions, source repositories stay link-only so the project does not become
+large, and documents/articles can be tracked as notes or URLs.
+
 ## Local Reference Folders
 
-### `notes/references/interface-prototypes/`
+### `notes/references/images/`
 
-Screen-level interface prototypes for Troje concepts, especially early visual
-directions that describe possible product surfaces before they are implemented.
-Use this folder for original UI ideas, interaction sketches, first-screen
-concepts, and PWA/mobile layout explorations.
+Checked-in visual references. Every image must have a sibling Markdown file with
+the same basename that explains what the image shows, its relevant UI or product
+elements, and how future agents should interpret it if they cannot view the
+image directly.
 
-### `notes/references/product-inspiration/`
+Current image subfolders:
 
-Product inspiration from other apps, systems, or public design references that
-may inform Troje's information architecture, workflows, visual language, or
-feature framing. Use this folder for references that are not direct Troje
-prototypes but help explain a pattern worth considering later.
+- `notes/references/images/interface-prototypes/`: original Troje screen
+  concepts, UI sketches, and product-surface prototypes.
+- `notes/references/images/product-inspiration/`: visual inspiration from other
+  products, examples, taxonomies, or interface patterns.
+
+### `notes/references/source-repositories/`
+
+Link-only references to GitHub, GitLab, or other source repositories. Do not
+commit cloned repositories here. Store the repository URL, what to inspect, why
+it matters for Troje, and any useful notes so a future agent can clone it into a
+disposable location when needed.
+
+### `notes/references/documents/`
+
+References to articles, specs, PDFs, technical docs, research notes, or other
+written sources. Prefer storing source URLs and short notes instead of copying
+large files into the repo unless the user explicitly asks for a local copy.

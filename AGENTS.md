@@ -68,6 +68,9 @@ step and the verification needed for the change.
   or product elements, and how future agents should interpret it if they cannot
   view the image directly. Also update `notes/references.md` with a short
   description of any new reference folder.
+- Do not commit cloned reference repositories. Store their source URL and
+  inspection notes under `notes/references/`; clone them only into disposable
+  locations unless the user explicitly asks otherwise.
 - This repo does not currently include checked-in reference repositories. Do not
   assume `.reference/` exists unless it is added later.
 - If a reference repository must be cloned for inspection, ask where it should be
