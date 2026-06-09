@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
+        url: '/favicon.ico?v=troje',
+        sizes: 'any',
+      },
+      {
         url: '/icon-light-32x32.png',
         media: '(prefers-color-scheme: light)',
       },
@@ -30,6 +34,7 @@ export const metadata: Metadata = {
         type: 'image/svg+xml',
       },
     ],
+    shortcut: '/favicon.ico?v=troje',
     apple: '/apple-icon.png',
   },
 }
