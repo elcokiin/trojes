@@ -75,16 +75,14 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <div className="fixed top-4 left-4 z-50 flex items-center gap-2">
         <DialogTrigger asChild>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" className="relative overflow-visible">
             <Settings className="size-5" />
+            <Kbd className="absolute -right-1 -top-1 h-4 min-w-4 rotate-12 px-1 text-[10px] shadow-sm">
+              {formatForDisplay(SHORTCUTS.settings.hotkeys[0])}
+            </Kbd>
             <span className="sr-only">Settings</span>
           </Button>
         </DialogTrigger>
-        <KbdGroup className="hidden sm:inline-flex">
-          {[...SHORTCUTS.settings.hotkeys, ...SHORTCUTS.help.hotkeys].map((hotkey) => (
-            <Kbd key={hotkeyKey(hotkey)}>{formatForDisplay(hotkey)}</Kbd>
-          ))}
-        </KbdGroup>
       </div>
       <DialogContent className="grid-rows-[auto_minmax(0,1fr)] w-[95vw] max-w-[95vw] h-[85vh] max-h-[85vh] sm:w-[820px] sm:max-w-[820px] sm:h-[620px] sm:max-h-[620px] overflow-hidden p-0">
         <DialogHeader>

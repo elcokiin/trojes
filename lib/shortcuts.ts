@@ -66,7 +66,7 @@ export const SHORTCUTS = {
   help: {
     id: "help",
     label: "Shortcut help",
-    hotkeys: [{ key: "?" }],
+    hotkeys: [{ key: "/", shift: true }],
     category: "System",
   },
   inbox: {
