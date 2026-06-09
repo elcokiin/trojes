@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { formatForDisplay, useHeldKeys, useHotkey, useKeyHold } from "@tanstack/react-hotkeys"
+import { useHeldKeys, useHotkey, useKeyHold } from "@tanstack/react-hotkeys"
 import {
   Dialog,
   DialogContent,
@@ -9,23 +9,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Kbd, KbdGroup } from "@/components/ui/kbd"
-import { SHORTCUT_GROUPS, SHORTCUTS, type ShortcutDefinition } from "@/lib/shortcuts"
+import { ShortcutKbdGroup } from "@/components/shortcut-kbd"
+import { SHORTCUT_GROUPS, SHORTCUTS } from "@/lib/shortcuts"
 import { cn } from "@/lib/utils"
-
-function hotkeyKey(hotkey: ShortcutDefinition["hotkeys"][number]) {
-  return typeof hotkey === "string" ? hotkey : JSON.stringify(hotkey)
-}
-
-function ShortcutKeys({ hotkeys }: { hotkeys: ShortcutDefinition["hotkeys"] }) {
-  return (
-    <KbdGroup className="flex-wrap justify-end">
-      {hotkeys.map((hotkey) => (
-        <Kbd key={hotkeyKey(hotkey)}>{formatForDisplay(hotkey)}</Kbd>
-      ))}
-    </KbdGroup>
-  )
-}
 
 export function ShortcutHelp() {
   const [open, setOpen] = useState(false)
@@ -77,7 +63,7 @@ export function ShortcutHelp() {
                       className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 py-2.5 text-sm"
                     >
                       <span>{shortcut.label}</span>
-                      <ShortcutKeys hotkeys={shortcut.hotkeys} />
+                      <ShortcutKbdGroup hotkeys={shortcut.hotkeys} className="flex-wrap justify-end" />
                     </div>
                   ))}
                 </div>

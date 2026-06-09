@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { formatForDisplay } from "@tanstack/react-hotkeys"
 import { useTheme } from "@/components/theme-provider"
 import {
   Dialog,
@@ -15,11 +14,11 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Settings, Keyboard, Moon, Sun, Monitor, Palette, Key, Smartphone } from "lucide-react"
-import { Kbd, KbdGroup } from "@/components/ui/kbd"
+import { ShortcutKbd, ShortcutKbdGroup } from "@/components/shortcut-kbd"
 import { cn } from "@/lib/utils"
 import { ApiKeysManager } from "@/components/api-keys-manager"
 import { PwaInstallManager } from "@/components/pwa-install-manager"
-import { SHORTCUTS, type ShortcutDefinition } from "@/lib/shortcuts"
+import { SHORTCUTS } from "@/lib/shortcuts"
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
 
 interface SettingsDialogProps {
@@ -35,6 +34,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [newIdeaKeyEnabled, setNewIdeaKeyEnabled] = useShortcutPreference("brainbox-shortcut-new-idea")
   const [themeToggleKeyEnabled, setThemeToggleKeyEnabled] = useShortcutPreference("brainbox-shortcut-theme-toggle")
   const [settingsKeyEnabled, setSettingsKeyEnabled] = useShortcutPreference("brainbox-shortcut-settings")
+  const [shortcutHintsEnabled, setShortcutHintsEnabled] = useShortcutPreference("brainbox-shortcut-hints")
   const [section, setSection] = useState<SettingsSection>("appearance")
   const [isMobile, setIsMobile] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -60,26 +60,16 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     }
   }, [isMobile, section])
 
-  const hotkeyKey = (hotkey: ShortcutDefinition["hotkeys"][number]) =>
-    typeof hotkey === "string" ? hotkey : JSON.stringify(hotkey)
-
-  const renderShortcutKeys = (hotkeys: ShortcutDefinition["hotkeys"]) => (
-    <KbdGroup className="flex-wrap justify-end">
-      {hotkeys.map((hotkey) => (
-        <Kbd key={hotkeyKey(hotkey)}>{formatForDisplay(hotkey)}</Kbd>
-      ))}
-    </KbdGroup>
-  )
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <div className="fixed top-4 left-4 z-50 flex items-center gap-2">
         <DialogTrigger asChild>
           <Button variant="ghost" size="icon" className="relative overflow-visible">
             <Settings className="size-5" />
-            <Kbd className="absolute -right-1 -top-1 h-4 min-w-4 rotate-12 px-1 text-[10px] shadow-sm">
-              {formatForDisplay(SHORTCUTS.settings.hotkeys[0])}
-            </Kbd>
+            <ShortcutKbd
+              hotkey={SHORTCUTS.settings.hotkeys[0]}
+              className="absolute -right-1 -top-1 h-4 min-w-4 rotate-12 px-1 text-[10px] shadow-sm"
+            />
             <span className="sr-only">Settings</span>
           </Button>
         </DialogTrigger>
@@ -205,6 +195,19 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   />
                 </div>
 
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-medium">Shortcut Hints</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Show key labels on controls and shortcut lists
+                    </p>
+                  </div>
+                  <Switch
+                    checked={shortcutHintsEnabled}
+                    onCheckedChange={setShortcutHintsEnabled}
+                  />
+                </div>
+
                 <div className="space-y-3 pt-2 border-t">
                   <Label className="text-sm font-medium">Shortcut Toggles</Label>
 
@@ -212,9 +215,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <div className="space-y-0.5">
                       <p className="text-sm">New idea key</p>
                       <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
-                        <span>Enable</span>
-                        {renderShortcutKeys(SHORTCUTS.newIdea.hotkeys)}
-                        <span>to open quick capture</span>
+                        <span>Quick capture shortcut</span>
+                        <ShortcutKbdGroup hotkeys={SHORTCUTS.newIdea.hotkeys} className="flex-wrap justify-end" />
                       </div>
                     </div>
                     <Switch
@@ -227,9 +229,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <div className="space-y-0.5">
                       <p className="text-sm">Theme toggle key</p>
                       <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
-                        <span>Enable</span>
-                        {renderShortcutKeys(SHORTCUTS.toggleTheme.hotkeys)}
-                        <span>to switch light/dark</span>
+                        <span>Light/dark theme shortcut</span>
+                        <ShortcutKbdGroup hotkeys={SHORTCUTS.toggleTheme.hotkeys} className="flex-wrap justify-end" />
                       </div>
                     </div>
                     <Switch
@@ -242,9 +243,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <div className="space-y-0.5">
                       <p className="text-sm">Settings key</p>
                       <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
-                        <span>Enable</span>
-                        {renderShortcutKeys(SHORTCUTS.settings.hotkeys)}
-                        <span>to open/close settings</span>
+                        <span>Settings dialog shortcuts</span>
+                        <ShortcutKbdGroup hotkeys={SHORTCUTS.settings.hotkeys} className="flex-wrap justify-end" />
                       </div>
                     </div>
                     <Switch
@@ -277,7 +277,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     ].map((shortcut) => (
                       <div key={shortcut.id} className="flex items-center justify-between gap-3">
                         <span className="text-muted-foreground">{shortcut.label}</span>
-                        {renderShortcutKeys(shortcut.hotkeys)}
+                        <ShortcutKbdGroup hotkeys={shortcut.hotkeys} className="flex-wrap justify-end" />
                       </div>
                     ))}
                   </div>

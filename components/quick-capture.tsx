@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { formatForDisplay, useHotkey } from "@tanstack/react-hotkeys"
+import { useHotkey } from "@tanstack/react-hotkeys"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Spinner } from "@/components/ui/spinner"
-import { Kbd } from "@/components/ui/kbd"
+import { ShortcutKbd } from "@/components/shortcut-kbd"
 import { Plus, Send } from "lucide-react"
 import { SHORTCUTS } from "@/lib/shortcuts"
 
@@ -72,7 +72,7 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
       >
         <Plus className="size-4" />
         <span>Capture a new idea...</span>
-        <Kbd className="ml-auto">{formatForDisplay(SHORTCUTS.newIdea.hotkeys[0])}</Kbd>
+        <ShortcutKbd hotkey={SHORTCUTS.newIdea.hotkeys[0]} className="ml-auto" />
       </Button>
     )
   }
@@ -90,9 +90,9 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
         />
         <div className="flex items-center justify-between">
           <p className="text-xs text-muted-foreground flex items-center gap-1">
-            <Kbd>{formatForDisplay(SHORTCUTS.cancelCapture.hotkeys[0])}</Kbd> cancel
+            <ShortcutKbd hotkey={SHORTCUTS.cancelCapture.hotkeys[0]} /> cancel
             <span className="mx-1">/</span>
-            <Kbd>{formatForDisplay(SHORTCUTS.saveCapture.hotkeys[0])}</Kbd> save
+            <ShortcutKbd hotkey={SHORTCUTS.saveCapture.hotkeys[0]} /> save
           </p>
           <div className="flex gap-2">
             <Button

@@ -7,6 +7,7 @@ export type ShortcutPreferenceKey =
   | "brainbox-shortcut-new-idea"
   | "brainbox-shortcut-theme-toggle"
   | "brainbox-shortcut-settings"
+  | "brainbox-shortcut-hints"
 
 export type ShortcutId =
   | "newIdea"
@@ -39,6 +40,7 @@ export const SHORTCUT_DEFAULTS: Record<ShortcutPreferenceKey, boolean> = {
   "brainbox-shortcut-new-idea": true,
   "brainbox-shortcut-theme-toggle": true,
   "brainbox-shortcut-settings": true,
+  "brainbox-shortcut-hints": true,
 }
 
 export const SHORTCUTS = {
