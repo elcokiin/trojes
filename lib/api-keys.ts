@@ -2,7 +2,7 @@ import crypto from "crypto"
 import { sql } from "@/lib/db"
 
 export function generateApiKey(): string {
-  return `bb_${crypto.randomBytes(24).toString("hex")}`
+  return `troje_${crypto.randomBytes(24).toString("hex")}`
 }
 
 export function hashApiKey(key: string): string {

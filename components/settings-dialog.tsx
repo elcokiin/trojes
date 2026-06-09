@@ -30,11 +30,11 @@ type SettingsSection = "appearance" | "keyboard" | "api" | "install"
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const { theme, setTheme } = useTheme()
-  const [keyboardNav, setKeyboardNav] = useShortcutPreference("brainbox-keyboard-nav")
-  const [newIdeaKeyEnabled, setNewIdeaKeyEnabled] = useShortcutPreference("brainbox-shortcut-new-idea")
-  const [themeToggleKeyEnabled, setThemeToggleKeyEnabled] = useShortcutPreference("brainbox-shortcut-theme-toggle")
-  const [settingsKeyEnabled, setSettingsKeyEnabled] = useShortcutPreference("brainbox-shortcut-settings")
-  const [shortcutHintsEnabled, setShortcutHintsEnabled] = useShortcutPreference("brainbox-shortcut-hints")
+  const [keyboardNav, setKeyboardNav] = useShortcutPreference("troje-keyboard-nav")
+  const [newIdeaKeyEnabled, setNewIdeaKeyEnabled] = useShortcutPreference("troje-shortcut-new-idea")
+  const [themeToggleKeyEnabled, setThemeToggleKeyEnabled] = useShortcutPreference("troje-shortcut-theme-toggle")
+  const [settingsKeyEnabled, setSettingsKeyEnabled] = useShortcutPreference("troje-shortcut-settings")
+  const [shortcutHintsEnabled, setShortcutHintsEnabled] = useShortcutPreference("troje-shortcut-hints")
   const [section, setSection] = useState<SettingsSection>("appearance")
   const [isMobile, setIsMobile] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -78,7 +78,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         <DialogHeader>
           <DialogTitle className="px-6 pt-6">Settings</DialogTitle>
           <DialogDescription className="px-6 pb-4">
-            Configure your BrainBox experience
+            Configure your Troje experience
           </DialogDescription>
         </DialogHeader>
 

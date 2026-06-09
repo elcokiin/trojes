@@ -1,6 +1,6 @@
-# BrainBox
+# Troje
 
-A personal idea management system designed for **frictionless capture**. BrainBox recognizes that inspiration strikes at unpredictable moments and optimizes for speed of entry rather than elaborate categorization at the point of capture.
+A personal idea management system designed for **frictionless capture**. Troje recognizes that inspiration strikes at unpredictable moments and optimizes for speed of entry rather than elaborate categorization at the point of capture.
 
 ## Features
 
@@ -10,7 +10,7 @@ A personal idea management system designed for **frictionless capture**. BrainBo
 - **Pin & Color Coding** - Pin important ideas and customize card backgrounds
 - **Trash with Recovery** - Soft delete with time tracking and permanent delete option
 - **API Keys for HTTP Capture** - Create per-user keys from Settings and send ideas via HTTP
-- **PWA Install Support** - Install BrainBox on mobile home screen
+- **PWA Install Support** - Install Troje on mobile home screen
 
 ## Keyboard Shortcuts
 
@@ -49,7 +49,7 @@ You can authenticate API requests in two ways:
 2. API key in header:
 
 ```http
-Authorization: Bearer bb_your_api_key_here
+Authorization: Bearer troje_your_api_key_here
 ```
 
 ### Endpoints
@@ -58,7 +58,7 @@ Authorization: Bearer bb_your_api_key_here
 ```http
 POST /api/ideas
 Content-Type: application/json
-Authorization: Bearer bb_your_api_key_here
+Authorization: Bearer troje_your_api_key_here
 
 {
   "content": "My brilliant idea"
@@ -120,7 +120,7 @@ Open Settings and go to `API Keys`:
 ```bash
 curl -X POST "http://localhost:3000/api/ideas" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer bb_your_api_key_here" \
+  -H "Authorization: Bearer troje_your_api_key_here" \
   -d '{"content":"Idea from terminal"}'
 ```
 

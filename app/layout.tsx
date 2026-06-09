@@ -11,7 +11,7 @@ const _inter = Inter({ subsets: ["latin"] });
 const _jetbrainsMono = JetBrains_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'BrainBox - Capture Ideas Anywhere',
+  title: 'Troje - Capture Ideas Anywhere',
   description: 'A personal idea management system for frictionless capture and thoughtful review.',
   generator: 'v0.app',
   manifest: '/manifest.webmanifest',

@@ -36,8 +36,8 @@ interface IdeasListProps {
 export function IdeasList({ status, onOpenCapture, active = true }: IdeasListProps) {
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const [captureOpen, setCaptureOpen] = useState(false)
-  const [keyboardEnabled] = useShortcutPreference("brainbox-keyboard-nav")
-  const [newIdeaKeyEnabled] = useShortcutPreference("brainbox-shortcut-new-idea")
+  const [keyboardEnabled] = useShortcutPreference("troje-keyboard-nav")
+  const [newIdeaKeyEnabled] = useShortcutPreference("troje-shortcut-new-idea")
 
   const { data, error, isLoading, mutate } = useSWR<{ ideas: Idea[] }>(
     `/api/ideas?status=${status}`,

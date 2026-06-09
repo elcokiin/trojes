@@ -211,7 +211,7 @@ export function ApiKeysManager() {
         <p className="font-medium text-foreground/90">Use via HTTP</p>
         <div className="rounded bg-background p-2 text-[11px] leading-relaxed">
           <p className="break-words">Authorization:</p>
-          <p className="break-all">Bearer bb_your_api_key_here</p>
+          <p className="break-all">Bearer troje_your_api_key_here</p>
         </div>
       </div>
     </div>

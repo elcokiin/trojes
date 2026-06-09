@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "my-project",
+      "name": "troje",
       "dependencies": {
         "@hookform/resolvers": "^3.9.1",
         "@neondatabase/serverless": "^0.10.4",

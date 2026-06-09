@@ -26,9 +26,9 @@ export function Dashboard({ user }: DashboardProps) {
   const [activeTab, setActiveTab] = useState<TabValue>("inbox")
   const [settingsOpen, setSettingsOpen] = useState(false)
   const { resolvedTheme, setTheme } = useTheme()
-  const [keyboardEnabled] = useShortcutPreference("brainbox-keyboard-nav")
-  const [themeToggleKeyEnabled] = useShortcutPreference("brainbox-shortcut-theme-toggle")
-  const [settingsKeyEnabled] = useShortcutPreference("brainbox-shortcut-settings")
+  const [keyboardEnabled] = useShortcutPreference("troje-keyboard-nav")
+  const [themeToggleKeyEnabled] = useShortcutPreference("troje-shortcut-theme-toggle")
+  const [settingsKeyEnabled] = useShortcutPreference("troje-shortcut-settings")
 
   const hotkeys: Array<UseHotkeyDefinition> = [
     {

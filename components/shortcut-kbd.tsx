@@ -15,7 +15,7 @@ interface ShortcutKbdProps {
 }
 
 export function ShortcutKbd({ hotkey, className, alwaysVisible = false }: ShortcutKbdProps) {
-  const [showShortcutHints] = useShortcutPreference("brainbox-shortcut-hints")
+  const [showShortcutHints] = useShortcutPreference("troje-shortcut-hints")
 
   if (!alwaysVisible && !showShortcutHints) return null
 
@@ -33,7 +33,7 @@ export function ShortcutKbdGroup({
   className,
   alwaysVisible = false,
 }: ShortcutKbdGroupProps) {
-  const [showShortcutHints] = useShortcutPreference("brainbox-shortcut-hints")
+  const [showShortcutHints] = useShortcutPreference("troje-shortcut-hints")
 
   if (!alwaysVisible && !showShortcutHints) return null
 

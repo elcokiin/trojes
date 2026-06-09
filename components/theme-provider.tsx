@@ -11,6 +11,8 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = React.createContext<ThemeContextValue | undefined>(undefined)
+const THEME_STORAGE_KEY = 'troje-theme'
+const LEGACY_THEME_STORAGE_KEY = 'brainbox-theme'
 
 export function useTheme() {
   const context = React.useContext(ThemeContext)
@@ -32,9 +34,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Initialize theme from localStorage on mount
   React.useEffect(() => {
-    const stored = localStorage.getItem('brainbox-theme') as Theme | null
+    const stored =
+      (localStorage.getItem(THEME_STORAGE_KEY) ??
+        localStorage.getItem(LEGACY_THEME_STORAGE_KEY)) as Theme | null
     if (stored && ['light', 'dark', 'system'].includes(stored)) {
       setThemeState(stored)
+      localStorage.setItem(THEME_STORAGE_KEY, stored)
     }
     setMounted(true)
   }, [])
@@ -68,7 +73,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const setTheme = React.useCallback((newTheme: Theme) => {
     setThemeState(newTheme)
-    localStorage.setItem('brainbox-theme', newTheme)
+    localStorage.setItem(THEME_STORAGE_KEY, newTheme)
   }, [])
 
   // Prevent hydration mismatch by not rendering theme-dependent content until mounted
