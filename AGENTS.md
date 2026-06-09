@@ -59,6 +59,15 @@ step and the verification needed for the change.
 - If the user explicitly provides a reference repository or URL for a task,
   document it in `notes/references.md` with enough context to explain why it is
   useful.
+- If the user provides an image to store as a reference, copy it into an
+  appropriate subfolder under `notes/references/` using a descriptive,
+  kebab-case filename.
+- For every reference image added under `notes/references/`, add a sibling
+  Markdown file with the same basename as the image. The Markdown file must name
+  the image file and briefly explain what the image shows, its important visual
+  or product elements, and how future agents should interpret it if they cannot
+  view the image directly. Also update `notes/references.md` with a short
+  description of any new reference folder.
 - This repo does not currently include checked-in reference repositories. Do not
   assume `.reference/` exists unless it is added later.
 - If a reference repository must be cloned for inspection, ask where it should be
