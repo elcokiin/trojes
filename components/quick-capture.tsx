@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { useHotkey } from "@tanstack/react-hotkeys"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
@@ -44,24 +43,11 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
   }
 
   const handleClose = () => {
+    textareaRef.current?.blur()
     onOpenChange?.(false)
     onClose?.()
     setContent("")
   }
-
-  useHotkey(SHORTCUTS.saveCapture.hotkeys[0], () => handleSubmit(), {
-    enabled: isExpanded,
-    target: textareaRef,
-    ignoreInputs: false,
-    preventDefault: true,
-  })
-
-  useHotkey(SHORTCUTS.cancelCapture.hotkeys[0], () => handleClose(), {
-    enabled: isExpanded,
-    target: textareaRef,
-    ignoreInputs: false,
-    preventDefault: true,
-  })
 
   if (!isExpanded) {
     return (
@@ -78,14 +64,27 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
   }
 
   return (
-    <Card className="p-4">
-      <div className="space-y-3">
+    <Card className="p-5">
+      <div className="flex flex-col gap-4">
         <Textarea
           ref={textareaRef}
           value={content}
           onChange={(e) => setContent(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              e.preventDefault()
+              e.stopPropagation()
+              handleClose()
+              return
+            }
+
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+              e.preventDefault()
+              handleSubmit()
+            }
+          }}
           placeholder="What's on your mind?"
-          className="min-h-[100px] resize-none border-0 p-0 focus-visible:ring-0 text-base"
+          className="min-h-[112px] resize-none border-0 p-3 text-base focus-visible:ring-0"
           disabled={isSubmitting}
         />
         <div className="flex items-center justify-between">
