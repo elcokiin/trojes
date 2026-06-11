@@ -39,6 +39,14 @@ commit cloned repositories here. Store the repository URL, what to inspect, why
 it matters for Troje, and any useful notes so a future agent can clone it into a
 disposable location when needed.
 
+Current source repository references:
+
+- `git@github.com:elcokiin/Andean-Water-Stress-Simulator.git`: design reference
+  for Troje's settings dialog structure, especially the configuration modal with
+  a persistent header, sidebar navigation, scrollable content, footer actions,
+  and `Mod+E` expand/restore behavior. Inspect in a disposable clone; do not
+  commit the repository.
+
 ### `notes/references/documents/`
 
 References to articles, specs, PDFs, technical docs, research notes, or other

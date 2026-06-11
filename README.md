@@ -22,6 +22,7 @@ A personal idea management system designed for **frictionless capture**. Troje r
 | `Enter` | Open card menu |
 | `Esc` | Close menu / deselect |
 | `e` | Open settings |
+| `Ctrl+E` / `Cmd+E` | Expand or restore settings |
 | `Ctrl+1` | Switch to Inbox |
 | `Ctrl+2` | Switch to Archived |
 | `Ctrl+3` | Switch to Trash |

@@ -13,6 +13,7 @@ export type ShortcutId =
   | "newIdea"
   | "toggleTheme"
   | "settings"
+  | "expandSettings"
   | "help"
   | "inbox"
   | "archived"
@@ -70,6 +71,13 @@ export const SHORTCUTS = {
     id: "settings",
     label: "Settings",
     hotkeys: ["P", ","],
+    category: "System",
+    preferenceKey: "troje-shortcut-settings",
+  },
+  expandSettings: {
+    id: "expandSettings",
+    label: "Expand settings dialog",
+    hotkeys: ["Mod+E"],
     category: "System",
     preferenceKey: "troje-shortcut-settings",
   },
