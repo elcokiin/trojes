@@ -8,7 +8,6 @@ import { SettingsDialog } from "@/components/settings-dialog"
 import { ShortcutHelp } from "@/components/shortcut-help"
 import { Inbox, Archive, Trash2 } from "lucide-react"
 import { UserMenu } from "@/components/user-menu"
-import { useTheme } from "@/components/theme-provider"
 import { SHORTCUTS } from "@/lib/shortcuts"
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
 
@@ -25,9 +24,7 @@ interface DashboardProps {
 export function Dashboard({ user }: DashboardProps) {
   const [activeTab, setActiveTab] = useState<TabValue>("inbox")
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const { resolvedTheme, setTheme } = useTheme()
   const [keyboardEnabled] = useShortcutPreference("troje-keyboard-nav")
-  const [themeToggleKeyEnabled] = useShortcutPreference("troje-shortcut-theme-toggle")
   const [settingsKeyEnabled] = useShortcutPreference("troje-shortcut-settings")
 
   const hotkeys: Array<UseHotkeyDefinition> = [
@@ -55,11 +52,6 @@ export function Dashboard({ user }: DashboardProps) {
       hotkey: SHORTCUTS.settings.hotkeys[1],
       callback: () => setSettingsOpen((prev) => !prev),
       options: { enabled: keyboardEnabled && settingsKeyEnabled },
-    },
-    {
-      hotkey: SHORTCUTS.toggleTheme.hotkeys[0],
-      callback: () => setTheme(resolvedTheme === "dark" ? "light" : "dark"),
-      options: { enabled: keyboardEnabled && themeToggleKeyEnabled },
     },
   ]
 
