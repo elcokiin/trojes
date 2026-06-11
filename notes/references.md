@@ -28,7 +28,9 @@ Current image subfolders:
 - `notes/references/images/interface-prototypes/`: original Troje screen
   concepts, UI sketches, and product-surface prototypes.
 - `notes/references/images/product-inspiration/`: visual inspiration from other
-  products, examples, taxonomies, or interface patterns.
+  products, examples, taxonomies, or interface patterns. Includes the Memos
+  positioning phrase reference for copy that defines a note product by what it
+  intentionally is not: not a workspace, and not a second brain.
 
 ### `notes/references/source-repositories/`
 
