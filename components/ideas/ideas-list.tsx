@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import useSWR from "swr"
 import { IdeaCard, type Idea } from "@/components/ideas/idea-card"
 import { QuickCapture } from "@/components/ideas/quick-capture"
 import {
@@ -14,18 +13,9 @@ import {
 } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
-import { Inbox, Archive, Trash2, Pin } from "lucide-react"
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
-
-const fetcher = async (url: string) => {
-  const res = await fetch(url)
-
-  if (!res.ok) {
-    throw new Error(`Request failed: ${res.status}`)
-  }
-
-  return res.json()
-}
+import { useIdeas } from "@/hooks/use-ideas"
+import { Inbox, Archive, Trash2, Pin } from "lucide-react"
 
 interface IdeasListProps {
   status: "inbox" | "archived" | "deleted"
@@ -39,13 +29,17 @@ export function IdeasList({ status, onOpenCapture, active = true }: IdeasListPro
   const [keyboardEnabled] = useShortcutPreference("troje-keyboard-nav")
   const [newIdeaKeyEnabled] = useShortcutPreference("troje-shortcut-new-idea")
 
-  const { data, error, isLoading, mutate } = useSWR<{ ideas: Idea[] }>(
-    `/api/ideas?status=${status}`,
-    fetcher,
-    { refreshInterval: 5000 }
-  )
+  const {
+    ideas,
+    error,
+    isLoading,
+    create,
+    updateStatus,
+    updatePin,
+    updateColor,
+    permanentDelete,
+  } = useIdeas({ status })
 
-  const ideas = data?.ideas ?? []
   const pinnedIdeas = ideas.filter(idea => idea.pinned)
   const unpinnedIdeas = ideas.filter(idea => !idea.pinned)
 
@@ -65,15 +59,7 @@ export function IdeasList({ status, onOpenCapture, active = true }: IdeasListPro
   })
 
   const handleCapture = async (content: string) => {
-    const response = await fetch("/api/ideas", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content }),
-    })
-
-    if (response.ok) {
-      mutate()
-    }
+    await create(content)
     setCaptureOpen(false)
   }
 
@@ -82,86 +68,20 @@ export function IdeasList({ status, onOpenCapture, active = true }: IdeasListPro
   }
 
   const handleStatusChange = async (id: string, newStatus: "inbox" | "archived" | "deleted") => {
-    mutate(
-      (currentData) => {
-        if (!currentData) return currentData
-        return {
-          ideas: currentData.ideas.filter((idea) => idea.id !== id),
-        }
-      },
-      false
-    )
-
-    await fetch(`/api/ideas/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: newStatus }),
-    })
-
-    mutate()
+    await updateStatus(id, newStatus)
     setSelectedIndex(-1)
   }
 
   const handlePinChange = async (id: string, pinned: boolean) => {
-    mutate(
-      (currentData) => {
-        if (!currentData) return currentData
-        return {
-          ideas: currentData.ideas.map((idea) =>
-            idea.id === id ? { ...idea, pinned } : idea
-          ),
-        }
-      },
-      false
-    )
-
-    await fetch(`/api/ideas/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pinned }),
-    })
-
-    mutate()
+    await updatePin(id, pinned)
   }
 
   const handleColorChange = async (id: string, background_color: string | null) => {
-    mutate(
-      (currentData) => {
-        if (!currentData) return currentData
-        return {
-          ideas: currentData.ideas.map((idea) =>
-            idea.id === id ? { ...idea, background_color } : idea
-          ),
-        }
-      },
-      false
-    )
-
-    await fetch(`/api/ideas/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ background_color }),
-    })
-
-    mutate()
+    await updateColor(id, background_color)
   }
 
   const handlePermanentDelete = async (id: string) => {
-    mutate(
-      (currentData) => {
-        if (!currentData) return currentData
-        return {
-          ideas: currentData.ideas.filter((idea) => idea.id !== id),
-        }
-      },
-      false
-    )
-
-    await fetch(`/api/ideas/${id}`, {
-      method: "DELETE",
-    })
-
-    mutate()
+    await permanentDelete(id)
     setSelectedIndex(-1)
   }
 

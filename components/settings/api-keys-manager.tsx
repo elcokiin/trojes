@@ -1,32 +1,15 @@
 "use client"
 
 import { useState } from "react"
-import useSWR from "swr"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useApiKeys } from "@/hooks/use-api-keys"
+import type { ApiKey } from "@/hooks/use-api-keys"
 import { Key, Plus, Trash2, Copy, Check, Pencil } from "lucide-react"
 
-interface ApiKey {
-  id: string
-  name: string
-  key_preview: string
-  full_key?: string
-  created_at: string
-  last_used_at: string | null
-}
-
-const fetcher = async (url: string) => {
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`Request failed: ${res.status}`)
-  return res.json()
-}
-
 export function ApiKeysManager() {
-  const { data, mutate, isLoading } = useSWR<{ keys: ApiKey[] }>(
-    "/api/api-keys",
-    fetcher
-  )
+  const { keys, isLoading, create, rename, remove } = useApiKeys()
 
   const [newKeyName, setNewKeyName] = useState("")
   const [newlyCreatedKey, setNewlyCreatedKey] = useState<string | null>(null)
@@ -34,8 +17,6 @@ export function ApiKeysManager() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState("")
   const [isCreating, setIsCreating] = useState(false)
-
-  const keys = data?.keys ?? []
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -56,41 +37,27 @@ export function ApiKeysManager() {
 
     setIsCreating(true)
     try {
-      const response = await fetch("/api/api-keys", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newKeyName.trim() }),
-      })
-
-      if (!response.ok) return
-
-      const { key } = await response.json()
-      setNewlyCreatedKey(key.full_key)
-      setNewKeyName("")
-      mutate()
+      const fullKey = await create(newKeyName.trim())
+      if (fullKey) {
+        setNewlyCreatedKey(fullKey)
+        setNewKeyName("")
+      }
     } finally {
       setIsCreating(false)
     }
   }
 
   const handleDelete = async (id: string) => {
-    const response = await fetch(`/api/api-keys/${id}`, { method: "DELETE" })
-    if (response.ok) mutate()
+    await remove(id)
   }
 
   const handleRename = async (id: string) => {
     if (!editingName.trim()) return
 
-    const response = await fetch(`/api/api-keys/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: editingName.trim() }),
-    })
-
-    if (response.ok) {
+    const ok = await rename(id, editingName.trim())
+    if (ok) {
       setEditingId(null)
       setEditingName("")
-      mutate()
     }
   }
 
