@@ -54,7 +54,15 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [settingsKeyEnabled, setSettingsKeyEnabled] = useShortcutPreference("troje-shortcut-settings")
   const [shortcutHintsEnabled, setShortcutHintsEnabled] = useShortcutPreference("troje-shortcut-hints")
   const [section, setSection] = useState<SettingsSection>("appearance")
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(() => {
+    if (typeof window === "undefined") return false
+    return localStorage.getItem("troje-settings-expanded") === "true"
+  })
+
+  useEffect(() => {
+    localStorage.setItem("troje-settings-expanded", String(isExpanded))
+  }, [isExpanded])
+
   const [isMobile, setIsMobile] = useState(false)
   const [mounted, setMounted] = useState(false)
 
