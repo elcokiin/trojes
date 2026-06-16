@@ -6,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Spinner } from "@/components/ui/spinner"
 import { ShortcutKbd } from "@/components/shortcuts/shortcut-kbd"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { cn } from "@/lib/utils"
 import { Plus, Send } from "lucide-react"
 import { SHORTCUTS } from "@/lib/shortcuts"
 
@@ -21,6 +23,7 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
   const [isSubmitting, setIsSubmitting] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+  const isMobile = useIsMobile()
   const isExpanded = isOpen ?? false
 
   useEffect(() => {
@@ -53,7 +56,7 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
     return (
       <Button
         onClick={() => onOpenChange?.(true)}
-        className="w-full h-12 justify-start gap-3 text-muted-foreground font-normal border-dashed"
+        className="w-full h-12 justify-start gap-3 text-muted-foreground font-normal border-dashed bg-card"
         variant="outline"
       >
         <Plus className="size-4" />
@@ -88,12 +91,14 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
           disabled={isSubmitting}
         />
         <div className="flex items-center justify-between">
-          <p className="text-xs text-muted-foreground flex items-center gap-1">
-            <ShortcutKbd hotkey={SHORTCUTS.cancelCapture.hotkeys[0]} /> cancel
-            <span className="mx-1">/</span>
-            <ShortcutKbd hotkey={SHORTCUTS.saveCapture.hotkeys[0]} /> save
-          </p>
-          <div className="flex gap-2">
+          {!isMobile && (
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <ShortcutKbd hotkey={SHORTCUTS.cancelCapture.hotkeys[0]} /> cancel
+              <span className="mx-1">/</span>
+              <ShortcutKbd hotkey={SHORTCUTS.saveCapture.hotkeys[0]} /> save
+            </p>
+          )}
+          <div className={cn("flex gap-2", isMobile && "ml-auto")}>
             <Button
               variant="ghost"
               size="sm"

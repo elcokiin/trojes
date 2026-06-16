@@ -315,7 +315,7 @@ export function IdeaCard({
                   variant="ghost"
                   size="icon-sm"
                   className={cn(
-                    "size-6 opacity-0 group-hover:opacity-100 transition-opacity -mr-1.5",
+                    "size-6 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity -mr-1.5",
                     isSelected && "opacity-100",
                   )}
                 >

@@ -172,3 +172,12 @@
 .themed-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--muted-foreground);
 }
+
+@media (max-width: 767px) {
+  [data-slot="dropdown-menu-shortcut"],
+  [data-slot="menubar-shortcut"],
+  [data-slot="context-menu-shortcut"],
+  [data-slot="command-shortcut"] {
+    display: none;
+  }
+}

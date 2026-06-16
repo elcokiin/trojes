@@ -10,19 +10,24 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { ShortcutKbdGroup } from "@/components/shortcuts/shortcut-kbd"
+import { useIsMobile } from "@/hooks/use-mobile"
 import { SHORTCUT_GROUPS, SHORTCUTS } from "@/lib/shortcuts"
 import { cn } from "@/lib/utils"
 
 export function ShortcutHelp() {
+  const isMobile = useIsMobile()
   const [open, setOpen] = useState(false)
   const heldKeys = useHeldKeys()
   const shiftHeld = useKeyHold("Shift")
   const shortcuts = Object.values(SHORTCUTS)
 
   useHotkey(SHORTCUTS.help.hotkeys[0], () => setOpen(true), {
+    enabled: !isMobile,
     ignoreInputs: true,
     preventDefault: true,
   })
+
+  if (isMobile) return null
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

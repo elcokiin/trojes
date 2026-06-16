@@ -8,6 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { ShortcutKbd } from "@/components/shortcuts/shortcut-kbd"
+import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import type { RegisterableHotkey } from "@tanstack/react-hotkeys"
 
@@ -38,6 +39,33 @@ export function IconTooltip({
   asChild,
   type,
 }: IconTooltipProps) {
+  const isMobile = useIsMobile()
+
+  if (isMobile) {
+    if (asChild) {
+      return (
+        <span className={cn("flex items-center justify-center", className)} onClick={onClick}>
+          {icon}
+          <span className="sr-only">{label}</span>
+        </span>
+      )
+    }
+
+    return (
+      <Button
+        variant="ghost"
+        size={size}
+        type={type}
+        className={className}
+        onClick={onClick}
+        aria-label={ariaLabel}
+      >
+        {icon}
+        <span className="sr-only">{label}</span>
+      </Button>
+    )
+  }
+
   if (asChild) {
     return (
       <Tooltip>
