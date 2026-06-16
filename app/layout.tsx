@@ -5,6 +5,8 @@ import { ThemeProvider } from '@/components/providers/theme-provider'
 import { SessionProvider } from '@/components/providers/session-provider'
 import { PwaRegister } from '@/components/providers/pwa-register'
 import { HotkeysRootProvider } from '@/components/providers/hotkeys-root-provider'
+import { TanStackDevtools } from '@tanstack/react-devtools'
+import { hotkeysDevtoolsPlugin } from '@tanstack/react-hotkeys-devtools'
 import './globals.css'
 
 const _inter = Inter({ subsets: ["latin"] });
@@ -49,12 +51,15 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+      <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased">
         <SessionProvider>
           <ThemeProvider>
             <HotkeysRootProvider>
               {children}
+              {process.env.NODE_ENV === 'development' && (
+                <TanStackDevtools plugins={[hotkeysDevtoolsPlugin()]} />
+              )}
             </HotkeysRootProvider>
           </ThemeProvider>
         </SessionProvider>

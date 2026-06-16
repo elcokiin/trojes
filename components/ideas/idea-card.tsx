@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { CopyToClipboard } from "react-copy-to-clipboard";
 import copy from "copy-to-clipboard";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { Card, CardContent } from "@/components/ui/card";
@@ -248,23 +247,19 @@ export function IdeaCard({
 
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem asChild>
-            <CopyToClipboard
-              text={idea.content}
-              onCopy={() => {
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              }}
-            >
-              <button className="flex w-full items-center gap-2">
-                {copied ? (
-                  <Check className="size-4" />
-                ) : (
-                  <Copy className="size-4" />
-                )}
-                {copied ? "Copied!" : "Copy text"}
-              </button>
-            </CopyToClipboard>
+          <DropdownMenuItem
+            onClick={() => {
+              copy(idea.content);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            }}
+          >
+            {copied ? (
+              <Check className="size-4 mr-2" />
+            ) : (
+              <Copy className="size-4 mr-2" />
+            )}
+            {copied ? "Copied!" : "Copy text"}
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />
