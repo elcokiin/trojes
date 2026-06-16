@@ -337,6 +337,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                           SHORTCUTS.navLeft,
                           SHORTCUTS.navRight,
                           SHORTCUTS.openActions,
+                          SHORTCUTS.copyIdea,
                           SHORTCUTS.deselect,
                           SHORTCUTS.saveCapture,
                           SHORTCUTS.cancelCapture,

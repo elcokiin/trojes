@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
+import copy from "copy-to-clipboard";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -88,6 +89,16 @@ export function IdeaCard({
   }, [isSelected]);
 
   useHotkey(SHORTCUTS.openActions.hotkeys[0], () => setMenuOpen(true), {
+    enabled: isSelected,
+    ignoreInputs: true,
+    preventDefault: true,
+  });
+
+  useHotkey(SHORTCUTS.copyIdea.hotkeys[0], () => {
+    copy(idea.content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, {
     enabled: isSelected,
     ignoreInputs: true,
     preventDefault: true,

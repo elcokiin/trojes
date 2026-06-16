@@ -27,6 +27,7 @@ export type ShortcutId =
   | "saveCapture"
   | "cancelCapture"
   | "toggleSidebar"
+  | "copyIdea"
 
 export interface ShortcutDefinition {
   id: ShortcutId
@@ -70,7 +71,7 @@ export const SHORTCUTS = {
   settings: {
     id: "settings",
     label: "Settings",
-    hotkeys: ["P", ","],
+    hotkeys: ["S", ","],
     category: "System",
     preferenceKey: "troje-shortcut-settings",
   },
@@ -142,6 +143,12 @@ export const SHORTCUTS = {
     hotkeys: ["Enter"],
     category: "Navigation",
     preferenceKey: "troje-keyboard-nav",
+  },
+  copyIdea: {
+    id: "copyIdea",
+    label: "Copy idea text",
+    hotkeys: ["C"],
+    category: "Editing",
   },
   deselect: {
     id: "deselect",
