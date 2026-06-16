@@ -28,6 +28,7 @@ export type ShortcutId =
   | "cancelCapture"
   | "toggleSidebar"
   | "copyIdea"
+  | "togglePin"
 
 export interface ShortcutDefinition {
   id: ShortcutId
@@ -148,6 +149,12 @@ export const SHORTCUTS = {
     id: "copyIdea",
     label: "Copy idea text",
     hotkeys: ["C"],
+    category: "Editing",
+  },
+  togglePin: {
+    id: "togglePin",
+    label: "Toggle pin",
+    hotkeys: ["P"],
     category: "Editing",
   },
   deselect: {

@@ -110,6 +110,14 @@ export function IdeaCard({
     preventDefault: true,
   });
 
+  useHotkey(SHORTCUTS.togglePin.hotkeys[0], () => {
+    handlePinToggle();
+  }, {
+    enabled: isSelected,
+    ignoreInputs: true,
+    preventDefault: true,
+  });
+
   const selectedColor = CARD_COLORS.find((c) => c.id === idea.background_color);
   const cardStyle = selectedColor?.color
     ? { backgroundColor: selectedColor.color }
@@ -136,6 +144,7 @@ export function IdeaCard({
             className={cn(
               "absolute top-2 right-2 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity",
               idea.pinned && "text-primary sm:opacity-100",
+              isSelected && "sm:opacity-100",
             )}
           >
             {idea.pinned ? (
@@ -148,6 +157,7 @@ export function IdeaCard({
         </TooltipTrigger>
         <TooltipContent side="left">
           <p>{idea.pinned ? "Unpin" : "Pin to top"}</p>
+          <ShortcutKbd hotkey={SHORTCUTS.togglePin.hotkeys[0]} />
         </TooltipContent>
       </Tooltip>
 
@@ -317,7 +327,10 @@ export function IdeaCard({
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    className="size-6 opacity-0 group-hover:opacity-100 transition-opacity -mr-1.5"
+                    className={cn(
+                      "size-6 opacity-0 group-hover:opacity-100 transition-opacity -mr-1.5",
+                      isSelected && "opacity-100",
+                    )}
                   >
                     {copied ? (
                       <Check className="size-3" />
