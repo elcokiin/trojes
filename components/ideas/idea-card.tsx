@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { CopyToClipboard } from "react-copy-to-clipboard";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ import {
   Palette,
   Check,
   AlertTriangle,
+  Copy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SHORTCUTS } from "@/lib/shortcuts";
@@ -45,6 +47,7 @@ export function IdeaCard({
 }: IdeaCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const handleStatusChange = async (
@@ -192,6 +195,27 @@ export function IdeaCard({
 
           <DropdownMenuSeparator />
 
+          <DropdownMenuItem asChild>
+            <CopyToClipboard
+              text={idea.content}
+              onCopy={() => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }}
+            >
+              <button className="flex w-full items-center gap-2">
+                {copied ? (
+                  <Check className="size-4" />
+                ) : (
+                  <Copy className="size-4" />
+                )}
+                {copied ? "Copied!" : "Copy text"}
+              </button>
+            </CopyToClipboard>
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+
           {idea.status !== "inbox" && (
             <DropdownMenuItem onClick={() => handleStatusChange("inbox")}>
               <Inbox className="size-4 mr-2" />
@@ -230,21 +254,43 @@ export function IdeaCard({
           <p className="text-sm leading-relaxed whitespace-pre-wrap wrap-break-words">
             {idea.content}
           </p>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            {idea.source === "telegram" ? (
-              <MessageSquare className="size-3" />
-            ) : (
-              <Globe className="size-3" />
-            )}
-            {showTrashInfo && idea.deleted_at ? (
-              <span className="text-destructive/70 flex items-center gap-1">
-                <Trash2 className="size-3" />
-                {formatTimeInTrash(idea.deleted_at)}
-              </span>
-            ) : (
-              <span>{formatRelativeDate(idea.created_at)}</span>
-            )}
-            {idea.pinned && <Pin className="size-3 text-primary" />}
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+              {idea.source === "telegram" ? (
+                <MessageSquare className="size-3" />
+              ) : (
+                <Globe className="size-3" />
+              )}
+              {showTrashInfo && idea.deleted_at ? (
+                <span className="text-destructive/70 flex items-center gap-1">
+                  <Trash2 className="size-3" />
+                  {formatTimeInTrash(idea.deleted_at)}
+                </span>
+              ) : (
+                <span>{formatRelativeDate(idea.created_at)}</span>
+              )}
+              {idea.pinned && <Pin className="size-3 text-primary" />}
+            </div>
+            <CopyToClipboard
+              text={idea.content}
+              onCopy={() => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }}
+            >
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="size-6 opacity-0 group-hover:opacity-100 transition-opacity -mr-1.5"
+              >
+                {copied ? (
+                  <Check className="size-3" />
+                ) : (
+                  <Copy className="size-3" />
+                )}
+                <span className="sr-only">Copy text</span>
+              </Button>
+            </CopyToClipboard>
           </div>
           {idea.tags && idea.tags.length > 0 && (
             <div className="flex flex-wrap gap-1">
