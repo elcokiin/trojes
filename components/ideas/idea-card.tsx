@@ -8,6 +8,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { ShortcutKbd } from "@/components/shortcuts/shortcut-kbd";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -121,22 +127,29 @@ export function IdeaCard({
         idea.background_color && "border-transparent",
       )}
     >
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        onClick={handlePinToggle}
-        className={cn(
-          "absolute top-2 right-2 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity",
-          idea.pinned && "text-primary sm:opacity-100",
-        )}
-      >
-        {idea.pinned ? (
-          <PinOff className="size-3.5" />
-        ) : (
-          <Pin className="size-3.5" />
-        )}
-        <span className="sr-only">{idea.pinned ? "Unpin" : "Pin"}</span>
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={handlePinToggle}
+            className={cn(
+              "absolute top-2 right-2 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity",
+              idea.pinned && "text-primary sm:opacity-100",
+            )}
+          >
+            {idea.pinned ? (
+              <PinOff className="size-3.5" />
+            ) : (
+              <Pin className="size-3.5" />
+            )}
+            <span className="sr-only">{idea.pinned ? "Unpin" : "Pin"}</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="left">
+          <p>{idea.pinned ? "Unpin" : "Pin to top"}</p>
+        </TooltipContent>
+      </Tooltip>
 
       <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
         <DropdownMenuTrigger asChild>
@@ -148,8 +161,18 @@ export function IdeaCard({
               isSelected && "sm:opacity-100",
             )}
           >
-            <MoreHorizontal className="size-4" />
-            <span className="sr-only">Actions</span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="flex items-center justify-center">
+                  <MoreHorizontal className="size-4" />
+                  <span className="sr-only">Actions</span>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                <p>More actions</p>
+                <ShortcutKbd hotkey={SHORTCUTS.openActions.hotkeys[0]} />
+              </TooltipContent>
+            </Tooltip>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
@@ -282,26 +305,34 @@ export function IdeaCard({
               )}
               {idea.pinned && <Pin className="size-3 text-primary" />}
             </div>
-            <CopyToClipboard
-              text={idea.content}
-              onCopy={() => {
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              }}
-            >
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="size-6 opacity-0 group-hover:opacity-100 transition-opacity -mr-1.5"
-              >
-                {copied ? (
-                  <Check className="size-3" />
-                ) : (
-                  <Copy className="size-3" />
-                )}
-                <span className="sr-only">Copy text</span>
-              </Button>
-            </CopyToClipboard>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <CopyToClipboard
+                  text={idea.content}
+                  onCopy={() => {
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="size-6 opacity-0 group-hover:opacity-100 transition-opacity -mr-1.5"
+                  >
+                    {copied ? (
+                      <Check className="size-3" />
+                    ) : (
+                      <Copy className="size-3" />
+                    )}
+                    <span className="sr-only">Copy text</span>
+                  </Button>
+                </CopyToClipboard>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p>Copy text</p>
+                <ShortcutKbd hotkey={SHORTCUTS.copyIdea.hotkeys[0]} />
+              </TooltipContent>
+            </Tooltip>
           </div>
           {idea.tags && idea.tags.length > 0 && (
             <div className="flex flex-wrap gap-1">
