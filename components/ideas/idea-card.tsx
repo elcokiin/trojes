@@ -6,12 +6,7 @@ import { useHotkey } from "@tanstack/react-hotkeys";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { ShortcutKbd } from "@/components/shortcuts/shortcut-kbd";
+import { IconTooltip } from "@/components/ui/icon-tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -137,60 +132,34 @@ export function IdeaCard({
         idea.background_color && "border-transparent",
       )}
     >
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={handlePinToggle}
-            className={cn(
-              "absolute top-2 right-10 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity",
-              idea.pinned && "text-primary sm:opacity-100",
-              isSelected && "sm:opacity-100",
-            )}
-          >
-            {idea.pinned ? (
-              <PinOff className="size-3.5" />
-            ) : (
-              <Pin className="size-3.5" />
-            )}
-            <span className="sr-only">{idea.pinned ? "Unpin" : "Pin"}</span>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="left">
-          <p>{idea.pinned ? "Unpin" : "Pin to top"}</p>
-          <ShortcutKbd hotkey={SHORTCUTS.togglePin.hotkeys[0]} />
-        </TooltipContent>
-      </Tooltip>
+      <IconTooltip
+        icon={idea.pinned ? PinOff : Pin}
+        label={idea.pinned ? "Unpin" : "Pin to top"}
+        shortcut={SHORTCUTS.togglePin.hotkeys[0]}
+        side="left"
+        onClick={handlePinToggle}
+        className={cn(
+          "absolute top-2 right-10 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity",
+          idea.pinned && "text-primary sm:opacity-100",
+          isSelected && "sm:opacity-100",
+        )}
+      />
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => {
-              copy(idea.content);
-              setCopied(true);
-              setTimeout(() => setCopied(false), 2000);
-            }}
-            className={cn(
-              "absolute top-2 right-2 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity",
-              isSelected && "sm:opacity-100",
-            )}
-          >
-            {copied ? (
-              <Check className="size-3.5" />
-            ) : (
-              <Copy className="size-3.5" />
-            )}
-            <span className="sr-only">Copy text</span>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="left">
-          <p>Copy text</p>
-          <ShortcutKbd hotkey={SHORTCUTS.copyIdea.hotkeys[0]} />
-        </TooltipContent>
-      </Tooltip>
+      <IconTooltip
+        icon={copied ? Check : Copy}
+        label="Copy text"
+        shortcut={SHORTCUTS.copyIdea.hotkeys[0]}
+        side="left"
+        onClick={() => {
+          copy(idea.content);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        }}
+        className={cn(
+          "absolute top-2 right-2 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity",
+          isSelected && "sm:opacity-100",
+        )}
+      />
 
       <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
         <DropdownMenuContent align="end" className="w-48">
@@ -326,18 +295,13 @@ export function IdeaCard({
                   isSelected && "opacity-100",
                 )}
               >
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="flex items-center justify-center">
-                      <MoreHorizontal className="size-3.5" />
-                      <span className="sr-only">Actions</span>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">
-                    <p>More actions</p>
-                    <ShortcutKbd hotkey={SHORTCUTS.openActions.hotkeys[0]} />
-                  </TooltipContent>
-                </Tooltip>
+                <IconTooltip
+                  icon={MoreHorizontal}
+                  label="More actions"
+                  shortcut={SHORTCUTS.openActions.hotkeys[0]}
+                  side="top"
+                  asChild
+                />
               </Button>
             </DropdownMenuTrigger>
           </div>

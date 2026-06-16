@@ -28,11 +28,7 @@ import {
   Sun,
 } from "lucide-react"
 import { ShortcutKbd, ShortcutKbdGroup } from "@/components/shortcuts/shortcut-kbd"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
+import { IconTooltip } from "@/components/ui/icon-tooltip"
 import { cn } from "@/lib/utils"
 import { ApiKeysManager } from "@/components/settings/api-keys-manager"
 import { PwaInstallManager } from "@/components/settings/pwa-install-manager"
@@ -146,26 +142,16 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       >
         <DialogHeader className="shrink-0 border-b px-6 py-4">
           <div className="flex items-start gap-3 pr-8">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="-ml-2"
-                  onClick={() => setIsExpanded((prev) => !prev)}
-                  aria-label={isExpanded ? "Restore settings dialog" : "Expand settings dialog"}
-                >
-                  {isExpanded ? <Minimize2 /> : <Maximize2 />}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <span className="inline-flex items-center gap-2">
-                  {isExpanded ? "Restore settings" : "Expand settings"}
-                  <ShortcutKbd hotkey={SHORTCUTS.expandSettings.hotkeys[0]} />
-                </span>
-              </TooltipContent>
-            </Tooltip>
+            <IconTooltip
+              icon={isExpanded ? Minimize2 : Maximize2}
+              label={isExpanded ? "Restore settings" : "Expand settings"}
+              aria-label={isExpanded ? "Restore settings dialog" : "Expand settings dialog"}
+              shortcut={SHORTCUTS.expandSettings.hotkeys[0]}
+              onClick={() => setIsExpanded((prev) => !prev)}
+              className="-ml-2"
+              size="icon"
+              type="button"
+            />
             <div className="min-w-0">
               <DialogTitle className="text-xl">Settings</DialogTitle>
               <DialogDescription>
