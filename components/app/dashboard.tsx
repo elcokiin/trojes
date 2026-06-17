@@ -2,15 +2,13 @@
 
 import { useState } from "react";
 import { useHotkeys, type UseHotkeyDefinition } from "@tanstack/react-hotkeys";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { IdeasList } from "@/components/ideas/ideas-list";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
 import { ShortcutHelp } from "@/components/shortcuts/shortcut-help";
-import { Inbox, Archive, Trash2 } from "lucide-react";
 import { UserMenu } from "@/components/account/user-menu";
 import { SHORTCUTS } from "@/lib/shortcuts";
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences";
 import { MobileLayout } from "@/components/app/mobile-layout";
+import { IdeasTabs } from "@/components/ideas/ideas-tabs";
 
 type TabValue = "inbox" | "archived" | "deleted";
 
@@ -73,38 +71,13 @@ export function Dashboard({ user }: DashboardProps) {
           <UserMenu user={user} />
         </div>
         <main className="container max-w-5xl mx-auto px-4 py-8 pt-16">
-          <Tabs
+          <IdeasTabs
             value={activeTab}
-            onValueChange={(v) => setActiveTab(v as TabValue)}
-            className="space-y-6"
-          >
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-3">
-              <TabsTrigger value="inbox" className="gap-2">
-                <Inbox className="size-4" />
-                <span className="hidden sm:inline">Inbox</span>
-              </TabsTrigger>
-              <TabsTrigger value="archived" className="gap-2">
-                <Archive className="size-4" />
-                <span className="hidden sm:inline">Archived</span>
-              </TabsTrigger>
-              <TabsTrigger value="deleted" className="gap-2">
-                <Trash2 className="size-4" />
-                <span className="hidden sm:inline">Trash</span>
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="inbox">
-              <IdeasList status="inbox" active={activeTab === "inbox"} />
-            </TabsContent>
-
-            <TabsContent value="archived">
-              <IdeasList status="archived" active={activeTab === "archived"} />
-            </TabsContent>
-
-            <TabsContent value="deleted">
-              <IdeasList status="deleted" active={activeTab === "deleted"} />
-            </TabsContent>
-          </Tabs>
+            onValueChange={setActiveTab}
+            tabsClassName="space-y-6"
+            tabsListClassName="grid w-full max-w-md mx-auto grid-cols-3"
+            triggerClassName="gap-2"
+          />
         </main>
       </div>
 

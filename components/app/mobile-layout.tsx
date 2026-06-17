@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Download, Inbox, Archive, Trash2, Pin, Settings } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { IdeasList } from "@/components/ideas/ideas-list";
+import { Download, Pin, Settings } from "lucide-react";
 import { QuickCapture } from "@/components/ideas/quick-capture";
 import { Button } from "@/components/ui/button";
 import { useIdeas } from "@/hooks/use-ideas";
+import { IdeasTabs } from "@/components/ideas/ideas-tabs";
 
 type TabValue = "inbox" | "archived" | "deleted";
 
@@ -118,51 +117,24 @@ export function MobileLayout({
           </div>
         )}
 
-        <Tabs
+        <IdeasTabs
           value={activeTab}
-          onValueChange={(v) => onTabChange(v as TabValue)}
+          onValueChange={onTabChange}
+          tabsListClassName="w-full grid grid-cols-3 rounded-none"
+          tabsListWrapperClassName="sticky top-0 z-40 bg-background"
+          contentWrapperClassName="px-4 pt-4"
+          showLabels={false}
+          hideCaptureInbox
         >
-          <div className="sticky top-0 z-40 bg-background">
-            <div className="px-4 pt-3 pb-0 space-y-3">
-              <QuickCapture
-                onCapture={handleCapture}
-                isOpen={captureOpen}
-                onOpenChange={setCaptureOpen}
-                onClose={() => setCaptureOpen(false)}
-              />
-            </div>
-            <TabsList className="w-full grid grid-cols-3 rounded-none">
-              <TabsTrigger value="inbox">
-                <Inbox className="size-4" />
-              </TabsTrigger>
-              <TabsTrigger value="archived">
-                <Archive className="size-4" />
-              </TabsTrigger>
-              <TabsTrigger value="deleted">
-                <Trash2 className="size-4" />
-              </TabsTrigger>
-            </TabsList>
+          <div className="px-4 pt-3 pb-0 space-y-3">
+            <QuickCapture
+              onCapture={handleCapture}
+              isOpen={captureOpen}
+              onOpenChange={setCaptureOpen}
+              onClose={() => setCaptureOpen(false)}
+            />
           </div>
-
-          <div className="px-4 pt-4">
-            <TabsContent value="inbox">
-              <IdeasList
-                status="inbox"
-                active={activeTab === "inbox"}
-                hideCapture
-              />
-            </TabsContent>
-            <TabsContent value="archived">
-              <IdeasList
-                status="archived"
-                active={activeTab === "archived"}
-              />
-            </TabsContent>
-            <TabsContent value="deleted">
-              <IdeasList status="deleted" active={activeTab === "deleted"} />
-            </TabsContent>
-          </div>
-        </Tabs>
+        </IdeasTabs>
       </div>
 
       <nav className="shrink-0 h-12 border-t bg-background flex items-stretch">
