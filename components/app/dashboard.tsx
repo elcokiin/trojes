@@ -162,9 +162,10 @@ export function Dashboard({ user }: DashboardProps) {
       {/* Mobile PWA layout */}
       <div className="md:hidden flex flex-col h-screen">
         <div className="flex-1 overflow-y-auto">
-          <header className="flex items-center justify-between px-4 h-14 border-b bg-background">
-            <span className="font-semibold text-base">Troje</span>
-            <UserMenu user={user} />
+          <header className="px-4 h-14 border-b bg-background flex items-center justify-center">
+            <div className="flex-1 border-t border-border/40" />
+            <span className="px-3 font-semibold text-base">Troje</span>
+            <div className="flex-1 border-t border-border/40" />
           </header>
 
           {showBanner && (
