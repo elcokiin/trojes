@@ -26,7 +26,9 @@ image directly.
 Current image subfolders:
 
 - `notes/references/images/interface-prototypes/`: original Troje screen
-  concepts, UI sketches, and product-surface prototypes.
+  concepts, UI sketches, and product-surface prototypes. Includes the default
+  universal inbox view and the contextual CTA dashboard view with a temporal
+  enhancement banner for PWA installation.
 - `notes/references/images/product-inspiration/`: visual inspiration from other
   products, examples, taxonomies, or interface patterns. Includes the Memos
   positioning phrase reference for copy that defines a note product by what it
