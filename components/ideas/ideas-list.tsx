@@ -40,7 +40,7 @@ export function IdeasList({ status, onOpenCapture, active = true, hideCapture = 
     updatePin,
     updateColor,
     permanentDelete,
-  } = useIdeas({ status })
+  } = useIdeas({ status, enabled: active })
 
   const pinnedIdeas = ideas.filter(idea => idea.pinned)
   const unpinnedIdeas = ideas.filter(idea => !idea.pinned)

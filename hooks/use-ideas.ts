@@ -7,11 +7,12 @@ import type { Idea } from "@/types/idea"
 
 interface UseIdeasOptions {
   status: "inbox" | "archived" | "deleted"
+  enabled?: boolean
 }
 
-export function useIdeas({ status }: UseIdeasOptions) {
+export function useIdeas({ status, enabled = true }: UseIdeasOptions) {
   const { data, error, isLoading, mutate } = useSWR<{ ideas: Idea[] }>(
-    `/api/ideas?status=${status}`,
+    enabled ? `/api/ideas?status=${status}` : null,
     fetcher,
     { refreshInterval: 5000 }
   )

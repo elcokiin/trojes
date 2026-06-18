@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Download, Pin, Settings } from "lucide-react";
+import { Pin, Settings, X } from "lucide-react";
 import { QuickCapture } from "@/components/ideas/quick-capture";
-import { Button } from "@/components/ui/button";
 import { useIdeas } from "@/hooks/use-ideas";
 import { IdeasTabs } from "@/components/ideas/ideas-tabs";
 import { cn } from "@/lib/utils";
@@ -114,33 +113,29 @@ export function MobileLayout({
         </header>
 
         {showBanner && (
-          <div className="px-4 pt-3">
-            <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
-              <Download className="size-5 text-primary shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium">Install Troje</p>
-                <p className="text-xs text-muted-foreground">
-                  Add to home screen for a native app experience
-                </p>
-              </div>
-              <div className="flex gap-2 shrink-0">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 text-xs"
-                  onClick={() => setBannerDismissed(true)}
-                >
-                  Dismiss
-                </Button>
-                <Button
-                  size="sm"
-                  className="h-8 text-xs"
-                  onClick={handleInstall}
-                >
-                  Install
-                </Button>
+          <div className="relative w-full h-10 bg-primary/5 overflow-hidden">
+            <div
+              onClick={handleInstall}
+              className="w-full h-full flex items-center pr-8 marquee-track cursor-pointer"
+            >
+              <div className="marquee-content whitespace-nowrap text-xs text-primary/70">
+                <span>
+                  Tap to install Troje — Add to home screen for a native
+                  experience •{" "}
+                </span>
+                <span>
+                  Tap to install Troje — Add to home screen for a native
+                  experience •{" "}
+                </span>
               </div>
             </div>
+            <button
+              onClick={() => setBannerDismissed(true)}
+              className="absolute right-0 top-0 h-full px-3 flex items-center justify-center text-primary/70 hover:text-primary z-10"
+              aria-label="Dismiss"
+            >
+              <X className="size-3.5" />
+            </button>
           </div>
         )}
 

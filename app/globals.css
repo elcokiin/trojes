@@ -149,6 +149,25 @@
   }
 }
 
+.marquee-track {
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 5%,
+    black 85%,
+    transparent 95%
+  );
+}
+
+.marquee-content {
+  animation: marquee 20s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 .themed-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: var(--border) var(--muted);
@@ -172,6 +191,7 @@
 .themed-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--muted-foreground);
 }
+
 
 @media (max-width: 767px) {
   [data-slot="dropdown-menu-shortcut"],
