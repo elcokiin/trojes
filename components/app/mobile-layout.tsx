@@ -101,7 +101,7 @@ export function MobileLayout({
   );
 
   return (
-    <div className="md:hidden flex flex-col h-screen">
+    <div className="flex flex-col h-screen">
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
         <header className="px-4 h-14 border-b bg-background flex items-center justify-center">
           <div className="flex-1 border-t border-foreground/10" />

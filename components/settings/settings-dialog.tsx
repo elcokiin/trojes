@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { signOut } from "next-auth/react"
 import { useHotkey } from "@tanstack/react-hotkeys"
 import { useTheme } from "@/components/providers/theme-provider"
 import {
@@ -11,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -23,9 +25,11 @@ import {
   Monitor,
   Moon,
   Palette,
+  LogOut,
   Settings,
   Smartphone,
   Sun,
+  User,
 } from "lucide-react"
 import { ShortcutKbd, ShortcutKbdGroup } from "@/components/shortcuts/shortcut-kbd"
 import { IconTooltip } from "@/components/ui/icon-tooltip"
@@ -38,11 +42,16 @@ import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
 interface SettingsDialogProps {
   open?: boolean
   onOpenChange?: (open: boolean) => void
+  user: {
+    name?: string | null
+    email?: string | null
+    image?: string | null
+  }
 }
 
-type SettingsSection = "appearance" | "keyboard" | "api" | "install"
+type SettingsSection = "appearance" | "keyboard" | "api" | "install" | "account"
 
-export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
+export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps) {
   const { theme, setTheme } = useTheme()
   const [keyboardNav, setKeyboardNav] = useShortcutPreference("troje-keyboard-nav")
   const [newIdeaKeyEnabled, setNewIdeaKeyEnabled] = useShortcutPreference("troje-shortcut-new-idea")
@@ -116,7 +125,19 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       label: "Install App",
       mobileOnly: true,
     },
+    {
+      id: "account",
+      icon: User,
+      label: "Account",
+    },
   ] as const
+
+  const initials = user.name
+    ?.split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2) || "U"
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -353,6 +374,35 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
                 {section === "api" && <ApiKeysManager />}
                 {isMobile && section === "install" && <PwaInstallManager />}
+
+                {section === "account" && (
+                  <div className="flex flex-col gap-6">
+                    <div className="flex items-center gap-4">
+                      <Avatar className="size-14">
+                        <AvatarImage src={user.image || undefined} alt={user.name || "User"} />
+                        <AvatarFallback className="bg-primary/10 text-primary text-lg">
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex flex-col gap-1">
+                        {user.name && (
+                          <p className="text-sm font-medium leading-none truncate">{user.name}</p>
+                        )}
+                        {user.email && (
+                          <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-fit gap-2 text-destructive hover:text-destructive"
+                      onClick={() => signOut({ callbackUrl: "/login" })}
+                    >
+                      <LogOut className="size-4" />
+                      Sign out
+                    </Button>
+                  </div>
+                )}
               </section>
             </ScrollArea>
           </div>
