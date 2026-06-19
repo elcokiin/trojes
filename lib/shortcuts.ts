@@ -92,14 +92,14 @@ export const SHORTCUTS = {
   inbox: {
     id: "inbox",
     label: "Inbox",
-    hotkeys: ["Mod+1"],
+    hotkeys: ["Mod+2"],
     category: "Views",
     preferenceKey: "troje-keyboard-nav",
   },
   archived: {
     id: "archived",
     label: "Archived",
-    hotkeys: ["Mod+2"],
+    hotkeys: ["Mod+1"],
     category: "Views",
     preferenceKey: "troje-keyboard-nav",
   },
