@@ -24,6 +24,7 @@ export type ShortcutId =
   | "navRight"
   | "openActions"
   | "deselect"
+  | "closeDialog"
   | "saveCapture"
   | "cancelCapture"
   | "toggleSidebar"
@@ -161,6 +162,13 @@ export const SHORTCUTS = {
     id: "deselect",
     label: "Deselect",
     hotkeys: ["Escape"],
+    category: "Navigation",
+    preferenceKey: "troje-keyboard-nav",
+  },
+  closeDialog: {
+    id: "closeDialog",
+    label: "Close dialog",
+    hotkeys: ["Q"],
     category: "Navigation",
     preferenceKey: "troje-keyboard-nav",
   },

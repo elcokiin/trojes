@@ -21,6 +21,7 @@ A personal idea management system designed for **frictionless capture**. Troje r
 | `h` / `l` | Navigate left / right |
 | `Enter` | Open card menu |
 | `Esc` | Close menu / deselect |
+| `q` | Close dialog |
 | `e` | Open settings |
 | `d` | Toggle light/dark theme |
 | `Ctrl+E` / `Cmd+E` | Expand or restore settings |

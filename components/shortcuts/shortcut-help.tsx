@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog"
 import { ShortcutKbdGroup } from "@/components/shortcuts/shortcut-kbd"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useDialogCloseHotkey } from "@/hooks/use-dialog-close-hotkey"
 import { SHORTCUT_GROUPS, SHORTCUTS } from "@/lib/shortcuts"
 import { cn } from "@/lib/utils"
 
@@ -26,6 +27,8 @@ export function ShortcutHelp() {
     ignoreInputs: true,
     preventDefault: true,
   })
+
+  useDialogCloseHotkey(open, () => setOpen(false))
 
   if (isMobile) return null
 

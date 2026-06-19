@@ -38,6 +38,7 @@ import { ApiKeysManager } from "@/components/settings/api-keys-manager"
 import { PwaInstallManager } from "@/components/settings/pwa-install-manager"
 import { SHORTCUTS } from "@/lib/shortcuts"
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
+import { useDialogCloseHotkey } from "@/hooks/use-dialog-close-hotkey"
 
 interface SettingsDialogProps {
   open?: boolean
@@ -101,6 +102,8 @@ export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps
     preventDefault: true,
     stopPropagation: true,
   })
+
+  useDialogCloseHotkey(!!open, () => onOpenChange?.(false))
 
   const sidebarItems = [
     {
@@ -344,6 +347,7 @@ export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps
                           SHORTCUTS.settings,
                           SHORTCUTS.expandSettings,
                           SHORTCUTS.help,
+                          SHORTCUTS.closeDialog,
                           SHORTCUTS.inbox,
                           SHORTCUTS.archived,
                           SHORTCUTS.trash,
