@@ -188,7 +188,7 @@ export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
           <aside className="shrink-0 border-b bg-muted/20 md:w-64 md:border-b-0 md:border-r">
             <ScrollArea className="w-full md:h-full">
-              <nav className="flex gap-1 p-3 md:flex-col">
+              <nav className="flex gap-1 p-3 overflow-x-auto md:overflow-visible md:flex-col">
                 {sidebarItems.map((item) => {
                   if ("desktopOnly" in item && item.desktopOnly && isMobile) return null
                   if ("mobileOnly" in item && item.mobileOnly && !isMobile) return null

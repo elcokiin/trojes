@@ -116,7 +116,15 @@ export function MobileLayout({
           <div className="relative w-full h-10 bg-primary/5 overflow-hidden">
             <div
               onClick={handleInstall}
-              className="w-full h-full flex items-center pr-8 marquee-track cursor-pointer"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleInstall();
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              className="w-full h-full flex items-center pr-8 marquee-track cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
             >
               <div className="marquee-content whitespace-nowrap text-xs text-primary/70">
                 <span>
