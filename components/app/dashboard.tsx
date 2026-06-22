@@ -98,13 +98,13 @@ export function Dashboard({ user }: DashboardProps) {
         />
       ) : (
         <>
-          <main className="flex-1 container max-w-5xl mx-auto px-4 py-8 pt-16 pb-12">
+          <main className="flex-1 container max-w-5xl mx-auto px-4 pt-6 pb-12">
             <QuickCapture
               isOpen={captureOpen}
               onOpenChange={setCaptureOpen}
               onCapture={handleCapture}
             />
-            <div className="mt-6">
+            <div className="mt-1">
               <IdeasTabs
                 value={activeTab}
                 onValueChange={setActiveTab}
@@ -112,8 +112,8 @@ export function Dashboard({ user }: DashboardProps) {
                 onOpenCapture={handleOpenCapture}
                 hideCaptureInbox
                 tabsClassName="space-y-6"
-                tabsListClassName="grid w-full max-w-md mx-auto grid-cols-3"
-                triggerClassName="gap-2"
+                tabsListClassName="grid w-full max-w-md mx-auto grid-cols-3 bg-transparent p-0 rounded-none"
+                triggerClassName="gap-2 rounded-none border-0 border-b-2 border-b-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none h-auto py-2"
               />
             </div>
           </main>
