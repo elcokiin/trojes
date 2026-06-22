@@ -16,23 +16,36 @@ export interface SearchState {
 interface BottomNavProps {
   onPinnedToggle: () => void;
   onSettingsOpen: () => void;
+  onSearchModeChange?: (open: boolean) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   handleClearSearch: () => void;
 }
 
-export function BottomNav({ onPinnedToggle, onSettingsOpen, searchQuery, setSearchQuery, handleClearSearch }: BottomNavProps) {
+export function BottomNav({ onPinnedToggle, onSettingsOpen, onSearchModeChange, searchQuery, setSearchQuery, handleClearSearch }: BottomNavProps) {
   const isMobile = useIsMobile();
   const [showShortcutHints] = useShortcutPreference("troje-shortcut-hints");
   const [searchMode, setSearchMode] = useState(false);
+  const [inputValue, setInputValue] = useState(searchQuery);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const onSearchModeChangeRef = useRef(onSearchModeChange);
+  onSearchModeChangeRef.current = onSearchModeChange;
+  const searchModeRef = useRef(searchMode);
+  searchModeRef.current = searchMode;
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => {
+    return () => clearTimeout(debounceRef.current);
+  }, []);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
       if (e.key === "f" && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
         e.preventDefault()
-        setSearchMode((prev) => !prev)
+        const next = !searchModeRef.current
+        setSearchMode(next)
+        onSearchModeChangeRef.current?.(next)
       }
     }
     window.addEventListener("keydown", handler)
@@ -45,18 +58,37 @@ export function BottomNav({ onPinnedToggle, onSettingsOpen, searchQuery, setSear
     }
   }, [searchMode])
 
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setInputValue(value)
+    clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      setSearchQuery(value)
+    }, 150)
+  }, [setSearchQuery])
+
   const handleCloseSearch = useCallback(() => {
     setSearchMode(false)
+    onSearchModeChange?.(false)
+    setInputValue("")
+    clearTimeout(debounceRef.current)
     handleClearSearch()
-  }, [handleClearSearch])
+  }, [handleClearSearch, onSearchModeChange])
 
   const handleXClick = useCallback(() => {
-    if (searchQuery) {
+    clearTimeout(debounceRef.current)
+    if (inputValue) {
+      setInputValue("")
       setSearchQuery("")
     } else {
       handleCloseSearch()
     }
-  }, [searchQuery, setSearchQuery, handleCloseSearch])
+  }, [inputValue, setSearchQuery, handleCloseSearch])
+
+  const handleOpenSearch = useCallback(() => {
+    setSearchMode(true)
+    onSearchModeChange?.(true)
+  }, [onSearchModeChange])
 
   return (
     <nav className="shrink-0 h-12 border-t bg-background flex items-stretch">
@@ -66,8 +98,8 @@ export function BottomNav({ onPinnedToggle, onSettingsOpen, searchQuery, setSear
           <input
             ref={searchInputRef}
             type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={inputValue}
+            onChange={handleInputChange}
             placeholder="Find your ideas..."
             className="flex-1 bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground"
             onKeyDown={(e) => {
@@ -79,7 +111,7 @@ export function BottomNav({ onPinnedToggle, onSettingsOpen, searchQuery, setSear
           <button
             onClick={handleXClick}
             className="text-muted-foreground hover:text-foreground transition-colors"
-            aria-label={searchQuery ? "Clear search" : "Close search"}
+            aria-label={inputValue ? "Clear search" : "Close search"}
           >
             <X className="size-4" />
           </button>
@@ -93,7 +125,7 @@ export function BottomNav({ onPinnedToggle, onSettingsOpen, searchQuery, setSear
             <Pin className="size-4" />
           </button>
           <button
-            onClick={() => setSearchMode(true)}
+            onClick={handleOpenSearch}
             className="flex-1 flex items-center justify-center text-muted-foreground border-x border-dashed border-muted-foreground h-full"
           >
             <span className="text-xs font-bold tracking-widest">SEARCH</span>
@@ -116,7 +148,7 @@ export function BottomNav({ onPinnedToggle, onSettingsOpen, searchQuery, setSear
             {showShortcutHints && <Kbd>P</Kbd>}
           </button>
           <button
-            onClick={() => setSearchMode(true)}
+            onClick={handleOpenSearch}
             className="flex-1 flex items-center justify-center gap-1.5 text-muted-foreground border-x border-dashed border-muted-foreground h-full"
           >
             <Search className="size-4" />

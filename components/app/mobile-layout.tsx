@@ -15,6 +15,7 @@ interface MobileLayoutProps {
   onTabChange: (tab: TabValue) => void;
   onPinnedToggle: () => void;
   onSettingsOpen: () => void;
+  onSearchModeChange?: (open: boolean) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   debouncedSearch: string;
@@ -27,6 +28,7 @@ export function MobileLayout({
   onTabChange,
   onPinnedToggle,
   onSettingsOpen,
+  onSearchModeChange,
   searchQuery,
   setSearchQuery,
   debouncedSearch,
@@ -186,7 +188,7 @@ export function MobileLayout({
         </IdeasTabs>
       </div>
 
-      <BottomNav onPinnedToggle={onPinnedToggle} onSettingsOpen={onSettingsOpen} searchQuery={searchQuery} setSearchQuery={setSearchQuery} handleClearSearch={handleClearSearch} />
+      <BottomNav onPinnedToggle={onPinnedToggle} onSettingsOpen={onSettingsOpen} onSearchModeChange={onSearchModeChange} searchQuery={searchQuery} setSearchQuery={setSearchQuery} handleClearSearch={handleClearSearch} />
     </div>
   );
 }

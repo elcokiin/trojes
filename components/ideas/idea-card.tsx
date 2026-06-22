@@ -104,16 +104,12 @@ export function IdeaCard({
     setTimeout(() => setCopied(false), 2000);
   }, [idea.content]);
 
-  useHotkey(
-    SHORTCUTS.copyIdea.hotkeys[0],
-    handleCopy,
-    {
-      enabled: isSelected,
-      ignoreInputs: true,
-      preventDefault: true,
-      conflictBehavior: "allow",
-    },
-  );
+  useHotkey(SHORTCUTS.copyIdea.hotkeys[0], handleCopy, {
+    enabled: isSelected,
+    ignoreInputs: true,
+    preventDefault: true,
+    conflictBehavior: "allow",
+  });
 
   useHotkey(
     SHORTCUTS.togglePin.hotkeys[0],
@@ -155,7 +151,7 @@ export function IdeaCard({
         }
         label={idea.pinned ? "Unpin" : "Pin to top"}
         shortcut={SHORTCUTS.togglePin.hotkeys[0]}
-        side="left"
+        side="top"
         onClick={handlePinToggle}
         className={cn(
           "absolute top-2 right-10 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity",
@@ -174,7 +170,7 @@ export function IdeaCard({
         }
         label="Copy text"
         shortcut={SHORTCUTS.copyIdea.hotkeys[0]}
-        side="left"
+        side="top"
         onClick={handleCopy}
         className={cn(
           "absolute top-2 right-2 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity",

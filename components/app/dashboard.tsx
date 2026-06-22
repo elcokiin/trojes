@@ -33,6 +33,7 @@ export function Dashboard({ user }: DashboardProps) {
   const [captureOpen, setCaptureOpen] = useState(false);
   const [pinnedTrayOpen, setPinnedTrayOpen] = useState(false);
   const [focusIdeaId, setFocusIdeaId] = useState<string | null>(null);
+  const [searchMode, setSearchMode] = useState(false);
   const [keyboardEnabled] = useShortcutPreference("troje-keyboard-nav");
   const [settingsKeyEnabled] = useShortcutPreference("troje-shortcut-settings");
   const { searchQuery, setSearchQuery, debouncedSearch, handleClearSearch } = useSearch();
@@ -81,7 +82,13 @@ export function Dashboard({ user }: DashboardProps) {
   const handleFocusIdea = useCallback((id: string) => {
     setFocusIdeaId(id)
     setActiveTab("inbox")
-    setPinnedTrayOpen(false)
+  }, [])
+
+  const handleSearchModeChange = useCallback((open: boolean) => {
+    setSearchMode(open)
+    if (open) {
+      setPinnedTrayOpen(false)
+    }
   }, [])
 
   useHotkeys(hotkeys, {
@@ -101,6 +108,7 @@ export function Dashboard({ user }: DashboardProps) {
           onTabChange={(v) => setActiveTab(v)}
           onPinnedToggle={() => setPinnedTrayOpen((prev) => !prev)}
           onSettingsOpen={() => setSettingsOpen(true)}
+          onSearchModeChange={handleSearchModeChange}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           debouncedSearch={debouncedSearch}
@@ -133,6 +141,7 @@ export function Dashboard({ user }: DashboardProps) {
             <BottomNav
               onPinnedToggle={() => setPinnedTrayOpen((prev) => !prev)}
               onSettingsOpen={() => setSettingsOpen(true)}
+              onSearchModeChange={handleSearchModeChange}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               handleClearSearch={handleClearSearch}
@@ -140,7 +149,7 @@ export function Dashboard({ user }: DashboardProps) {
           </div>
         </>
       )}
-      <PinnedTray isOpen={pinnedTrayOpen} onOpenChange={setPinnedTrayOpen} onFocusIdea={handleFocusIdea} />
+      {!searchMode && <PinnedTray isOpen={pinnedTrayOpen} onOpenChange={setPinnedTrayOpen} onFocusIdea={handleFocusIdea} />}
     </div>
   );
 }

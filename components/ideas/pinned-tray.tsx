@@ -1,20 +1,25 @@
-"use client"
+"use client";
 
-import { useCallback, useRef, useEffect, type CSSProperties } from "react"
-import { Pin, X, ChevronUp } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { usePinnedIdeas } from "@/hooks/use-pinned-ideas"
-import { useIdeas } from "@/hooks/use-ideas"
-import { useHotkey } from "@tanstack/react-hotkeys"
-import { SHORTCUTS } from "@/lib/shortcuts"
-import { useIsMobile } from "@/hooks/use-mobile"
-import { cn } from "@/lib/utils"
+import { useCallback, useRef, useEffect, type CSSProperties } from "react";
+import { Pin, X, ChevronUp } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { usePinnedIdeas } from "@/hooks/use-pinned-ideas";
+import { useIdeas } from "@/hooks/use-ideas";
+import { useHotkey } from "@tanstack/react-hotkeys";
+import { SHORTCUTS } from "@/lib/shortcuts";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 interface PinnedTrayProps {
-  isOpen: boolean
-  onOpenChange: (open: boolean) => void
-  onFocusIdea?: (id: string) => void
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  onFocusIdea?: (id: string) => void;
 }
 
 function PinnedCard({
@@ -23,12 +28,12 @@ function PinnedCard({
   onUnpin,
   onFocus,
 }: {
-  idea: { id: string; content: string; created_at: string }
-  index: number
-  onUnpin: (id: string) => void
-  onFocus?: (id: string) => void
+  idea: { id: string; content: string; created_at: string };
+  index: number;
+  onUnpin: (id: string) => void;
+  onFocus?: (id: string) => void;
 }) {
-  const pinnedDate = new Date(idea.created_at).toLocaleDateString()
+  const pinnedDate = new Date(idea.created_at).toLocaleDateString();
 
   return (
     <div
@@ -37,7 +42,9 @@ function PinnedCard({
       onClick={() => onFocus?.(idea.id)}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => { if (e.key === "Enter") onFocus?.(idea.id) }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") onFocus?.(idea.id);
+      }}
     >
       <div className="absolute -top-px left-2 flex items-center gap-1">
         <Badge
@@ -48,7 +55,10 @@ function PinnedCard({
         </Badge>
       </div>
       <button
-        onClick={(e) => { e.stopPropagation(); onUnpin(idea.id) }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onUnpin(idea.id);
+        }}
         className="absolute right-2 top-2 rounded-sm p-0.5 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
         aria-label="Unpin"
       >
@@ -57,52 +67,68 @@ function PinnedCard({
       <p className="line-clamp-2 break-words pr-5 text-sm font-medium leading-snug text-foreground">
         {idea.content}
       </p>
-      <p className="mt-1 text-xs leading-none text-muted-foreground">{pinnedDate}</p>
+      <p className="mt-1 text-xs leading-none text-muted-foreground">
+        {pinnedDate}
+      </p>
     </div>
-  )
+  );
 }
 
-export function PinnedTray({ isOpen, onOpenChange, onFocusIdea }: PinnedTrayProps) {
-  const { ideas, isLoading, mutate } = usePinnedIdeas()
-  const { updatePin } = useIdeas({ status: "inbox" })
-  const isMobile = useIsMobile()
-  const hasPins = ideas.length > 0
-  const extraCount = ideas.length - 1
-  const trayRef = useRef<HTMLDivElement>(null)
-  const previewCount = Math.min(ideas.length, 3)
+export function PinnedTray({
+  isOpen,
+  onOpenChange,
+  onFocusIdea,
+}: PinnedTrayProps) {
+  const { ideas, isLoading, mutate } = usePinnedIdeas();
+  const { updatePin } = useIdeas({ status: "inbox" });
+  const isMobile = useIsMobile();
+  const hasPins = ideas.length > 0;
+  const extraCount = ideas.length - 1;
+  const trayRef = useRef<HTMLDivElement>(null);
+  const previewCount = Math.min(ideas.length, 3);
 
   useHotkey(
     SHORTCUTS.togglePinnedTray.hotkeys[0],
     () => onOpenChange(!isOpen),
     { enabled: true },
-  )
+  );
 
   useEffect(() => {
-    if (!isOpen || isMobile) return
+    if (!isOpen || isMobile) return;
     const handler = (e: MouseEvent) => {
       if (trayRef.current && !trayRef.current.contains(e.target as Node)) {
-        onOpenChange(false)
+        onOpenChange(false);
       }
-    }
-    const id = setTimeout(() => document.addEventListener("mousedown", handler), 0)
+    };
+    const id = setTimeout(
+      () => document.addEventListener("mousedown", handler),
+      0,
+    );
     return () => {
-      clearTimeout(id)
-      document.removeEventListener("mousedown", handler)
-    }
-  }, [isOpen, onOpenChange, isMobile])
+      clearTimeout(id);
+      document.removeEventListener("mousedown", handler);
+    };
+  }, [isOpen, onOpenChange, isMobile]);
 
-  const handleUnpin = useCallback(async (id: string) => {
-    await updatePin(id, false)
-    mutate()
-  }, [updatePin, mutate])
+  const handleUnpin = useCallback(
+    async (id: string) => {
+      await updatePin(id, false);
+      mutate();
+    },
+    [updatePin, mutate],
+  );
 
   const loadingState = isLoading && ideas.length === 0 && (
-    <div className="p-4 text-xs text-muted-foreground text-center">Loading...</div>
-  )
+    <div className="p-4 text-xs text-muted-foreground text-center">
+      Loading...
+    </div>
+  );
 
   const emptyState = !isLoading && ideas.length === 0 && (
-    <div className="p-4 text-xs text-muted-foreground text-center">No pinned ideas yet</div>
-  )
+    <div className="p-4 text-xs text-muted-foreground text-center">
+      No pinned ideas yet
+    </div>
+  );
 
   const listContent = ideas.length > 0 && (
     <div className="flex flex-col gap-2">
@@ -116,7 +142,7 @@ export function PinnedTray({ isOpen, onOpenChange, onFocusIdea }: PinnedTrayProp
         />
       ))}
     </div>
-  )
+  );
 
   return (
     <>
@@ -132,7 +158,8 @@ export function PinnedTray({ isOpen, onOpenChange, onFocusIdea }: PinnedTrayProp
                 key={idea.id}
                 className={cn(
                   "absolute inset-x-1 rounded-md border bg-popover shadow-sm",
-                  i === 0 && "bottom-0 z-30 min-h-16 border-primary/70 px-3 pb-2 pt-4",
+                  i === 0 &&
+                    "bottom-0 z-30 min-h-16 border-primary/70 px-3 pb-2 pt-4",
                   i === 1 && "bottom-6 z-20 h-12 scale-[0.98] opacity-70",
                   i === 2 && "bottom-8 z-10 h-12 scale-[0.96] opacity-45",
                 )}
@@ -151,7 +178,7 @@ export function PinnedTray({ isOpen, onOpenChange, onFocusIdea }: PinnedTrayProp
                       {idea.content}
                     </p>
                     <p className="mt-0.5 text-[10px] font-medium text-muted-foreground">
-                      {ideas.length} pinned
+                      {ideas.length} ideas pinned
                     </p>
                   </>
                 ) : (
@@ -174,14 +201,22 @@ export function PinnedTray({ isOpen, onOpenChange, onFocusIdea }: PinnedTrayProp
 
       {isMobile ? (
         <Sheet open={isOpen} onOpenChange={onOpenChange}>
-          <SheetContent side="bottom" className="flex max-h-[60vh] flex-col gap-0 p-0">
+          <SheetContent
+            side="bottom"
+            className="flex max-h-[60vh] flex-col gap-0 p-0"
+          >
             <SheetHeader className="sr-only">
               <SheetTitle>Pinned ideas</SheetTitle>
             </SheetHeader>
             <div className="mx-auto mt-2 h-1 w-8 shrink-0 rounded-full bg-muted" />
             <div className="flex items-center justify-between border-b px-4 py-3">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Pinned {hasPins && <span className="text-muted-foreground/50">({ideas.length})</span>}
+                Pinned{" "}
+                {hasPins && (
+                  <span className="text-muted-foreground/50">
+                    ({ideas.length})
+                  </span>
+                )}
               </span>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto p-2">
@@ -201,7 +236,12 @@ export function PinnedTray({ isOpen, onOpenChange, onFocusIdea }: PinnedTrayProp
               <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b bg-popover px-4 py-3">
                 <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   <Pin className="size-3" />
-                  Pinned {hasPins && <span className="text-muted-foreground/50">({ideas.length})</span>}
+                  Pinned{" "}
+                  {hasPins && (
+                    <span className="text-muted-foreground/50">
+                      ({ideas.length})
+                    </span>
+                  )}
                 </span>
                 <button
                   onClick={() => onOpenChange(false)}
@@ -221,5 +261,5 @@ export function PinnedTray({ isOpen, onOpenChange, onFocusIdea }: PinnedTrayProp
         )
       )}
     </>
-  )
+  );
 }

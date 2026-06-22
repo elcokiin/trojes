@@ -53,10 +53,11 @@ export function IdeasList({ status, search, onOpenCapture, active = true, hideCa
   const prevFocusIdeaIdRef = useRef(focusIdeaId)
 
   useEffect(() => {
-    if (!focusIdeaId || focusIdeaId === prevFocusIdeaIdRef.current) return
-    prevFocusIdeaIdRef.current = focusIdeaId
+    if (!focusIdeaId) return
+    if (focusIdeaId === prevFocusIdeaIdRef.current) return
     const index = ideas.findIndex((idea) => idea.id === focusIdeaId)
     if (index !== -1) {
+      prevFocusIdeaIdRef.current = focusIdeaId
       setSelectedIndex(index)
     }
   }, [focusIdeaId, ideas])
