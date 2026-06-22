@@ -154,7 +154,7 @@ export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps
           <div className="flex items-start gap-3 pr-8">
             <IconTooltip
               icon={isExpanded ? <Minimize2 /> : <Maximize2 />}
-              label={isExpanded ? "Restore settings" : "Expand settings"}
+              label={isExpanded ? "Collapse settings" : "Expand settings"}
               shortcut={SHORTCUTS.expandSettings.hotkeys[0]}
               side="top"
               onClick={() => setIsExpanded((prev) => !prev)}
