@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
 import { useIdeas } from "@/hooks/use-ideas"
-import { Inbox, Archive, Trash2, Pin } from "lucide-react"
+import { Inbox, Archive, Trash2 } from "lucide-react"
 
 interface IdeasListProps {
   status: "inbox" | "archived" | "deleted"
@@ -42,9 +42,6 @@ export function IdeasList({ status, search, onOpenCapture, active = true, hideCa
     updateColor,
     permanentDelete,
   } = useIdeas({ status, search, enabled: active })
-
-  const pinnedIdeas = ideas.filter(idea => idea.pinned)
-  const unpinnedIdeas = ideas.filter(idea => !idea.pinned)
 
   const handleNew = useCallback(() => {
     if (status === "inbox") {
@@ -173,28 +170,7 @@ export function IdeasList({ status, search, onOpenCapture, active = true, hideCa
           EmptyIcon
         )
       ) : (
-        <div className="space-y-6">
-          {pinnedIdeas.length > 0 && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                <Pin className="size-3" />
-                Pinned
-              </div>
-              {renderIdeas(pinnedIdeas, 0)}
-            </div>
-          )}
-          
-          {unpinnedIdeas.length > 0 && (
-            <div className="space-y-3">
-              {pinnedIdeas.length > 0 && (
-                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Others
-                </div>
-              )}
-              {renderIdeas(unpinnedIdeas, pinnedIdeas.length)}
-            </div>
-          )}
-        </div>
+        renderIdeas(ideas, 0)
       )}
     </div>
   )
