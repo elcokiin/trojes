@@ -94,7 +94,7 @@ export function BottomNav({ onPinnedToggle, onSettingsOpen, searchQuery, setSear
           </button>
           <button
             onClick={() => setSearchMode(true)}
-            className="flex-1 flex items-center justify-center text-muted-foreground h-full"
+            className="flex-1 flex items-center justify-center text-muted-foreground border-x border-dashed border-muted-foreground h-full"
           >
             <span className="text-xs font-bold tracking-widest">SEARCH</span>
           </button>
