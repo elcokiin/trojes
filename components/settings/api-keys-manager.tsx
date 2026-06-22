@@ -8,6 +8,14 @@ import { useApiKeys } from "@/hooks/use-api-keys"
 import type { ApiKey } from "@/hooks/use-api-keys"
 import { Key, Plus, Trash2, Copy, Check, Pencil } from "lucide-react"
 
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  })
+}
+
 export function ApiKeysManager() {
   const { keys, isLoading, create, rename, remove } = useApiKeys()
 
@@ -17,14 +25,6 @@ export function ApiKeysManager() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState("")
   const [isCreating, setIsCreating] = useState(false)
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    })
-  }
 
   const copyToClipboard = async (text: string, id: string) => {
     await navigator.clipboard.writeText(text)

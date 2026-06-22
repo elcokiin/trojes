@@ -148,7 +148,8 @@ export function PinnedTray() {
   return (
     <>
       {!isMobile && hasPins && !isOpen && (
-        <div
+        <button
+          type="button"
           onClick={() => setPinnedTrayOpen(true)}
           className="fixed bottom-0 left-0 z-50 flex min-h-32 w-1/3 min-w-0 cursor-pointer flex-col justify-end px-1.5 pb-1.5 pt-2"
           aria-label={`Open pinned ideas (${ideas.length})`}
@@ -197,7 +198,7 @@ export function PinnedTray() {
               )}
             </div>
           </div>
-        </div>
+        </button>
       )}
 
       {isMobile ? (

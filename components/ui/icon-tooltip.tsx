@@ -44,10 +44,10 @@ export function IconTooltip({
   if (isMobile) {
     if (asChild) {
       return (
-        <span className={cn("flex items-center justify-center", className)} onClick={onClick}>
+        <button type="button" className={cn("flex items-center justify-center", className)} onClick={onClick}>
           {icon}
           <span className="sr-only">{label}</span>
-        </span>
+        </button>
       )
     }
 
@@ -70,10 +70,10 @@ export function IconTooltip({
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className={cn("flex items-center justify-center", className)} onClick={onClick}>
+          <button type="button" className={cn("flex items-center justify-center", className)} onClick={onClick}>
             {icon}
             <span className="sr-only">{label}</span>
-          </span>
+          </button>
         </TooltipTrigger>
         <TooltipContent side={side} align={align} className="flex items-center gap-1.5">
           <span>{label}</span>

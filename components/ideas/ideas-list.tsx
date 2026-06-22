@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useCallback } from "react"
 import { IdeaCard } from "@/components/ideas/idea-card"
 import type { Idea } from "@/types/idea"
 import { QuickCapture } from "@/components/ideas/quick-capture"
@@ -20,6 +20,37 @@ import { useSearchStore } from "@/stores/search-store"
 import { useUIStore } from "@/stores/ui-store"
 import { Inbox, Archive, Trash2 } from "lucide-react"
 
+const emptyState = {
+  inbox: {
+    icon: Inbox,
+    title: "Your inbox is empty",
+    description: "Press 'n' to capture a new idea",
+  },
+  archived: {
+    icon: Archive,
+    title: "No archived ideas",
+    description: "Ideas you archive will appear here",
+  },
+  deleted: {
+    icon: Trash2,
+    title: "Trash is empty",
+    description: "Deleted ideas will appear here",
+  },
+}
+
+const renderEmpty = (title: string, description: string, Icon: typeof Inbox) => (
+  <Empty>
+    <EmptyHeader>
+      <EmptyMedia variant="icon">
+        <Icon className="size-5" />
+      </EmptyMedia>
+      <EmptyTitle>{title}</EmptyTitle>
+      <EmptyDescription>{description}</EmptyDescription>
+    </EmptyHeader>
+    <EmptyContent />
+  </Empty>
+)
+
 interface IdeasListProps {
   status: "inbox" | "archived" | "deleted"
   active?: boolean
@@ -27,13 +58,13 @@ interface IdeasListProps {
 }
 
 export function IdeasList({ status, active = true, hideCapture = false }: IdeasListProps) {
-  const [selectedIndex, setSelectedIndex] = useState(-1)
   const [captureOpen, setCaptureOpen] = useState(false)
   const [keyboardEnabled] = useShortcutPreference("troje-keyboard-nav")
   const [newIdeaKeyEnabled] = useShortcutPreference("troje-shortcut-new-idea")
   const debouncedSearch = useSearchStore((s) => s.debouncedSearch)
   const focusIdeaId = useUIStore((s) => s.focusIdeaId)
   const storeSetCaptureOpen = useUIStore((s) => s.setCaptureOpen)
+  const setFocusIdeaId = useUIStore((s) => s.setFocusIdeaId)
 
   const {
     ideas,
@@ -46,28 +77,25 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
     permanentDelete,
   } = useIdeas({ status, search: debouncedSearch, enabled: active })
 
+  const selectedIndex = focusIdeaId
+    ? ideas.findIndex((idea) => idea.id === focusIdeaId)
+    : -1
+
+  const handleSelect = useCallback((index: number) => {
+    const id = index >= 0 && index < ideas.length ? ideas[index].id : null
+    setFocusIdeaId(id)
+  }, [ideas, setFocusIdeaId])
+
   const handleNew = useCallback(() => {
     if (status === "inbox") {
       storeSetCaptureOpen(true)
     }
   }, [status, storeSetCaptureOpen])
 
-  const prevFocusIdeaIdRef = useRef(focusIdeaId)
-
-  useEffect(() => {
-    if (!focusIdeaId) return
-    if (focusIdeaId === prevFocusIdeaIdRef.current) return
-    const index = ideas.findIndex((idea) => idea.id === focusIdeaId)
-    if (index !== -1) {
-      prevFocusIdeaIdRef.current = focusIdeaId
-      setSelectedIndex(index)
-    }
-  }, [focusIdeaId, ideas])
-
   useKeyboardNavigation({
     itemCount: ideas.length,
     selectedIndex,
-    onSelect: setSelectedIndex,
+    onSelect: handleSelect,
     onNew: newIdeaKeyEnabled ? handleNew : undefined,
     enabled: active && keyboardEnabled && !captureOpen,
   })
@@ -83,7 +111,7 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
 
   const handleStatusChange = async (id: string, newStatus: "inbox" | "archived" | "deleted") => {
     await updateStatus(id, newStatus)
-    setSelectedIndex(-1)
+    setFocusIdeaId(null)
   }
 
   const handlePinChange = async (id: string, pinned: boolean) => {
@@ -96,39 +124,8 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
 
   const handlePermanentDelete = async (id: string) => {
     await permanentDelete(id)
-    setSelectedIndex(-1)
+    setFocusIdeaId(null)
   }
-
-  const emptyState = {
-    inbox: {
-      icon: Inbox,
-      title: "Your inbox is empty",
-      description: "Press 'n' to capture a new idea",
-    },
-    archived: {
-      icon: Archive,
-      title: "No archived ideas",
-      description: "Ideas you archive will appear here",
-    },
-    deleted: {
-      icon: Trash2,
-      title: "Trash is empty",
-      description: "Deleted ideas will appear here",
-    },
-  }
-
-  const renderEmpty = (title: string, description: string, Icon: typeof Inbox) => (
-    <Empty>
-      <EmptyHeader>
-        <EmptyMedia variant="icon">
-          <Icon className="size-5" />
-        </EmptyMedia>
-        <EmptyTitle>{title}</EmptyTitle>
-        <EmptyDescription>{description}</EmptyDescription>
-      </EmptyHeader>
-      <EmptyContent />
-    </Empty>
-  )
 
   if (isLoading) {
     return (

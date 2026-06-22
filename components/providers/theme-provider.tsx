@@ -39,13 +39,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
     return 'system'
   })
-  const [resolvedTheme, setResolvedTheme] = React.useState<'light' | 'dark'>('light')
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0)
+  const resolvedTheme = theme === 'system' ? getSystemTheme() : theme
 
   // Update resolved theme and apply to document
   React.useEffect(() => {
     const resolved = theme === 'system' ? getSystemTheme() : theme
-    setResolvedTheme(resolved)
-
     const root = document.documentElement
     root.classList.remove('light', 'dark')
     root.classList.add(resolved)
@@ -57,9 +56,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
     const handler = (e: MediaQueryListEvent) => {
-      setResolvedTheme(e.matches ? 'dark' : 'light')
       document.documentElement.classList.remove('light', 'dark')
       document.documentElement.classList.add(e.matches ? 'dark' : 'light')
+      forceUpdate()
     }
 
     mediaQuery.addEventListener('change', handler)

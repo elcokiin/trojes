@@ -37,6 +37,36 @@ import { SHORTCUTS } from "@/lib/shortcuts"
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
 import { useDialogCloseHotkey } from "@/hooks/use-dialog-close-hotkey"
 
+const sidebarItems = [
+  {
+    id: "appearance",
+    icon: Palette,
+    label: "Theme",
+  },
+  {
+    id: "keyboard",
+    icon: Keyboard,
+    label: "Keybindings",
+    desktopOnly: true,
+  },
+  {
+    id: "api",
+    icon: Key,
+    label: "API Keys",
+  },
+  {
+    id: "install",
+    icon: Smartphone,
+    label: "Install App",
+    mobileOnly: true,
+  },
+  {
+    id: "account",
+    icon: User,
+    label: "Account",
+  },
+] as const
+
 interface SettingsDialogProps {
   open?: boolean
   onOpenChange?: (open: boolean) => void
@@ -75,18 +105,13 @@ export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps
     const media = window.matchMedia("(max-width: 767px)")
     const onMediaChange = (e: MediaQueryListEvent) => {
       setIsMobile(e.matches)
+      setSection((prev) => e.matches && prev === "keyboard" ? "appearance" : prev)
     }
 
     media.addEventListener("change", onMediaChange)
 
     return () => media.removeEventListener("change", onMediaChange)
   }, [])
-
-  useEffect(() => {
-    if (isMobile && section === "keyboard") {
-      setSection("appearance")
-    }
-  }, [isMobile, section])
 
   useHotkey(SHORTCUTS.expandSettings.hotkeys[0], () => {
     onOpenChange?.(true)
@@ -99,36 +124,6 @@ export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps
   })
 
   useDialogCloseHotkey(!!open, () => onOpenChange?.(false))
-
-  const sidebarItems = [
-    {
-      id: "appearance",
-      icon: Palette,
-      label: "Theme",
-    },
-    {
-      id: "keyboard",
-      icon: Keyboard,
-      label: "Keybindings",
-      desktopOnly: true,
-    },
-    {
-      id: "api",
-      icon: Key,
-      label: "API Keys",
-    },
-    {
-      id: "install",
-      icon: Smartphone,
-      label: "Install App",
-      mobileOnly: true,
-    },
-    {
-      id: "account",
-      icon: User,
-      label: "Account",
-    },
-  ] as const
 
   const initials = user.name
     ?.split(" ")
