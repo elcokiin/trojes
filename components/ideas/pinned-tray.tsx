@@ -21,7 +21,7 @@ export function PinnedTray({ isOpen, onOpenChange }: PinnedTrayProps) {
   const isMobile = useIsMobile()
 
   useHotkey(
-    SHORTCUTS.togglePin.hotkeys[0],
+    SHORTCUTS.togglePinnedTray.hotkeys[0],
     () => onOpenChange(!isOpen),
     { enabled: true },
   )
@@ -36,10 +36,10 @@ export function PinnedTray({ isOpen, onOpenChange }: PinnedTrayProps) {
       <SheetContent
         side="bottom"
         className={cn(
-          "flex flex-col p-0 gap-0",
+          "flex flex-col p-0 gap-0 [&>button:last-child]:hidden",
           isMobile
             ? "max-h-[70vh]"
-            : "sm:left-4 sm:right-auto sm:w-80 sm:max-h-[60vh] sm:bottom-4 sm:rounded-lg sm:border [&>button:last-child]:hidden"
+            : "sm:left-4 sm:right-auto sm:w-80 sm:max-h-[60vh] sm:bottom-4 sm:rounded-lg sm:border"
         )}
       >
         <div className="flex items-center justify-between px-3 py-2.5 border-b shrink-0">

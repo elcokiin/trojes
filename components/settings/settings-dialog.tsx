@@ -344,6 +344,7 @@ export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps
                           SHORTCUTS.openActions,
                           SHORTCUTS.copyIdea,
                           SHORTCUTS.togglePin,
+                          SHORTCUTS.togglePinnedTray,
                           SHORTCUTS.deselect,
                           SHORTCUTS.saveCapture,
                           SHORTCUTS.cancelCapture,

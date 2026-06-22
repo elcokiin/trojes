@@ -30,6 +30,7 @@ export type ShortcutId =
   | "toggleSidebar"
   | "copyIdea"
   | "togglePin"
+  | "togglePinnedTray"
 
 export interface ShortcutDefinition {
   id: ShortcutId
@@ -155,8 +156,14 @@ export const SHORTCUTS = {
   togglePin: {
     id: "togglePin",
     label: "Toggle pin",
-    hotkeys: ["P"],
+    hotkeys: [{ key: "P", shift: true }],
     category: "Editing",
+  },
+  togglePinnedTray: {
+    id: "togglePinnedTray",
+    label: "Toggle pinned tray",
+    hotkeys: ["P"],
+    category: "Views",
   },
   deselect: {
     id: "deselect",
