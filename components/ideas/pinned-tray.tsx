@@ -32,40 +32,40 @@ function PinnedCard({
   const pinnedDate = new Date(idea.created_at).toLocaleDateString();
 
   return (
-    <div
-      className="pinned-tray-card group relative min-h-24 rounded-md border bg-popover px-3 pb-3 pt-5 shadow-sm hover:border-primary/70 cursor-pointer"
-      style={{ "--pinned-index": index } as React.CSSProperties & Record<string, string | number>}
-      onClick={() => onFocus?.(idea.id)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") onFocus?.(idea.id);
-      }}
-    >
-      <div className="absolute -top-px left-2 flex items-center gap-1">
-        <Badge
-          variant="outline"
-          className="h-5 rounded-t-none border-t-0 bg-popover px-1.5 text-[10px] text-muted-foreground"
-        >
-          <Pin className="size-2.5" />
-        </Badge>
-      </div>
+    <div className="pinned-tray-card group relative min-h-24 rounded-md border bg-popover shadow-sm hover:border-primary/70">
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onUnpin(idea.id);
-        }}
-        className="absolute right-2 top-2 rounded-sm p-0.5 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
-        aria-label="Unpin"
-      >
-        <X className="size-3.5" />
-      </button>
-      <p className="line-clamp-2 break-words pr-5 text-sm font-medium leading-snug text-foreground">
-        {idea.content}
-      </p>
-      <p className="mt-1 text-xs leading-none text-muted-foreground">
-        {pinnedDate}
-      </p>
+        type="button"
+        className="absolute inset-0 z-10 w-full cursor-pointer rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+        aria-label={idea.content ? `Focus pinned idea: ${idea.content.slice(0, 60)}` : "Focus pinned idea"}
+        onClick={() => onFocus?.(idea.id)}
+      />
+      <div className="relative z-20 pointer-events-none px-3 pb-3 pt-5">
+        <div className="absolute -top-px left-2 flex items-center gap-1">
+          <Badge
+            variant="outline"
+            className="h-5 rounded-t-none border-t-0 bg-popover px-1.5 text-[10px] text-muted-foreground"
+          >
+            <Pin className="size-2.5" />
+          </Badge>
+        </div>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onUnpin(idea.id);
+          }}
+          className="pointer-events-auto absolute right-2 top-2 rounded-sm p-0.5 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
+          aria-label="Unpin"
+        >
+          <X className="size-3.5" />
+        </button>
+        <span className="line-clamp-2 break-words pr-5 text-sm font-medium leading-snug text-foreground">
+          {idea.content}
+        </span>
+        <span className="mt-1 block text-xs leading-none text-muted-foreground">
+          {pinnedDate}
+        </span>
+      </div>
     </div>
   );
 }
@@ -245,6 +245,7 @@ export function PinnedTray() {
                   )}
                 </span>
                 <button
+                  type="button"
                   onClick={() => setPinnedTrayOpen(false)}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                   aria-label="Close pinned tray"

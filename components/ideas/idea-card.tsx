@@ -8,29 +8,19 @@ import { Badge } from "@/components/ui/badge";
 import { IconTooltip } from "@/components/ui/icon-tooltip";
 import {
   DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
-  DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
 import {
   MoreHorizontal,
-  Archive,
-  Inbox,
-  Trash2,
   MessageSquare,
   Globe,
   Pin,
   PinOff,
-  Palette,
+  Trash2,
   Check,
-  AlertTriangle,
   Copy,
 } from "lucide-react";
+import { IdeaCardMenu } from "@/components/ideas/idea-card-menu";
 import { cn } from "@/lib/utils";
 import { SHORTCUTS } from "@/lib/shortcuts";
 import {
@@ -198,106 +188,16 @@ export function IdeaCard({
       />
 
       <DropdownMenu open={menuOpen} onOpenChange={handleMenuOpenChange}>
-        <DropdownMenuContent
-          align="end"
-          className="w-48"
-          onCloseAutoFocus={(e) => e.preventDefault()}
-        >
-          <DropdownMenuItem onClick={handlePinToggle}>
-            {idea.pinned ? (
-              <>
-                <PinOff className="size-4 mr-2" />
-                Unpin
-              </>
-            ) : (
-              <>
-                <Pin className="size-4 mr-2" />
-                Pin to top
-              </>
-            )}
-          </DropdownMenuItem>
-
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
-              <Palette className="size-4 mr-2" />
-              Background color
-            </DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-              <DropdownMenuSubContent className="p-2">
-                <div className="grid grid-cols-6 gap-1.5">
-                  {CARD_COLORS.map((colorOption) => (
-                    <button
-                      key={colorOption.id ?? "default"}
-                      onClick={() => handleColorSelect(colorOption.id)}
-                      className={cn(
-                        "size-6 rounded-full border-2 transition-all hover:scale-110 flex items-center justify-center",
-                        colorOption.id === null
-                          ? "bg-card border-border"
-                          : "border-transparent",
-                        idea.background_color === colorOption.id &&
-                          "ring-2 ring-primary ring-offset-1",
-                      )}
-                      style={
-                        colorOption.color
-                          ? { backgroundColor: colorOption.color }
-                          : undefined
-                      }
-                      title={colorOption.name}
-                    >
-                      {idea.background_color === colorOption.id && (
-                        <Check className="size-3 text-foreground/70" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-          </DropdownMenuSub>
-
-          <DropdownMenuSeparator />
-
-          <DropdownMenuItem onClick={handleCopy}>
-            {copied ? (
-              <Check className="size-4 mr-2" />
-            ) : (
-              <Copy className="size-4 mr-2" />
-            )}
-            {copied ? "Copied!" : "Copy text"}
-          </DropdownMenuItem>
-
-          <DropdownMenuSeparator />
-
-          {idea.status !== "inbox" && (
-            <DropdownMenuItem onClick={() => handleStatusChange("inbox")}>
-              <Inbox className="size-4 mr-2" />
-              Move to Inbox
-            </DropdownMenuItem>
-          )}
-          {idea.status !== "archived" && (
-            <DropdownMenuItem onClick={() => handleStatusChange("archived")}>
-              <Archive className="size-4 mr-2" />
-              Archive
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuSeparator />
-          {showTrashInfo && onPermanentDelete ? (
-            <DropdownMenuItem
-              onClick={handlePermanentDelete}
-              className="text-destructive focus:text-destructive"
-            >
-              <AlertTriangle className="size-4 mr-2" />
-              Delete permanently
-            </DropdownMenuItem>
-          ) : (
-            <DropdownMenuItem
-              onClick={() => handleStatusChange("deleted")}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="size-4 mr-2" />
-              Delete
-            </DropdownMenuItem>
-          )}
-        </DropdownMenuContent>
+        <IdeaCardMenu
+          idea={idea}
+          copied={copied}
+          showTrashInfo={showTrashInfo}
+          onStatusChange={handleStatusChange}
+          onColorSelect={handleColorSelect}
+          onPinToggle={handlePinToggle}
+          onPermanentDelete={handlePermanentDelete}
+          onCopy={handleCopy}
+        />
         <CardContent className="pt-2 pl-4 pr-10">
           <div className="space-y-3">
             <p className="text-sm leading-relaxed whitespace-pre-wrap wrap-break-words">

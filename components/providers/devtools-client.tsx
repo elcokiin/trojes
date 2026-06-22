@@ -5,11 +5,13 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import { hotkeysDevtoolsPlugin } from '@tanstack/react-hotkeys-devtools'
 
 export function DevtoolsClient() {
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia('(max-width: 767px)').matches;
+  })
 
   useEffect(() => {
     const mql = window.matchMedia('(max-width: 767px)')
-    setIsMobile(mql.matches)
     const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches)
     mql.addEventListener('change', onChange)
     return () => mql.removeEventListener('change', onChange)

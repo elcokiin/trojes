@@ -19,14 +19,16 @@ function isBeforeInstallPromptEvent(e: Event): e is BeforeInstallPromptEvent {
 
 export function PwaInstallManager() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
-  const [isInstalled, setIsInstalled] = useState(false)
-  const [isIos, setIsIos] = useState(false)
+  const [isInstalled, setIsInstalled] = useState(() => {
+    if (typeof window === "undefined") return false
+    return isStandaloneMode()
+  })
+  const [isIos, setIsIos] = useState(() => {
+    if (typeof window === "undefined") return false
+    return /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase())
+  })
 
   useEffect(() => {
-    setIsInstalled(isStandaloneMode())
-    const ua = window.navigator.userAgent.toLowerCase()
-    setIsIos(/iphone|ipad|ipod/.test(ua))
-
     const onBeforeInstallPrompt = (event: Event) => {
       event.preventDefault()
       if (isBeforeInstallPromptEvent(event)) {

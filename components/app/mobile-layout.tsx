@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
 import { X } from "lucide-react";
 import { IdeasTabs } from "@/components/ideas/ideas-tabs";
 import { QuickCapture } from "@/components/ideas/quick-capture";
@@ -16,7 +17,10 @@ function isBeforeInstallPromptEvent(e: Event): e is BeforeInstallPromptEvent {
 
 export function MobileLayout() {
   const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
-  const [isStandalone, setIsStandalone] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(display-mode: standalone)").matches;
+  });
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [topHidden, setTopHidden] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -26,7 +30,6 @@ export function MobileLayout() {
 
   useEffect(() => {
     const media = window.matchMedia("(display-mode: standalone)");
-    setIsStandalone(media.matches);
 
     const onStandaloneChange = (e: MediaQueryListEvent) =>
       setIsStandalone(e.matches);
@@ -102,7 +105,7 @@ export function MobileLayout() {
         <header className="px-4 h-14 border-b bg-background flex items-center justify-center">
           <div className="flex-1 border-t border-foreground/10" />
           <div className="flex items-center gap-1.5 px-3">
-            <img src="/icon.svg" alt="Troje" className="size-7" />
+            <Image src="/icon.svg" alt="Troje" width={28} height={28} className="size-7" />
             <span className="text-2xl font-bold">Troje</span>
           </div>
           <div className="flex-1 border-t border-foreground/10" />
@@ -110,16 +113,9 @@ export function MobileLayout() {
 
         {showBanner && (
           <div className="relative w-full h-10 bg-primary/5 overflow-hidden">
-            <div
+            <button
+              type="button"
               onClick={handleInstall}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  handleInstall();
-                }
-              }}
-              role="button"
-              tabIndex={0}
               className="w-full h-full flex items-center pr-8 marquee-track cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
             >
               <div className="marquee-content whitespace-nowrap text-xs text-primary/70">
@@ -132,8 +128,9 @@ export function MobileLayout() {
                   experience •{" "}
                 </span>
               </div>
-            </div>
+            </button>
             <button
+              type="button"
               onClick={() => setBannerDismissed(true)}
               className="absolute right-0 top-0 h-full px-3 flex items-center justify-center text-primary/70 hover:text-primary z-10"
               aria-label="Dismiss"

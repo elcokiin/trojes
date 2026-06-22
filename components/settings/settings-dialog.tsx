@@ -15,7 +15,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Switch } from "@/components/ui/switch"
 import {
   Key,
   Keyboard,
@@ -29,11 +28,11 @@ import {
   Sun,
   User,
 } from "lucide-react"
-import { ShortcutKbdGroup } from "@/components/shortcuts/shortcut-kbd"
 import { IconTooltip } from "@/components/ui/icon-tooltip"
 import { cn } from "@/lib/utils"
 import { ApiKeysManager } from "@/components/settings/api-keys-manager"
 import { PwaInstallManager } from "@/components/settings/pwa-install-manager"
+import { SettingsKeyboard } from "@/components/settings/settings-keyboard"
 import { SHORTCUTS } from "@/lib/shortcuts"
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
 import { useDialogCloseHotkey } from "@/hooks/use-dialog-close-hotkey"
@@ -67,17 +66,15 @@ export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps
     localStorage.setItem("troje-settings-expanded", String(isExpanded))
   }, [isExpanded])
 
-  const [isMobile, setIsMobile] = useState(false)
-  const [mounted, setMounted] = useState(false)
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") return false
+    return window.matchMedia("(max-width: 767px)").matches
+  })
 
   useEffect(() => {
-    setMounted(true)
     const media = window.matchMedia("(max-width: 767px)")
-    const syncMobile = (matches: boolean) => setIsMobile(matches)
-    syncMobile(media.matches)
-
     const onMediaChange = (e: MediaQueryListEvent) => {
-      syncMobile(e.matches)
+      setIsMobile(e.matches)
     }
 
     media.addEventListener("change", onMediaChange)
@@ -208,7 +205,7 @@ export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps
                     <Label className="text-sm font-medium">Theme</Label>
                     <div className="grid grid-cols-3 gap-2">
                       <Button
-                        variant={mounted && theme === "light" ? "default" : "outline"}
+                        variant={theme === "light" ? "default" : "outline"}
                         size="sm"
                         onClick={() => setTheme("light")}
                         className="gap-2"
@@ -217,7 +214,7 @@ export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps
                         Light
                       </Button>
                       <Button
-                        variant={mounted && theme === "dark" ? "default" : "outline"}
+                        variant={theme === "dark" ? "default" : "outline"}
                         size="sm"
                         onClick={() => setTheme("dark")}
                         className="gap-2"
@@ -226,7 +223,7 @@ export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps
                         Dark
                       </Button>
                       <Button
-                        variant={mounted && theme === "system" ? "default" : "outline"}
+                        variant={theme === "system" ? "default" : "outline"}
                         size="sm"
                         onClick={() => setTheme("system")}
                         className="gap-2"
@@ -239,128 +236,18 @@ export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps
                 )}
 
                 {!isMobile && section === "keyboard" && (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col gap-1">
-                        <Label className="text-sm font-medium flex items-center gap-2">
-                          <Keyboard />
-                          Keyboard Navigation
-                        </Label>
-                        <p className="text-xs text-muted-foreground">
-                          Navigate with vim-style keys
-                        </p>
-                      </div>
-                      <Switch
-                        checked={keyboardNav}
-                        onCheckedChange={setKeyboardNav}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col gap-1">
-                        <Label className="text-sm font-medium">Shortcut Hints</Label>
-                        <p className="text-xs text-muted-foreground">
-                          Show key labels on controls and shortcut lists
-                        </p>
-                      </div>
-                      <Switch
-                        checked={shortcutHintsEnabled}
-                        onCheckedChange={setShortcutHintsEnabled}
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-3 border-t pt-2">
-                      <Label className="text-sm font-medium">Shortcut Toggles</Label>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex flex-col gap-1">
-                          <p className="text-sm">New idea key</p>
-                          <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
-                            <span>Quick capture shortcut</span>
-                            <ShortcutKbdGroup
-                              hotkeys={SHORTCUTS.newIdea.hotkeys}
-                              className="flex-wrap justify-end"
-                            />
-                          </div>
-                        </div>
-                        <Switch
-                          checked={newIdeaKeyEnabled}
-                          onCheckedChange={setNewIdeaKeyEnabled}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex flex-col gap-1">
-                          <p className="text-sm">Theme toggle key</p>
-                          <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
-                            <span>Light/dark theme shortcut</span>
-                            <ShortcutKbdGroup
-                              hotkeys={SHORTCUTS.toggleTheme.hotkeys}
-                              className="flex-wrap justify-end"
-                            />
-                          </div>
-                        </div>
-                        <Switch
-                          checked={themeToggleKeyEnabled}
-                          onCheckedChange={setThemeToggleKeyEnabled}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex flex-col gap-1">
-                          <p className="text-sm">Settings key</p>
-                          <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
-                            <span>Settings dialog shortcuts</span>
-                            <ShortcutKbdGroup
-                              hotkeys={SHORTCUTS.settings.hotkeys}
-                              className="flex-wrap justify-end"
-                            />
-                          </div>
-                        </div>
-                        <Switch
-                          checked={settingsKeyEnabled}
-                          onCheckedChange={setSettingsKeyEnabled}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-3 border-t pt-2">
-                      <Label className="text-sm font-medium">Keyboard Shortcuts</Label>
-                      <div className="grid gap-2 text-sm">
-                        {[
-                          SHORTCUTS.newIdea,
-                          SHORTCUTS.toggleTheme,
-                          SHORTCUTS.settings,
-                          SHORTCUTS.expandSettings,
-                          SHORTCUTS.help,
-                          SHORTCUTS.closeDialog,
-                          SHORTCUTS.inbox,
-                          SHORTCUTS.archived,
-                          SHORTCUTS.trash,
-                          SHORTCUTS.navDown,
-                          SHORTCUTS.navUp,
-                          SHORTCUTS.navLeft,
-                          SHORTCUTS.navRight,
-                          SHORTCUTS.openActions,
-                          SHORTCUTS.copyIdea,
-                          SHORTCUTS.togglePin,
-                          SHORTCUTS.togglePinnedTray,
-                          SHORTCUTS.deselect,
-                          SHORTCUTS.saveCapture,
-                          SHORTCUTS.cancelCapture,
-                        ].map((shortcut) => (
-                          <div key={shortcut.id} className="flex items-center justify-between gap-3">
-                            <span className="text-muted-foreground">{shortcut.label}</span>
-                            <ShortcutKbdGroup
-                              hotkeys={shortcut.hotkeys}
-                              className="flex-wrap justify-end"
-                              alwaysVisible
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </>
+                  <SettingsKeyboard
+                    keyboardNav={keyboardNav}
+                    setKeyboardNav={setKeyboardNav}
+                    shortcutHintsEnabled={shortcutHintsEnabled}
+                    setShortcutHintsEnabled={setShortcutHintsEnabled}
+                    newIdeaKeyEnabled={newIdeaKeyEnabled}
+                    setNewIdeaKeyEnabled={setNewIdeaKeyEnabled}
+                    themeToggleKeyEnabled={themeToggleKeyEnabled}
+                    setThemeToggleKeyEnabled={setThemeToggleKeyEnabled}
+                    settingsKeyEnabled={settingsKeyEnabled}
+                    setSettingsKeyEnabled={setSettingsKeyEnabled}
+                  />
                 )}
 
                 {section === "api" && <ApiKeysManager />}

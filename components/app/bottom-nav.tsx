@@ -86,6 +86,7 @@ export function BottomNav() {
             value={inputValue}
             onChange={handleInputChange}
             placeholder="Find your ideas..."
+            aria-label="Search ideas"
             className="flex-1 bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground"
             onKeyDown={(e) => {
               if (e.key === "Escape") handleCloseSearch();
@@ -94,6 +95,7 @@ export function BottomNav() {
             spellCheck={false}
           />
           <button
+            type="button"
             onClick={handleXClick}
             className="text-muted-foreground hover:text-foreground transition-colors"
             aria-label={inputValue ? "Clear search" : "Close search"}
@@ -104,18 +106,21 @@ export function BottomNav() {
       ) : isMobile ? (
         <>
           <button
+            type="button"
             onClick={togglePinnedTray}
             className="flex items-center justify-center text-muted-foreground px-4"
           >
             <Pin className="size-4" />
           </button>
           <button
+            type="button"
             onClick={handleOpenSearch}
             className="flex-1 flex items-center justify-center text-muted-foreground border-x border-dashed border-muted-foreground h-full"
           >
             <span className="text-xs font-bold tracking-widest">SEARCH</span>
           </button>
           <button
+            type="button"
             onClick={() => setSettingsOpen(true)}
             className="flex items-center justify-center text-muted-foreground px-4"
           >
@@ -125,6 +130,7 @@ export function BottomNav() {
       ) : (
         <>
           <button
+            type="button"
             onClick={togglePinnedTray}
             className="flex-1 flex items-center justify-center gap-1.5 text-muted-foreground h-full"
           >
@@ -133,6 +139,7 @@ export function BottomNav() {
             {showShortcutHints && <Kbd>P</Kbd>}
           </button>
           <button
+            type="button"
             onClick={handleOpenSearch}
             className="flex-1 flex items-center justify-center gap-1.5 text-muted-foreground border-x border-dashed border-muted-foreground h-full"
           >
@@ -141,6 +148,7 @@ export function BottomNav() {
             {showShortcutHints && <Kbd>F</Kbd>}
           </button>
           <button
+            type="button"
             onClick={() => setSettingsOpen(true)}
             className="flex-1 flex items-center justify-center gap-1.5 text-muted-foreground h-full"
           >
