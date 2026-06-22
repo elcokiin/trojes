@@ -78,7 +78,7 @@ export function Dashboard({ user }: DashboardProps) {
         />
       ) : (
         <>
-          <main className="flex-1 container max-w-5xl mx-auto px-4 py-8 pt-16">
+          <main className="flex-1 container max-w-5xl mx-auto px-4 py-8 pt-16 pb-12">
             <IdeasTabs
               value={activeTab}
               onValueChange={setActiveTab}
@@ -88,10 +88,12 @@ export function Dashboard({ user }: DashboardProps) {
               triggerClassName="gap-2"
             />
           </main>
-          <BottomNav
-            onSettingsOpen={() => setSettingsOpen(true)}
-            search={search}
-          />
+          <div className="fixed bottom-0 left-0 right-0 z-40">
+            <BottomNav
+              onSettingsOpen={() => setSettingsOpen(true)}
+              search={search}
+            />
+          </div>
         </>
       )}
     </div>

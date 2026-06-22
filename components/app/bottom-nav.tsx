@@ -4,6 +4,7 @@ import { Pin, Search, Settings, X } from "lucide-react";
 import type { RefObject } from "react";
 import { Kbd } from "@/components/ui/kbd";
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export interface SearchState {
   searchMode: boolean;
@@ -22,6 +23,7 @@ interface BottomNavProps {
 }
 
 export function BottomNav({ onSettingsOpen, search }: BottomNavProps) {
+  const isMobile = useIsMobile();
   const [showShortcutHints] = useShortcutPreference("troje-shortcut-hints");
   const {
     searchMode,
@@ -59,34 +61,46 @@ export function BottomNav({ onSettingsOpen, search }: BottomNavProps) {
             <X className="size-4" />
           </button>
         </div>
-      ) : (
+      ) : isMobile ? (
         <>
-          <button className="flex-1 flex flex-col items-center justify-center text-muted-foreground h-full gap-0.5">
-            <Pin className="size-[14px]" />
-            <span className="flex items-center gap-1 text-[10px] font-medium leading-tight">
-              Pin
-              {showShortcutHints && <Kbd className="h-3.5 min-w-3.5 text-[8px] px-0.5">P</Kbd>}
-            </span>
+          <button className="flex items-center justify-center text-muted-foreground px-4">
+            <Pin className="size-4" />
           </button>
           <button
             onClick={() => setSearchMode(true)}
-            className="flex-1 flex flex-col items-center justify-center text-muted-foreground border-x border-dashed border-muted-foreground h-full gap-0.5"
+            className="flex-1 flex items-center justify-center text-muted-foreground border-x border-dashed border-muted-foreground h-full"
           >
-            <Search className="size-[14px]" />
-            <span className="flex items-center gap-1 text-[10px] font-medium leading-tight">
-              Search
-              {showShortcutHints && <Kbd className="h-3.5 min-w-3.5 text-[8px] px-0.5">F</Kbd>}
-            </span>
+            <span className="text-xs font-bold tracking-widest">SEARCH</span>
           </button>
           <button
             onClick={onSettingsOpen}
-            className="flex-1 flex flex-col items-center justify-center text-muted-foreground h-full gap-0.5"
+            className="flex items-center justify-center text-muted-foreground px-4"
           >
-            <Settings className="size-[14px]" />
-            <span className="flex items-center gap-1 text-[10px] font-medium leading-tight">
-              Settings
-              {showShortcutHints && <Kbd className="h-3.5 min-w-3.5 text-[8px] px-0.5">S</Kbd>}
-            </span>
+            <Settings className="size-4" />
+          </button>
+        </>
+      ) : (
+        <>
+          <button className="flex-1 flex items-center justify-center gap-1.5 text-muted-foreground h-full">
+            <Pin className="size-4" />
+            <span className="text-sm font-medium">Pin</span>
+            {showShortcutHints && <Kbd>P</Kbd>}
+          </button>
+          <button
+            onClick={() => setSearchMode(true)}
+            className="flex-1 flex items-center justify-center gap-1.5 text-muted-foreground border-x border-dashed border-muted-foreground h-full"
+          >
+            <Search className="size-4" />
+            <span className="text-sm font-medium">Search</span>
+            {showShortcutHints && <Kbd>F</Kbd>}
+          </button>
+          <button
+            onClick={onSettingsOpen}
+            className="flex-1 flex items-center justify-center gap-1.5 text-muted-foreground h-full"
+          >
+            <Settings className="size-4" />
+            <span className="text-sm font-medium">Settings</span>
+            {showShortcutHints && <Kbd>S</Kbd>}
           </button>
         </>
       )}
