@@ -1,5 +1,8 @@
 import type { NextAuthOptions } from "next-auth"
+import { getServerSession } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
+import { type NextRequest } from "next/server"
+import { getUserIdFromApiKey } from "@/lib/api-keys"
 import {
   accountExists,
   createAccount,
@@ -93,4 +96,21 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   secret: process.env.NEXTAUTH_SECRET,
+}
+
+export async function getAuthenticatedUserId(request?: NextRequest): Promise<string | null> {
+  const session = await getServerSession(authOptions)
+  if (session?.user?.id) {
+    return session.user.id
+  }
+
+  if (!request) return null
+
+  const authHeader = request.headers.get("authorization")
+  if (!authHeader?.startsWith("Bearer ")) return null
+
+  const apiKey = authHeader.slice(7).trim()
+  if (!apiKey) return null
+
+  return getUserIdFromApiKey(apiKey)
 }

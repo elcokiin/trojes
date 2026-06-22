@@ -1,17 +1,16 @@
+import { getAuthenticatedUserId } from "@/lib/auth"
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
 import { createApiKey, findApiKeysByUserId } from "@/db/api-keys"
 import { generateApiKey, hashApiKey } from "@/lib/api-keys"
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
+    const userId = await getAuthenticatedUserId()
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const keys = await findApiKeysByUserId(session.user.id)
+    const keys = await findApiKeysByUserId(userId)
 
     return NextResponse.json({ keys })
   } catch (error) {
@@ -22,8 +21,8 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
+    const userId = await getAuthenticatedUserId()
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -39,7 +38,7 @@ export async function POST(request: NextRequest) {
     const keyPreview = fullKey.slice(-4)
 
     const key = await createApiKey({
-      user_id: session.user.id,
+      user_id: userId,
       name,
       key_hash: keyHash,
       key_preview: keyPreview,

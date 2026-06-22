@@ -1,27 +1,6 @@
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getAuthenticatedUserId } from "@/lib/auth"
 import { NextRequest, NextResponse } from "next/server"
-import { getUserIdFromApiKey } from "@/lib/api-keys"
 import { createIdea, findIdeas, findPinnedIdeas } from "@/db/ideas"
-
-async function getUserIdFromAuthorizationHeader(request: NextRequest): Promise<string | null> {
-  const authHeader = request.headers.get("authorization")
-  if (!authHeader?.startsWith("Bearer ")) return null
-
-  const apiKey = authHeader.slice(7).trim()
-  if (!apiKey) return null
-
-  return getUserIdFromApiKey(apiKey)
-}
-
-async function getAuthenticatedUserId(request: NextRequest): Promise<string | null> {
-  const session = await getServerSession(authOptions)
-  if (session?.user?.id) {
-    return session.user.id
-  }
-
-  return getUserIdFromAuthorizationHeader(request)
-}
 
 // GET - Fetch all ideas (for web dashboard)
 export async function GET(request: NextRequest) {

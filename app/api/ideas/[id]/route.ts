@@ -1,16 +1,6 @@
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getAuthenticatedUserId } from "@/lib/auth"
 import { NextRequest, NextResponse } from "next/server"
 import { deleteIdea, findIdeaById, updateIdea } from "@/db/ideas"
-
-// Get authenticated user ID from session
-async function getAuthenticatedUserId(): Promise<string | null> {
-  const session = await getServerSession(authOptions)
-  if (session?.user?.id) {
-    return session.user.id
-  }
-  return null
-}
 
 // GET - Fetch single idea
 export async function GET(
@@ -18,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = await getAuthenticatedUserId()
+    const userId = await getAuthenticatedUserId(request)
     
     if (!userId) {
       return NextResponse.json(
@@ -54,7 +44,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = await getAuthenticatedUserId()
+    const userId = await getAuthenticatedUserId(request)
     
     if (!userId) {
       return NextResponse.json(
@@ -120,7 +110,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = await getAuthenticatedUserId()
+    const userId = await getAuthenticatedUserId(request)
     
     if (!userId) {
       return NextResponse.json(
