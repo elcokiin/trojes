@@ -31,7 +31,7 @@ export async function findIdeas({
     .select()
     .from(ideas)
     .where(and(...filters))
-    .orderBy(desc(ideas.pinned), desc(ideas.created_at))
+    .orderBy(desc(ideas.created_at))
 }
 
 export async function findPinnedIdeas({

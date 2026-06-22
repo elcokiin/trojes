@@ -27,7 +27,7 @@ const TABS: TabConfig[] = [
     icon: Archive,
     shortcut: SHORTCUTS.archived.hotkeys[0],
     mobileClasses:
-      "rounded-none border-0 border-r border-dashed border-muted-foreground data-[state=active]:border-l data-[state=active]:flex-1 data-[state=inactive]:flex-none data-[state=inactive]:px-4",
+      "rounded-none border-0 border-r border-dashed border-muted-foreground data-[state=active]:border-l",
   },
   {
     value: "inbox",
@@ -35,7 +35,7 @@ const TABS: TabConfig[] = [
     icon: Inbox,
     shortcut: SHORTCUTS.inbox.hotkeys[0],
     mobileClasses:
-      "rounded-none border-0 data-[state=active]:border-x data-[state=active]:border-dashed data-[state=active]:border-muted-foreground data-[state=active]:flex-1 data-[state=inactive]:flex-none data-[state=inactive]:px-4",
+      "rounded-none border-0 data-[state=active]:border-x data-[state=active]:border-dashed data-[state=active]:border-muted-foreground",
   },
   {
     value: "deleted",
@@ -43,7 +43,7 @@ const TABS: TabConfig[] = [
     icon: Trash2,
     shortcut: SHORTCUTS.trash.hotkeys[0],
     mobileClasses:
-      "rounded-none border-0 border-l border-dashed border-muted-foreground data-[state=active]:border-r data-[state=active]:flex-1 data-[state=inactive]:flex-none data-[state=inactive]:px-4",
+      "rounded-none border-0 border-l border-dashed border-muted-foreground data-[state=active]:border-r",
   },
 ]
 
@@ -98,12 +98,7 @@ export function IdeasTabs({
             )}
           >
             {mobile ? (
-              <>
-                <Icon className="size-4 group-data-[state=active]:hidden" />
-                <span className="hidden group-data-[state=active]:inline uppercase text-xs font-bold tracking-widest">
-                  {tab.label}
-                </span>
-              </>
+              <Icon className="size-4" />
             ) : (
               <Tooltip>
                 <TooltipTrigger asChild>
