@@ -54,6 +54,13 @@ export function IdeaCard({
   const [copied, setCopied] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
+  const handleMenuOpenChange = useCallback((open: boolean) => {
+    if (!open && document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    setMenuOpen(open);
+  }, []);
+
   const handleStatusChange = async (
     newStatus: "inbox" | "archived" | "deleted",
   ) => {
@@ -104,7 +111,7 @@ export function IdeaCard({
   }, [isSelected]);
 
   useHotkey(SHORTCUTS.openActions.hotkeys[0], () => setMenuOpen(true), {
-    enabled: isSelected,
+    enabled: isSelected && !menuOpen,
     ignoreInputs: true,
     preventDefault: true,
     conflictBehavior: "allow",
@@ -190,8 +197,12 @@ export function IdeaCard({
         )}
       />
 
-      <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
-        <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenu open={menuOpen} onOpenChange={handleMenuOpenChange}>
+        <DropdownMenuContent
+          align="end"
+          className="w-48"
+          onCloseAutoFocus={(e) => e.preventDefault()}
+        >
           <DropdownMenuItem onClick={handlePinToggle}>
             {idea.pinned ? (
               <>
