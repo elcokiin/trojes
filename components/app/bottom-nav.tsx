@@ -23,15 +23,11 @@ export function BottomNav() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchModeRef = useRef(searchMode);
   searchModeRef.current = searchMode;
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
-    return () => clearTimeout(debounceRef.current);
-  }, []);
-
-  useEffect(() => {
-    setInputValue(searchQuery);
-  }, [searchQuery]);
+    const timer = setTimeout(() => setSearchQuery(inputValue), 150);
+    return () => clearTimeout(timer);
+  }, [inputValue, setSearchQuery]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -56,23 +52,16 @@ export function BottomNav() {
   }, [searchMode])
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setInputValue(value)
-    clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => {
-      setSearchQuery(value)
-    }, 150)
-  }, [setSearchQuery])
+    setInputValue(e.target.value)
+  }, [])
 
   const handleCloseSearch = useCallback(() => {
     setSearchMode(false)
     setInputValue("")
-    clearTimeout(debounceRef.current)
     handleClearSearch()
   }, [handleClearSearch, setSearchMode])
 
   const handleXClick = useCallback(() => {
-    clearTimeout(debounceRef.current)
     if (inputValue) {
       setInputValue("")
       setSearchQuery("")
