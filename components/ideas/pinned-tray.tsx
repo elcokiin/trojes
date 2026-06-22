@@ -1,7 +1,8 @@
 "use client"
 
-import { useCallback, useRef, useEffect } from "react"
+import { useCallback, useRef, useEffect, type CSSProperties } from "react"
 import { Pin, X, ChevronUp } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import { usePinnedIdeas } from "@/hooks/use-pinned-ideas"
 import { useIdeas } from "@/hooks/use-ideas"
 import { useHotkey } from "@tanstack/react-hotkeys"
@@ -16,29 +17,45 @@ interface PinnedTrayProps {
 
 function PinnedCard({
   idea,
+  index,
   onUnpin,
 }: {
   idea: { id: string; content: string; created_at: string }
+  index: number
   onUnpin: (id: string) => void
 }) {
+  const pinnedDate = new Date(idea.created_at).toLocaleDateString()
+
   return (
-    <div className="group flex items-start gap-2 px-3 py-3 hover:bg-accent/50 transition-colors">
-      <div className="flex-1 min-w-0">
-        <p className="text-sm leading-snug line-clamp-2 break-words">{idea.content}</p>
-        <div className="flex items-center gap-1.5 mt-1">
-          <Pin className="size-2.5 text-primary" />
-          <span className="text-[10px] text-muted-foreground">
-            {new Date(idea.created_at).toLocaleDateString()}
-          </span>
-        </div>
+    <div
+      className="pinned-tray-card group relative min-h-24 rounded-md border bg-popover px-3 pb-3 pt-5 shadow-sm transition-colors hover:border-primary/70 hover:bg-popover"
+      style={{ "--pinned-index": index } as CSSProperties}
+    >
+      <div className="absolute -top-px left-2 flex items-center gap-1">
+        <Badge
+          variant="secondary"
+          className="h-5 rounded-t-none border border-t-0 border-primary/35 bg-primary/15 px-2 text-[10px] font-semibold uppercase tracking-wide text-primary"
+        >
+          Troje
+        </Badge>
+        <Badge
+          variant="outline"
+          className="h-5 rounded-t-none border-t-0 bg-popover px-1.5 text-[10px] text-muted-foreground"
+        >
+          <Pin className="size-2.5" />
+        </Badge>
       </div>
       <button
         onClick={() => onUnpin(idea.id)}
-        className="shrink-0 text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity p-0.5"
+        className="absolute right-2 top-2 rounded-sm p-0.5 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
         aria-label="Unpin"
       >
         <X className="size-3.5" />
       </button>
+      <p className="line-clamp-2 break-words pr-5 text-sm font-medium leading-snug text-foreground">
+        {idea.content}
+      </p>
+      <p className="mt-1 text-xs leading-none text-muted-foreground">{pinnedDate}</p>
     </div>
   )
 }
@@ -86,9 +103,14 @@ export function PinnedTray({ isOpen, onOpenChange }: PinnedTrayProps) {
   )
 
   const listContent = ideas.length > 0 && (
-    <div className="divide-y">
-      {ideas.map((idea) => (
-        <PinnedCard key={idea.id} idea={idea} onUnpin={handleUnpin} />
+    <div className="flex flex-col gap-2">
+      {ideas.map((idea, index) => (
+        <PinnedCard
+          key={idea.id}
+          idea={idea}
+          index={index}
+          onUnpin={handleUnpin}
+        />
       ))}
     </div>
   )
@@ -99,35 +121,51 @@ export function PinnedTray({ isOpen, onOpenChange }: PinnedTrayProps) {
         <button
           type="button"
           onClick={() => onOpenChange(true)}
-          className="fixed bottom-0 left-0 z-50 flex h-24 w-1/3 min-w-0 cursor-pointer items-stretch p-1.5 pb-2 text-left"
+          className="fixed bottom-0 left-0 z-50 flex h-28 w-1/3 min-w-0 cursor-pointer items-stretch px-1.5 pb-1.5 pt-2 text-left"
           aria-label={`Open pinned ideas (${ideas.length})`}
         >
-          <div className="relative flex min-w-0 flex-1 flex-col justify-end overflow-hidden rounded-t-lg border border-b-0 bg-popover shadow-lg transition-colors hover:bg-accent/40">
+          <div className="pinned-tray-preview relative flex min-w-0 flex-1 flex-col justify-end overflow-hidden">
             {ideas.slice(0, previewCount).map((idea, i) => (
               <div
                 key={idea.id}
                 className={cn(
-                  "absolute inset-x-2 rounded-md border bg-popover px-2.5 py-2 shadow-sm transition-all",
-                  i === 0 && "bottom-6 z-30 min-h-14",
-                  i === 1 && "bottom-4 z-20 scale-[0.96] opacity-70",
-                  i === 2 && "bottom-2 z-10 scale-[0.92] opacity-45",
+                  "absolute inset-x-1 rounded-md border bg-popover shadow-sm transition-all",
+                  i === 0 && "bottom-11 z-30 min-h-20 border-primary/70 px-3 pb-3 pt-5",
+                  i === 1 && "bottom-9 z-20 h-16 scale-[0.98] opacity-70",
+                  i === 2 && "bottom-7 z-10 h-16 scale-[0.96] opacity-45",
                 )}
               >
                 {i === 0 ? (
-                  <div className="flex min-w-0 items-start gap-2">
-                    <Pin className="mt-0.5 size-3 shrink-0 text-primary" />
-                    <p className="line-clamp-2 min-w-0 text-xs leading-snug text-foreground/85">
+                  <>
+                    <div className="absolute -top-px left-2 flex items-center gap-1">
+                      <Badge
+                        variant="secondary"
+                        className="h-5 rounded-t-none border border-t-0 border-primary/35 bg-primary/15 px-2 text-[10px] font-semibold uppercase tracking-wide text-primary"
+                      >
+                        Troje
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="h-5 rounded-t-none border-t-0 bg-popover px-1.5 text-[10px] text-muted-foreground"
+                      >
+                        <Pin className="size-2.5" />
+                      </Badge>
+                    </div>
+                    <p className="line-clamp-2 min-w-0 text-sm font-medium leading-snug text-foreground">
                       {idea.content}
                     </p>
-                  </div>
+                    <p className="mt-1 text-xs leading-none text-muted-foreground">
+                      {new Date(idea.created_at).toLocaleDateString()}
+                    </p>
+                  </>
                 ) : (
-                  <div className="h-3.5" />
+                  <div className="h-full rounded-md bg-popover" />
                 )}
               </div>
             ))}
-            <div className="relative z-40 mt-auto flex h-6 items-center justify-center gap-1 border-t bg-popover/95 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+            <div className="relative z-40 mt-auto flex h-10 items-center justify-center gap-1 border-t bg-background/95 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               <ChevronUp className="size-3" />
-              <span>{ideas.length} pinned</span>
+              <span>Pinned</span>
               {extraCount > 0 && (
                 <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] normal-case tracking-normal">
                   +{extraCount}
@@ -164,21 +202,9 @@ export function PinnedTray({ isOpen, onOpenChange }: PinnedTrayProps) {
         isOpen && (
           <div
             ref={trayRef}
-            className="fixed bottom-12 left-0 z-50 w-1/3 max-w-80 min-w-0 bg-popover border rounded-lg shadow-lg overflow-hidden"
+            className="pointer-events-none fixed bottom-0 left-0 z-50 w-1/3 min-w-0 px-1.5 pb-12"
           >
-            <div className="flex items-center justify-between px-3 py-2.5 border-b shrink-0 bg-popover">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Pinned ({ideas.length})
-              </span>
-              <button
-                onClick={() => onOpenChange(false)}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Close pinned tray"
-              >
-                <X className="size-4" />
-              </button>
-            </div>
-            <div className="overflow-y-auto max-h-[40vh]">
+            <div className="pinned-tray-list pointer-events-auto max-h-[calc(100vh-5rem)] overflow-y-auto rounded-t-md pt-3">
               {loadingState}
               {emptyState}
               {listContent}
