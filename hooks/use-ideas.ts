@@ -27,8 +27,12 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
 
   const create = useCallback(async (content: string) => {
     const response = await ideasApi.create(content)
-    if (response.ok) mutate()
-  }, [mutate])
+    if (response.ok) {
+      globalMutate(
+        (key) => typeof key === "string" && key.startsWith("/api/ideas")
+      )
+    }
+  }, [])
 
   const updateStatus = useCallback(
     async (id: string, newStatus: "inbox" | "archived" | "deleted") => {

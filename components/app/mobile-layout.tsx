@@ -7,7 +7,8 @@ import { QuickCapture } from "@/components/ideas/quick-capture";
 import { BottomNav } from "@/components/app/bottom-nav";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
-import { useIdeas } from "@/hooks/use-ideas";
+import { mutate as globalMutate } from "swr";
+import { ideasApi } from "@/lib/api-client";
 
 function isBeforeInstallPromptEvent(e: Event): e is BeforeInstallPromptEvent {
   return "prompt" in e;
@@ -85,11 +86,15 @@ export function MobileLayout() {
     setBannerDismissed(true);
   }, [deferredPrompt]);
 
-  const { create } = useIdeas({ status: "inbox" });
   const handleCapture = useCallback(async (content: string) => {
-    await create(content);
+    const response = await ideasApi.create(content);
+    if (response.ok) {
+      globalMutate(
+        (key) => typeof key === "string" && key.startsWith("/api/ideas")
+      );
+    }
     setCaptureOpen(false);
-  }, [create, setCaptureOpen]);
+  }, [setCaptureOpen]);
 
   return (
     <div className="flex flex-col h-screen">
