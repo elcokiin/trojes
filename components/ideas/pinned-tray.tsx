@@ -28,7 +28,7 @@ function PinnedCard({
 
   return (
     <div
-      className="pinned-tray-card group relative min-h-24 rounded-md border bg-popover px-3 pb-3 pt-5 shadow-sm transition-colors hover:border-primary/70 hover:bg-popover"
+      className="pinned-tray-card group relative min-h-24 rounded-md border bg-popover px-3 pb-3 pt-5 shadow-sm hover:border-primary/70"
       style={{ "--pinned-index": index } as CSSProperties}
     >
       <div className="absolute -top-px left-2 flex items-center gap-1">
@@ -118,21 +118,20 @@ export function PinnedTray({ isOpen, onOpenChange }: PinnedTrayProps) {
   return (
     <>
       {!isMobile && hasPins && !isOpen && (
-        <button
-          type="button"
+        <div
           onClick={() => onOpenChange(true)}
-          className="fixed bottom-0 left-0 z-50 flex h-28 w-1/3 min-w-0 cursor-pointer items-stretch px-1.5 pb-1.5 pt-2 text-left"
+          className="fixed bottom-0 left-0 z-50 flex min-h-32 w-1/3 min-w-0 cursor-pointer flex-col justify-end px-1.5 pb-1.5 pt-2"
           aria-label={`Open pinned ideas (${ideas.length})`}
         >
-          <div className="pinned-tray-preview relative flex min-w-0 flex-1 flex-col justify-end overflow-hidden">
+          <div className="pinned-tray-preview relative">
             {ideas.slice(0, previewCount).map((idea, i) => (
               <div
                 key={idea.id}
                 className={cn(
-                  "absolute inset-x-1 rounded-md border bg-popover shadow-sm transition-all",
-                  i === 0 && "bottom-11 z-30 min-h-20 border-primary/70 px-3 pb-3 pt-5",
-                  i === 1 && "bottom-9 z-20 h-16 scale-[0.98] opacity-70",
-                  i === 2 && "bottom-7 z-10 h-16 scale-[0.96] opacity-45",
+                  "absolute inset-x-1 rounded-md border bg-popover shadow-sm",
+                  i === 0 && "bottom-0 z-30 min-h-16 border-primary/70 px-3 pb-2 pt-4",
+                  i === 1 && "bottom-6 z-20 h-12 scale-[0.98] opacity-70",
+                  i === 2 && "bottom-8 z-10 h-12 scale-[0.96] opacity-45",
                 )}
               >
                 {i === 0 ? (
@@ -151,11 +150,11 @@ export function PinnedTray({ isOpen, onOpenChange }: PinnedTrayProps) {
                         <Pin className="size-2.5" />
                       </Badge>
                     </div>
-                    <p className="line-clamp-2 min-w-0 text-sm font-medium leading-snug text-foreground">
+                    <p className="line-clamp-1 min-w-0 pr-5 text-sm font-medium leading-snug text-foreground">
                       {idea.content}
                     </p>
-                    <p className="mt-1 text-xs leading-none text-muted-foreground">
-                      {new Date(idea.created_at).toLocaleDateString()}
+                    <p className="mt-0.5 text-[10px] font-medium text-muted-foreground">
+                      {ideas.length} pinned
                     </p>
                   </>
                 ) : (
@@ -163,7 +162,7 @@ export function PinnedTray({ isOpen, onOpenChange }: PinnedTrayProps) {
                 )}
               </div>
             ))}
-            <div className="relative z-40 mt-auto flex h-10 items-center justify-center gap-1 border-t bg-background/95 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <div className="relative z-0 flex h-10 items-center justify-center gap-1 border-t bg-background text-xs font-semibold uppercase tracking-wide text-muted-foreground rounded-b-md">
               <ChevronUp className="size-3" />
               <span>Pinned</span>
               {extraCount > 0 && (
@@ -173,7 +172,7 @@ export function PinnedTray({ isOpen, onOpenChange }: PinnedTrayProps) {
               )}
             </div>
           </div>
-        </button>
+        </div>
       )}
 
       {isMobile ? (
@@ -204,10 +203,25 @@ export function PinnedTray({ isOpen, onOpenChange }: PinnedTrayProps) {
             ref={trayRef}
             className="pointer-events-none fixed bottom-0 left-0 z-50 w-1/3 min-w-0 px-1.5 pb-12"
           >
-            <div className="pinned-tray-list pointer-events-auto max-h-[calc(100vh-5rem)] overflow-y-auto rounded-t-md pt-3">
-              {loadingState}
-              {emptyState}
-              {listContent}
+            <div className="pinned-tray-list pointer-events-auto max-h-[calc(100vh-5rem)] overflow-y-auto rounded-t-md bg-popover shadow-lg">
+              <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b bg-popover px-4 py-3">
+                <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <Pin className="size-3" />
+                  Pinned {hasPins && <span className="text-muted-foreground/50">({ideas.length})</span>}
+                </span>
+                <button
+                  onClick={() => onOpenChange(false)}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Close pinned tray"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+              <div className="p-2">
+                {loadingState}
+                {emptyState}
+                {listContent}
+              </div>
             </div>
           </div>
         )
