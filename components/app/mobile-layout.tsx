@@ -10,6 +10,10 @@ import { cn } from "@/lib/utils";
 
 type TabValue = "inbox" | "archived" | "deleted";
 
+function isBeforeInstallPromptEvent(e: Event): e is BeforeInstallPromptEvent {
+  return "prompt" in e;
+}
+
 interface MobileLayoutProps {
   activeTab: TabValue;
   onTabChange: (tab: TabValue) => void;
@@ -97,9 +101,9 @@ export function MobileLayout({
 
   const handleInstall = useCallback(async () => {
     if (!deferredPrompt) return;
-    const promptEvent = deferredPrompt as any;
-    promptEvent.prompt();
-    const choice = await promptEvent.userChoice;
+    if (!isBeforeInstallPromptEvent(deferredPrompt)) return;
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
     if (choice.outcome === "accepted") {
       setDeferredPrompt(null);
       setIsStandalone(true);

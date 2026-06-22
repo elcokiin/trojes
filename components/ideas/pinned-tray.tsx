@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useRef, useEffect, type CSSProperties } from "react";
+import { useCallback, useRef, useEffect } from "react";
+import type React from "react";
 import { Pin, X, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -38,7 +39,7 @@ function PinnedCard({
   return (
     <div
       className="pinned-tray-card group relative min-h-24 rounded-md border bg-popover px-3 pb-3 pt-5 shadow-sm hover:border-primary/70 cursor-pointer"
-      style={{ "--pinned-index": index } as CSSProperties}
+      style={{ "--pinned-index": index } as React.CSSProperties & Record<string, string | number>}
       onClick={() => onFocus?.(idea.id)}
       role="button"
       tabIndex={0}
@@ -96,7 +97,7 @@ export function PinnedTray({
   useEffect(() => {
     if (!isOpen || isMobile) return;
     const handler = (e: MouseEvent) => {
-      if (trayRef.current && !trayRef.current.contains(e.target as Node)) {
+      if (trayRef.current && e.target instanceof Node && !trayRef.current.contains(e.target)) {
         onOpenChange(false);
       }
     };

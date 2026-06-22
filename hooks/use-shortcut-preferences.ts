@@ -8,6 +8,10 @@ import {
   writeShortcutPreference,
 } from "@/lib/shortcuts"
 
+function isBooleanCustomEvent(event: Event): event is CustomEvent<boolean> {
+  return "detail" in event
+}
+
 export function useShortcutPreference(key: ShortcutPreferenceKey) {
   const [enabled, setEnabled] = useState(SHORTCUT_DEFAULTS[key])
 
@@ -15,7 +19,9 @@ export function useShortcutPreference(key: ShortcutPreferenceKey) {
     setEnabled(readShortcutPreference(key))
 
     const handleChange = (event: Event) => {
-      setEnabled((event as CustomEvent<boolean>).detail)
+      if (isBooleanCustomEvent(event)) {
+        setEnabled(event.detail)
+      }
     }
 
     window.addEventListener(key, handleChange)

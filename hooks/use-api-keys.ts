@@ -22,9 +22,9 @@ export function useApiKeys() {
   const create = useCallback(async (name: string) => {
     const response = await apiKeysApi.create(name)
     if (!response.ok) return null
-    const body = await response.json()
+    const body: { key: { full_key: string } } = await response.json()
     mutate()
-    return body.key.full_key as string
+    return body.key.full_key
   }, [mutate])
 
   const rename = useCallback(async (id: string, name: string) => {

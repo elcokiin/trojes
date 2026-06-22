@@ -1,6 +1,17 @@
 import { getAuthenticatedUserId } from "@/lib/auth"
 import { NextRequest, NextResponse } from "next/server"
 import { createIdea, findIdeas, findPinnedIdeas } from "@/db/ideas"
+import type { Idea } from "@/db/schema"
+
+const VALID_STATUSES: Idea["status"][] = ["inbox", "archived", "deleted"]
+
+function parseIdeaStatus(raw: string | null): NonNullable<Idea["status"]> {
+  const status = raw || "inbox" as string
+  if (VALID_STATUSES.includes(status as NonNullable<Idea["status"]>)) {
+    return status as NonNullable<Idea["status"]>
+  }
+  return "inbox"
+}
 
 // GET - Fetch all ideas (for web dashboard)
 export async function GET(request: NextRequest) {
@@ -15,7 +26,7 @@ export async function GET(request: NextRequest) {
     }
     
     const { searchParams } = new URL(request.url)
-    const status = searchParams.get("status") || "inbox"
+    const status = parseIdeaStatus(searchParams.get("status"))
     const search = searchParams.get("search")
     const pinned = searchParams.get("pinned") === "true"
 
@@ -25,7 +36,7 @@ export async function GET(request: NextRequest) {
     } else {
       ideas = await findIdeas({
         userId,
-        status: status as "inbox" | "archived" | "deleted",
+        status,
         search,
       })
     }

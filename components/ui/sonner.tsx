@@ -8,14 +8,14 @@ const Toaster = ({ ...props }: ToasterProps) => {
 
   return (
     <Sonner
-      theme={theme as ToasterProps['theme']}
+      theme={theme === "system" ? "dark" : theme as "light" | "dark"}
       className="toaster group"
       style={
         {
           '--normal-bg': 'var(--popover)',
           '--normal-text': 'var(--popover-foreground)',
           '--normal-border': 'var(--border)',
-        } as React.CSSProperties
+        } as React.CSSProperties & Record<string, string>
       }
       {...props}
     />

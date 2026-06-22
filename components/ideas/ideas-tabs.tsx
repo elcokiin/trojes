@@ -12,6 +12,12 @@ import type { RegisterableHotkey } from "@tanstack/react-hotkeys";
 
 type TabValue = "inbox" | "archived" | "deleted";
 
+const TAB_VALUES: TabValue[] = ["inbox", "archived", "deleted"];
+
+function isTabValue(v: string): v is TabValue {
+  return TAB_VALUES.includes(v as TabValue);
+}
+
 interface TabConfig {
   value: TabValue
   label: string
@@ -147,7 +153,9 @@ export function IdeasTabs({
   return (
     <Tabs
       value={value}
-      onValueChange={(v) => onValueChange(v as TabValue)}
+      onValueChange={(v) => {
+        if (isTabValue(v)) onValueChange(v);
+      }}
       className={tabsClassName}
     >
       {tabsListWrapperClassName ? (

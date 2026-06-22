@@ -5,17 +5,16 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Download, CheckCircle2, Share2, PlusSquare } from "lucide-react"
 
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>
-  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>
-}
-
 function isStandaloneMode() {
   if (typeof window === "undefined") return false
   return (
     window.matchMedia("(display-mode: standalone)").matches ||
-    (window.navigator as Navigator & { standalone?: boolean }).standalone === true
+    navigator.standalone === true
   )
+}
+
+function isBeforeInstallPromptEvent(e: Event): e is BeforeInstallPromptEvent {
+  return "prompt" in e
 }
 
 export function PwaInstallManager() {
@@ -30,7 +29,9 @@ export function PwaInstallManager() {
 
     const onBeforeInstallPrompt = (event: Event) => {
       event.preventDefault()
-      setDeferredPrompt(event as BeforeInstallPromptEvent)
+      if (isBeforeInstallPromptEvent(event)) {
+        setDeferredPrompt(event)
+      }
     }
 
     const onAppInstalled = () => {

@@ -35,9 +35,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Initialize theme from localStorage on mount
   React.useEffect(() => {
     const stored =
-      (localStorage.getItem(THEME_STORAGE_KEY) ??
-        localStorage.getItem(LEGACY_THEME_STORAGE_KEY)) as Theme | null
-    if (stored && ['light', 'dark', 'system'].includes(stored)) {
+      localStorage.getItem(THEME_STORAGE_KEY) ??
+      localStorage.getItem(LEGACY_THEME_STORAGE_KEY)
+    if (stored === "light" || stored === "dark" || stored === "system") {
+      setThemeState(stored)
       setThemeState(stored)
       localStorage.setItem(THEME_STORAGE_KEY, stored)
     }
