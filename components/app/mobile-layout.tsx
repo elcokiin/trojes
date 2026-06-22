@@ -2,46 +2,15 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { X } from "lucide-react";
-import { QuickCapture } from "@/components/ideas/quick-capture";
-import { useIdeas } from "@/hooks/use-ideas";
 import { IdeasTabs } from "@/components/ideas/ideas-tabs";
 import { BottomNav } from "@/components/app/bottom-nav";
 import { cn } from "@/lib/utils";
-
-type TabValue = "inbox" | "archived" | "deleted";
 
 function isBeforeInstallPromptEvent(e: Event): e is BeforeInstallPromptEvent {
   return "prompt" in e;
 }
 
-interface MobileLayoutProps {
-  activeTab: TabValue;
-  onTabChange: (tab: TabValue) => void;
-  onPinnedToggle: () => void;
-  onSettingsOpen: () => void;
-  onSearchModeChange?: (open: boolean) => void;
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  debouncedSearch: string;
-  handleClearSearch: () => void;
-  focusIdeaId?: string | null;
-}
-
-export function MobileLayout({
-  activeTab,
-  onTabChange,
-  onPinnedToggle,
-  onSettingsOpen,
-  onSearchModeChange,
-  searchQuery,
-  setSearchQuery,
-  debouncedSearch,
-  handleClearSearch,
-  focusIdeaId,
-}: MobileLayoutProps) {
-  const { create } = useIdeas({ status: "inbox" });
-
-  const [captureOpen, setCaptureOpen] = useState(false);
+export function MobileLayout() {
   const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
   const [isStandalone, setIsStandalone] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
@@ -84,7 +53,7 @@ export function MobileLayout({
       const scrollY = container.scrollTop;
       const delta = scrollY - prevScrollY.current;
 
-      if (delta > 5 && scrollY > 150 && !captureOpen) {
+      if (delta > 5 && scrollY > 150) {
         setTopHidden(true);
       } else if (delta < -5 || scrollY === 0) {
         setTopHidden(false);
@@ -94,7 +63,7 @@ export function MobileLayout({
 
     container.addEventListener("scroll", handleScroll, { passive: true });
     return () => container.removeEventListener("scroll", handleScroll);
-  }, [captureOpen]);
+  }, []);
 
   const showBanner =
     !isStandalone && deferredPrompt !== null && !bannerDismissed;
@@ -110,14 +79,6 @@ export function MobileLayout({
     }
     setBannerDismissed(true);
   }, [deferredPrompt]);
-
-  const handleCapture = useCallback(
-    async (content: string) => {
-      await create(content);
-      setCaptureOpen(false);
-    },
-    [create],
-  );
 
   return (
     <div className="flex flex-col h-screen">
@@ -167,10 +128,6 @@ export function MobileLayout({
         )}
 
         <IdeasTabs
-          value={activeTab}
-          onValueChange={onTabChange}
-          search={debouncedSearch}
-          onOpenCapture={() => setCaptureOpen(true)}
           tabsListClassName="w-full grid grid-cols-3 rounded-none"
           tabsListWrapperClassName={cn(
             "sticky top-0 z-40 bg-background transition-transform duration-300 ease-in-out will-change-transform",
@@ -179,20 +136,10 @@ export function MobileLayout({
           contentWrapperClassName="px-4 pt-4"
           showLabels={false}
           hideCaptureInbox
-          focusIdeaId={focusIdeaId}
-        >
-          <div className="pb-0">
-            <QuickCapture
-              onCapture={handleCapture}
-              isOpen={captureOpen}
-              onOpenChange={setCaptureOpen}
-              onClose={() => setCaptureOpen(false)}
-            />
-          </div>
-        </IdeasTabs>
+        />
       </div>
 
-      <BottomNav onPinnedToggle={onPinnedToggle} onSettingsOpen={onSettingsOpen} onSearchModeChange={onSearchModeChange} searchQuery={searchQuery} setSearchQuery={setSearchQuery} handleClearSearch={handleClearSearch} />
+      <BottomNav />
     </div>
   );
 }

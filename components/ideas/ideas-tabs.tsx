@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { ShortcutKbd } from "@/components/shortcuts/shortcut-kbd";
 import { SHORTCUTS } from "@/lib/shortcuts";
 import type { RegisterableHotkey } from "@tanstack/react-hotkeys";
+import { useUIStore } from "@/stores/ui-store";
 
 type TabValue = "inbox" | "archived" | "deleted";
 
@@ -54,10 +55,6 @@ const TABS: TabConfig[] = [
 ]
 
 interface IdeasTabsProps {
-  value: TabValue;
-  onValueChange: (value: TabValue) => void;
-  search?: string;
-  onOpenCapture?: () => void;
   tabsClassName?: string;
   tabsListClassName?: string;
   triggerClassName?: string;
@@ -65,15 +62,10 @@ interface IdeasTabsProps {
   contentWrapperClassName?: string;
   showLabels?: boolean;
   hideCaptureInbox?: boolean;
-  focusIdeaId?: string | null;
   children?: ReactNode;
 }
 
 export function IdeasTabs({
-  value,
-  onValueChange,
-  search,
-  onOpenCapture,
   tabsClassName,
   tabsListClassName,
   triggerClassName,
@@ -81,9 +73,10 @@ export function IdeasTabs({
   contentWrapperClassName,
   showLabels = true,
   hideCaptureInbox = false,
-  focusIdeaId,
   children,
 }: IdeasTabsProps) {
+  const value = useUIStore((s) => s.activeTab)
+  const onValueChange = useUIStore((s) => s.setActiveTab)
   const mobile = !showLabels;
 
   const tabsListContent = (
@@ -127,25 +120,24 @@ export function IdeasTabs({
     </TabsList>
   );
 
+  const onValueChangeHandler = (v: string) => onValueChange(v as TabValue)
+
   const tabsContent = (
     <>
       <TabsContent value="inbox">
         <IdeasList
           status="inbox"
-          search={search}
           active={value === "inbox"}
           hideCapture={hideCaptureInbox}
-          onOpenCapture={onOpenCapture}
-          focusIdeaId={focusIdeaId}
         />
       </TabsContent>
 
       <TabsContent value="archived">
-        <IdeasList status="archived" search={search} active={value === "archived"} focusIdeaId={focusIdeaId} />
+        <IdeasList status="archived" active={value === "archived"} />
       </TabsContent>
 
       <TabsContent value="deleted">
-        <IdeasList status="deleted" search={search} active={value === "deleted"} focusIdeaId={focusIdeaId} />
+        <IdeasList status="deleted" active={value === "deleted"} />
       </TabsContent>
     </>
   );
@@ -153,9 +145,7 @@ export function IdeasTabs({
   return (
     <Tabs
       value={value}
-      onValueChange={(v) => {
-        if (isTabValue(v)) onValueChange(v);
-      }}
+      onValueChange={onValueChangeHandler}
       className={tabsClassName}
     >
       {tabsListWrapperClassName ? (

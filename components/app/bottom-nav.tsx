@@ -5,31 +5,22 @@ import { Pin, Search, Settings, X } from "lucide-react";
 import { Kbd } from "@/components/ui/kbd";
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useSearchStore } from "@/stores/search-store";
+import { useUIStore } from "@/stores/ui-store";
 
-export interface SearchState {
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  debouncedSearch: string;
-  handleClearSearch: () => void;
-}
-
-interface BottomNavProps {
-  onPinnedToggle: () => void;
-  onSettingsOpen: () => void;
-  onSearchModeChange?: (open: boolean) => void;
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  handleClearSearch: () => void;
-}
-
-export function BottomNav({ onPinnedToggle, onSettingsOpen, onSearchModeChange, searchQuery, setSearchQuery, handleClearSearch }: BottomNavProps) {
+export function BottomNav() {
   const isMobile = useIsMobile();
   const [showShortcutHints] = useShortcutPreference("troje-shortcut-hints");
-  const [searchMode, setSearchMode] = useState(false);
+  const searchQuery = useSearchStore((s) => s.searchQuery);
+  const setSearchQuery = useSearchStore((s) => s.setSearchQuery);
+  const handleClearSearch = useSearchStore((s) => s.handleClearSearch);
+  const searchMode = useSearchStore((s) => s.searchMode);
+  const setSearchMode = useSearchStore((s) => s.setSearchMode);
+  const togglePinnedTray = useUIStore((s) => s.togglePinnedTray);
+  const setPinnedTrayOpen = useUIStore((s) => s.setPinnedTrayOpen);
+  const setSettingsOpen = useUIStore((s) => s.setSettingsOpen);
   const [inputValue, setInputValue] = useState(searchQuery);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const onSearchModeChangeRef = useRef(onSearchModeChange);
-  onSearchModeChangeRef.current = onSearchModeChange;
   const searchModeRef = useRef(searchMode);
   searchModeRef.current = searchMode;
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -39,18 +30,24 @@ export function BottomNav({ onPinnedToggle, onSettingsOpen, onSearchModeChange, 
   }, []);
 
   useEffect(() => {
+    setInputValue(searchQuery);
+  }, [searchQuery]);
+
+  useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
       if (e.key === "f" && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
         e.preventDefault()
         const next = !searchModeRef.current
         setSearchMode(next)
-        onSearchModeChangeRef.current?.(next)
+        if (next) {
+          setPinnedTrayOpen(false)
+        }
       }
     }
     window.addEventListener("keydown", handler)
     return () => window.removeEventListener("keydown", handler)
-  }, [])
+  }, [setSearchMode, setPinnedTrayOpen])
 
   useEffect(() => {
     if (searchMode && searchInputRef.current) {
@@ -69,11 +66,10 @@ export function BottomNav({ onPinnedToggle, onSettingsOpen, onSearchModeChange, 
 
   const handleCloseSearch = useCallback(() => {
     setSearchMode(false)
-    onSearchModeChange?.(false)
     setInputValue("")
     clearTimeout(debounceRef.current)
     handleClearSearch()
-  }, [handleClearSearch, onSearchModeChange])
+  }, [handleClearSearch, setSearchMode])
 
   const handleXClick = useCallback(() => {
     clearTimeout(debounceRef.current)
@@ -87,8 +83,8 @@ export function BottomNav({ onPinnedToggle, onSettingsOpen, onSearchModeChange, 
 
   const handleOpenSearch = useCallback(() => {
     setSearchMode(true)
-    onSearchModeChange?.(true)
-  }, [onSearchModeChange])
+    setPinnedTrayOpen(false)
+  }, [setSearchMode, setPinnedTrayOpen])
 
   return (
     <nav className="shrink-0 h-12 border-t bg-background flex items-stretch">
@@ -119,7 +115,7 @@ export function BottomNav({ onPinnedToggle, onSettingsOpen, onSearchModeChange, 
       ) : isMobile ? (
         <>
           <button
-            onClick={onPinnedToggle}
+            onClick={togglePinnedTray}
             className="flex items-center justify-center text-muted-foreground px-4"
           >
             <Pin className="size-4" />
@@ -131,7 +127,7 @@ export function BottomNav({ onPinnedToggle, onSettingsOpen, onSearchModeChange, 
             <span className="text-xs font-bold tracking-widest">SEARCH</span>
           </button>
           <button
-            onClick={onSettingsOpen}
+            onClick={() => setSettingsOpen(true)}
             className="flex items-center justify-center text-muted-foreground px-4"
           >
             <Settings className="size-4" />
@@ -140,7 +136,7 @@ export function BottomNav({ onPinnedToggle, onSettingsOpen, onSearchModeChange, 
       ) : (
         <>
           <button
-            onClick={onPinnedToggle}
+            onClick={togglePinnedTray}
             className="flex-1 flex items-center justify-center gap-1.5 text-muted-foreground h-full"
           >
             <Pin className="size-4" />
@@ -156,7 +152,7 @@ export function BottomNav({ onPinnedToggle, onSettingsOpen, onSearchModeChange, 
             {showShortcutHints && <Kbd>F</Kbd>}
           </button>
           <button
-            onClick={onSettingsOpen}
+            onClick={() => setSettingsOpen(true)}
             className="flex-1 flex items-center justify-center gap-1.5 text-muted-foreground h-full"
           >
             <Settings className="size-4" />

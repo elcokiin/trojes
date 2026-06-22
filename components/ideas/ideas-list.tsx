@@ -16,22 +16,24 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
 import { useIdeas } from "@/hooks/use-ideas"
+import { useSearchStore } from "@/stores/search-store"
+import { useUIStore } from "@/stores/ui-store"
 import { Inbox, Archive, Trash2 } from "lucide-react"
 
 interface IdeasListProps {
   status: "inbox" | "archived" | "deleted"
-  search?: string
-  onOpenCapture?: () => void
   active?: boolean
   hideCapture?: boolean
-  focusIdeaId?: string | null
 }
 
-export function IdeasList({ status, search, onOpenCapture, active = true, hideCapture = false, focusIdeaId }: IdeasListProps) {
+export function IdeasList({ status, active = true, hideCapture = false }: IdeasListProps) {
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const [captureOpen, setCaptureOpen] = useState(false)
   const [keyboardEnabled] = useShortcutPreference("troje-keyboard-nav")
   const [newIdeaKeyEnabled] = useShortcutPreference("troje-shortcut-new-idea")
+  const debouncedSearch = useSearchStore((s) => s.debouncedSearch)
+  const focusIdeaId = useUIStore((s) => s.focusIdeaId)
+  const storeSetCaptureOpen = useUIStore((s) => s.setCaptureOpen)
 
   const {
     ideas,
@@ -42,13 +44,13 @@ export function IdeasList({ status, search, onOpenCapture, active = true, hideCa
     updatePin,
     updateColor,
     permanentDelete,
-  } = useIdeas({ status, search, enabled: active })
+  } = useIdeas({ status, search: debouncedSearch, enabled: active })
 
   const handleNew = useCallback(() => {
     if (status === "inbox") {
-      onOpenCapture?.()
+      storeSetCaptureOpen(true)
     }
-  }, [status, onOpenCapture])
+  }, [status, storeSetCaptureOpen])
 
   const prevFocusIdeaIdRef = useRef(focusIdeaId)
 

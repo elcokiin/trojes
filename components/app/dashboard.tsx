@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { useHotkeys, type UseHotkeyDefinition } from "@tanstack/react-hotkeys";
 import { mutate } from "swr";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
@@ -8,15 +8,14 @@ import { ShortcutHelp } from "@/components/shortcuts/shortcut-help";
 import { SHORTCUTS } from "@/lib/shortcuts";
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useSearch } from "@/hooks/use-search";
+import { useUIStore } from "@/stores/ui-store";
+import { useSearchStore } from "@/stores/search-store";
 import { MobileLayout } from "@/components/app/mobile-layout";
 import { IdeasTabs } from "@/components/ideas/ideas-tabs";
 import { QuickCapture } from "@/components/ideas/quick-capture";
 import { ideasApi } from "@/lib/api-client";
 import { BottomNav } from "@/components/app/bottom-nav";
 import { PinnedTray } from "@/components/ideas/pinned-tray";
-
-type TabValue = "inbox" | "archived" | "deleted";
 
 interface DashboardProps {
   user: {
@@ -28,15 +27,12 @@ interface DashboardProps {
 
 export function Dashboard({ user }: DashboardProps) {
   const isMobile = useIsMobile();
-  const [activeTab, setActiveTab] = useState<TabValue>("inbox");
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [captureOpen, setCaptureOpen] = useState(false);
-  const [pinnedTrayOpen, setPinnedTrayOpen] = useState(false);
-  const [focusIdeaId, setFocusIdeaId] = useState<string | null>(null);
-  const [searchMode, setSearchMode] = useState(false);
+  const setActiveTab = useUIStore((s) => s.setActiveTab);
+  const settingsOpen = useUIStore((s) => s.settingsOpen);
+  const setSettingsOpen = useUIStore((s) => s.setSettingsOpen);
+  const searchMode = useSearchStore((s) => s.searchMode);
   const [keyboardEnabled] = useShortcutPreference("troje-keyboard-nav");
   const [settingsKeyEnabled] = useShortcutPreference("troje-shortcut-settings");
-  const { searchQuery, setSearchQuery, debouncedSearch, handleClearSearch } = useSearch();
 
   const hotkeys: Array<UseHotkeyDefinition> = [
     {
@@ -56,12 +52,12 @@ export function Dashboard({ user }: DashboardProps) {
     },
     {
       hotkey: SHORTCUTS.settings.hotkeys[0],
-      callback: () => setSettingsOpen((prev) => !prev),
+      callback: () => setSettingsOpen(!settingsOpen),
       options: { enabled: keyboardEnabled && settingsKeyEnabled },
     },
     {
       hotkey: SHORTCUTS.settings.hotkeys[1],
-      callback: () => setSettingsOpen((prev) => !prev),
+      callback: () => setSettingsOpen(!settingsOpen),
       options: { enabled: keyboardEnabled && settingsKeyEnabled },
     },
   ];
@@ -72,22 +68,6 @@ export function Dashboard({ user }: DashboardProps) {
       mutate(
         (key) => typeof key === "string" && key.startsWith("/api/ideas"),
       )
-    }
-  }, [])
-
-  const handleOpenCapture = useCallback(() => {
-    setCaptureOpen(true)
-  }, [])
-
-  const handleFocusIdea = useCallback((id: string) => {
-    setFocusIdeaId(id)
-    setActiveTab("inbox")
-  }, [])
-
-  const handleSearchModeChange = useCallback((open: boolean) => {
-    setSearchMode(open)
-    if (open) {
-      setPinnedTrayOpen(false)
     }
   }, [])
 
@@ -103,53 +83,28 @@ export function Dashboard({ user }: DashboardProps) {
       <ShortcutHelp />
 
       {isMobile ? (
-        <MobileLayout
-          activeTab={activeTab}
-          onTabChange={(v) => setActiveTab(v)}
-          onPinnedToggle={() => setPinnedTrayOpen((prev) => !prev)}
-          onSettingsOpen={() => setSettingsOpen(true)}
-          onSearchModeChange={handleSearchModeChange}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          debouncedSearch={debouncedSearch}
-          handleClearSearch={handleClearSearch}
-          focusIdeaId={focusIdeaId}
-        />
+        <MobileLayout />
       ) : (
         <>
           <main className="flex-1 container max-w-5xl mx-auto px-4 pt-6 pb-12">
             <QuickCapture
-              isOpen={captureOpen}
-              onOpenChange={setCaptureOpen}
               onCapture={handleCapture}
             />
             <div className="mt-1">
               <IdeasTabs
-                value={activeTab}
-                onValueChange={setActiveTab}
-                search={debouncedSearch}
-                onOpenCapture={handleOpenCapture}
-                hideCaptureInbox
                 tabsClassName="space-y-6"
                 tabsListClassName="grid w-full max-w-md mx-auto grid-cols-3 bg-transparent p-0 rounded-none"
                 triggerClassName="gap-2 rounded-none border-0 border-b-2 border-b-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none h-auto py-2"
-                focusIdeaId={focusIdeaId}
+                hideCaptureInbox
               />
             </div>
           </main>
           <div className="fixed bottom-0 left-0 right-0 z-40">
-            <BottomNav
-              onPinnedToggle={() => setPinnedTrayOpen((prev) => !prev)}
-              onSettingsOpen={() => setSettingsOpen(true)}
-              onSearchModeChange={handleSearchModeChange}
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              handleClearSearch={handleClearSearch}
-            />
+            <BottomNav />
           </div>
         </>
       )}
-      {!searchMode && <PinnedTray isOpen={pinnedTrayOpen} onOpenChange={setPinnedTrayOpen} onFocusIdea={handleFocusIdea} />}
+      {!searchMode && <PinnedTray />}
     </div>
   );
 }

@@ -15,13 +15,8 @@ import { useIdeas } from "@/hooks/use-ideas";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { SHORTCUTS } from "@/lib/shortcuts";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useUIStore } from "@/stores/ui-store";
 import { cn } from "@/lib/utils";
-
-interface PinnedTrayProps {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  onFocusIdea?: (id: string) => void;
-}
 
 function PinnedCard({
   idea,
@@ -75,22 +70,27 @@ function PinnedCard({
   );
 }
 
-export function PinnedTray({
-  isOpen,
-  onOpenChange,
-  onFocusIdea,
-}: PinnedTrayProps) {
+export function PinnedTray() {
   const { ideas, isLoading, mutate } = usePinnedIdeas();
   const { updatePin } = useIdeas({ status: "inbox" });
   const isMobile = useIsMobile();
+  const isOpen = useUIStore((s) => s.pinnedTrayOpen);
+  const setPinnedTrayOpen = useUIStore((s) => s.setPinnedTrayOpen);
+  const setActiveTab = useUIStore((s) => s.setActiveTab);
+  const setFocusIdeaId = useUIStore((s) => s.setFocusIdeaId);
   const hasPins = ideas.length > 0;
   const extraCount = ideas.length - 1;
   const trayRef = useRef<HTMLDivElement>(null);
   const previewCount = Math.min(ideas.length, 3);
 
+  const handleFocusIdea = useCallback((id: string) => {
+    setFocusIdeaId(id)
+    setActiveTab("inbox")
+  }, [setFocusIdeaId, setActiveTab])
+
   useHotkey(
     SHORTCUTS.togglePinnedTray.hotkeys[0],
-    () => onOpenChange(!isOpen),
+    () => setPinnedTrayOpen(!isOpen),
     { enabled: true },
   );
 
@@ -98,7 +98,7 @@ export function PinnedTray({
     if (!isOpen || isMobile) return;
     const handler = (e: MouseEvent) => {
       if (trayRef.current && e.target instanceof Node && !trayRef.current.contains(e.target)) {
-        onOpenChange(false);
+        setPinnedTrayOpen(false);
       }
     };
     const id = setTimeout(
@@ -109,7 +109,7 @@ export function PinnedTray({
       clearTimeout(id);
       document.removeEventListener("mousedown", handler);
     };
-  }, [isOpen, onOpenChange, isMobile]);
+  }, [isOpen, setPinnedTrayOpen, isMobile]);
 
   const handleUnpin = useCallback(
     async (id: string) => {
@@ -139,7 +139,7 @@ export function PinnedTray({
           idea={idea}
           index={index}
           onUnpin={handleUnpin}
-          onFocus={onFocusIdea}
+          onFocus={handleFocusIdea}
         />
       ))}
     </div>
@@ -149,7 +149,7 @@ export function PinnedTray({
     <>
       {!isMobile && hasPins && !isOpen && (
         <div
-          onClick={() => onOpenChange(true)}
+          onClick={() => setPinnedTrayOpen(true)}
           className="fixed bottom-0 left-0 z-50 flex min-h-32 w-1/3 min-w-0 cursor-pointer flex-col justify-end px-1.5 pb-1.5 pt-2"
           aria-label={`Open pinned ideas (${ideas.length})`}
         >
@@ -201,7 +201,7 @@ export function PinnedTray({
       )}
 
       {isMobile ? (
-        <Sheet open={isOpen} onOpenChange={onOpenChange}>
+        <Sheet open={isOpen} onOpenChange={setPinnedTrayOpen}>
           <SheetContent
             side="bottom"
             className="flex max-h-[60vh] flex-col gap-0 p-0"
@@ -245,7 +245,7 @@ export function PinnedTray({
                   )}
                 </span>
                 <button
-                  onClick={() => onOpenChange(false)}
+                  onClick={() => setPinnedTrayOpen(false)}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                   aria-label="Close pinned tray"
                 >
