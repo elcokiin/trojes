@@ -602,7 +602,7 @@ type Direction = "ltr" | "rtl";
 const DirectionContext = React.createContext<Direction | undefined>(undefined);
 
 function useDirection(dirProp?: Direction): Direction {
-  const contextDir = React.useContext(DirectionContext);
+  const contextDir = React.use(DirectionContext);
   return dirProp ?? contextDir ?? "ltr";
 }
 
@@ -725,7 +725,7 @@ function createColorPickerStore(
 }
 
 function useColorPickerStoreContext(consumerName: string) {
-  const context = React.useContext(ColorPickerStoreContext);
+  const context = React.use(ColorPickerStoreContext);
   if (!context) {
     throw new Error(
       `\`${consumerName}\` must be used within \`ColorPickerRoot\``,
@@ -763,7 +763,7 @@ const ColorPickerContext = React.createContext<ColorPickerContextValue | null>(
 );
 
 function useColorPickerContext(consumerName: string) {
-  const context = React.useContext(ColorPickerContext);
+  const context = React.use(ColorPickerContext);
   if (!context) {
     throw new Error(
       `\`${consumerName}\` must be used within \`ColorPickerRoot\``,

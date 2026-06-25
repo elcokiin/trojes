@@ -14,6 +14,7 @@ import { HeadingNode, QuoteNode } from "@lexical/rich-text"
 import { ListNode, ListItemNode } from "@lexical/list"
 import { CodeNode, CodeHighlightNode } from "@lexical/code"
 import { LinkNode, AutoLinkNode } from "@lexical/link"
+import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode"
 import { ComponentPickerMenuPlugin } from "@/components/editor/plugins/component-picker-menu-plugin"
 import { ParagraphPickerPlugin } from "@/components/editor/plugins/picker/paragraph-picker-plugin"
 import { HeadingPickerPlugin } from "@/components/editor/plugins/picker/heading-picker-plugin"
@@ -22,6 +23,10 @@ import { NumberedListPickerPlugin } from "@/components/editor/plugins/picker/num
 import { CodePickerPlugin } from "@/components/editor/plugins/picker/code-picker-plugin"
 import { QuotePickerPlugin } from "@/components/editor/plugins/picker/quote-picker-plugin"
 import { EmojiPickerPlugin } from "@/components/editor/plugins/emoji-picker-plugin"
+import { CheckListPickerPlugin } from "@/components/editor/plugins/picker/check-list-picker-plugin"
+import { DividerPickerPlugin } from "@/components/editor/plugins/picker/divider-picker-plugin"
+import { CodeHighlightPlugin } from "@/components/editor/plugins/code-highlight-plugin"
+import { TabFocusPlugin } from "@/components/editor/plugins/tab-focus-plugin"
 import { FloatingTextFormatToolbarPlugin } from "@/components/editor/plugins/floating-text-format-plugin"
 import { FloatingLinkEditorPlugin } from "@/components/editor/plugins/floating-link-editor-plugin"
 import { editorTheme } from "@/components/editor/themes/editor-theme"
@@ -48,6 +53,8 @@ function SlashMenuPlugin() {
     NumberedListPickerPlugin(),
     CodePickerPlugin(),
     QuotePickerPlugin(),
+    CheckListPickerPlugin(),
+    DividerPickerPlugin(),
   ]
 
   return (
@@ -174,6 +181,7 @@ export function EditorX({
       CodeHighlightNode,
       LinkNode,
       AutoLinkNode,
+      HorizontalRuleNode,
     ],
     editorState: null,
     onError: (error: Error) => {
@@ -190,6 +198,8 @@ export function EditorX({
         <MarkdownShortcutsPlugin />
         <SlashMenuPlugin />
         <EmojiPickerPlugin />
+        <CodeHighlightPlugin />
+        <TabFocusPlugin />
         <FloatingTextFormatToolbarPlugin
           anchorElem={anchorRef.current}
           setIsLinkEditMode={setIsLinkEditMode}

@@ -147,11 +147,9 @@ export function ComponentPickerMenuPlugin({
       closeMenu: () => void,
       matchingString: string,
     ) => {
-      editor.update(() => {
-        nodeToRemove?.remove();
-        selectedOption.onSelect(matchingString, editor, showModal);
-        closeMenu();
-      });
+      nodeToRemove?.remove();
+      selectedOption.onSelect(matchingString, editor, showModal);
+      closeMenu();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [editor],

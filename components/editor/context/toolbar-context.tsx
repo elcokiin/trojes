@@ -1,4 +1,4 @@
-import { type JSX, createContext, useContext } from "react";
+import { type JSX, createContext, use, useMemo } from "react";
 
 import type { LexicalEditor } from "lexical";
 
@@ -37,21 +37,24 @@ export function ToolbarContext({
   ) => void;
   children: React.ReactNode;
 }) {
+  const value = useMemo(
+    () => ({
+      activeEditor,
+      $updateToolbar,
+      blockType,
+      setBlockType,
+      showModal,
+    }),
+    [activeEditor, $updateToolbar, blockType, setBlockType, showModal],
+  );
+
   return (
-    <Context.Provider
-      value={{
-        activeEditor,
-        $updateToolbar,
-        blockType,
-        setBlockType,
-        showModal,
-      }}
-    >
+    <Context.Provider value={value}>
       {children}
     </Context.Provider>
   );
 }
 
 export function useToolbarContext() {
-  return useContext(Context);
+  return use(Context);
 }
