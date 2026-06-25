@@ -102,7 +102,6 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
 
   const handleCapture = async (content: string) => {
     await create(content)
-    setCaptureOpen(false)
   }
 
   const handleCaptureClose = () => {

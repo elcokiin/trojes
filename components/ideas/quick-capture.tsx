@@ -21,25 +21,24 @@ interface QuickCaptureProps {
 export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: QuickCaptureProps) {
   const [content, setContent] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [editorKey, setEditorKey] = useState(0)
-  const contentRef = useRef(content)
-  const editorRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => { contentRef.current = content }, [content])
+  const [openCount, setOpenCount] = useState(0)
 
   const isMobile = useIsMobile()
   const isExpanded = isOpen ?? false
 
-  useEffect(() => {
-    if (isExpanded) {
-      setTimeout(() => {
-        (editorRef.current?.querySelector("[contenteditable]") as HTMLElement)?.focus()
-      }, 0)
-    }
-  }, [isExpanded])
+  const handleOpen = useCallback(() => {
+    setContent("")
+    setOpenCount((c) => c + 1)
+    onOpenChange?.(true)
+  }, [onOpenChange])
+
+  const handleClose = useCallback(() => {
+    onOpenChange?.(false)
+    onClose?.()
+  }, [onOpenChange, onClose])
 
   const handleSubmit = useCallback(async () => {
-    const currentContent = contentRef.current
+    const currentContent = content
     if (!currentContent.trim() || isSubmitting) return
 
     setIsSubmitting(true)
@@ -47,46 +46,31 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
       await onCapture(currentContent.trim())
     } finally {
       setIsSubmitting(false)
-      setContent("")
-      setEditorKey((k) => k + 1)
       onOpenChange?.(false)
     }
-  }, [isSubmitting, onCapture, onOpenChange])
+  }, [content, isSubmitting, onCapture, onOpenChange])
 
-  const handleClose = useCallback(() => {
-    setContent("")
-    setEditorKey((k) => k + 1)
-    onOpenChange?.(false)
-    onClose?.()
-  }, [onOpenChange, onClose])
+  const handleEscape = useCallback(() => {
+    handleClose()
+  }, [handleClose])
+
+  const handleModEnter = useCallback(() => {
+    handleSubmit()
+  }, [handleSubmit])
 
   useEffect(() => {
-    if (!isExpanded) return
-
-    const el = editorRef.current?.querySelector("[contenteditable]")
-    if (!el) return
-
-    const handleKeyDown = (e: Event) => {
-      const ke = e as KeyboardEvent
-      if (ke.key === "Escape") {
-        ke.preventDefault()
-        ke.stopPropagation()
-        handleClose()
-      } else if ((ke.key === "Enter" && (ke.metaKey || ke.ctrlKey))) {
-        ke.preventDefault()
-        ke.stopPropagation()
-        handleSubmit()
-      }
+    if (isExpanded) {
+      setTimeout(() => {
+        const el = document.querySelector("[contenteditable]") as HTMLElement | null
+        el?.focus()
+      }, 0)
     }
-
-    el.addEventListener("keydown", handleKeyDown)
-    return () => el.removeEventListener("keydown", handleKeyDown)
-  }, [isExpanded, handleClose, handleSubmit])
+  }, [isExpanded])
 
   if (!isExpanded) {
     return (
       <Button
-        onClick={() => onOpenChange?.(true)}
+        onClick={handleOpen}
         variant="outline"
         className={cn(
           "w-full h-12 justify-start gap-3 text-muted-foreground font-normal border-dashed bg-card group hover:border-solid transition-all duration-200",
@@ -101,13 +85,17 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
   }
 
   return (
-    <Card className={cn("p-0 overflow-hidden", isMobile && "rounded-none border-x-0")}>
+    <Card
+      key={openCount}
+      className={cn("p-0 overflow-hidden", isMobile && "rounded-none border-x-0")}
+    >
       <div className="flex flex-col">
-        <div ref={editorRef}>
+        <div>
           <EditorX
-            key={editorKey}
-            value={content}
+            value=""
             onChange={setContent}
+            onEscape={handleEscape}
+            onModEnter={handleModEnter}
             placeholder="What's on your mind? Type **markdown** naturally..."
             minHeight="120px"
             disabled={isSubmitting}

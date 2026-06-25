@@ -7,6 +7,7 @@ import { ContentEditable as LexicalContentEditable } from "@lexical/react/Lexica
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin"
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary"
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext"
+import { KEY_ENTER_COMMAND, COMMAND_PRIORITY_LOW } from "lexical"
 import { $convertToMarkdownString, $convertFromMarkdownString, TRANSFORMERS } from "@lexical/markdown"
 import { registerMarkdownShortcuts } from "@lexical/markdown"
 import { HeadingNode, QuoteNode } from "@lexical/rich-text"
@@ -92,6 +93,50 @@ function EditorContentPlugin({
   return null
 }
 
+function KeyboardPlugin({
+  onEscape,
+  onModEnter,
+}: {
+  onEscape?: () => void
+  onModEnter?: () => void
+}) {
+  const [editor] = useLexicalComposerContext()
+
+  useEffect(() => {
+    const root = editor.getRootElement()
+    if (!root) return
+
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault()
+        onEscape?.()
+        return
+      }
+    }
+
+    root.addEventListener("keydown", handler)
+    return () => root.removeEventListener("keydown", handler)
+  }, [editor, onEscape])
+
+  useEffect(() => {
+    return editor.registerCommand(
+      KEY_ENTER_COMMAND,
+      (payload) => {
+        const event = payload as KeyboardEvent | null
+        if (event && (event.metaKey || event.ctrlKey)) {
+          event.preventDefault()
+          onModEnter?.()
+          return true
+        }
+        return false
+      },
+      COMMAND_PRIORITY_LOW,
+    )
+  }, [editor, onModEnter])
+
+  return null
+}
+
 export function EditorX({
   value,
   onChange,
@@ -99,6 +144,8 @@ export function EditorX({
   className,
   minHeight = "120px",
   disabled,
+  onEscape,
+  onModEnter,
 }: {
   value: string
   onChange: (markdown: string) => void
@@ -106,6 +153,8 @@ export function EditorX({
   className?: string
   minHeight?: string
   disabled?: boolean
+  onEscape?: () => void
+  onModEnter?: () => void
 }) {
   const initialConfig = {
     namespace: "TrojeEditor",
@@ -133,6 +182,7 @@ export function EditorX({
         <SlashMenuPlugin />
         <EmojiPickerPlugin />
         <HistoryPlugin />
+        <KeyboardPlugin onEscape={onEscape} onModEnter={onModEnter} />
         <EditorContentPlugin
           initialContent={value}
           onMarkdownChange={onChange}
