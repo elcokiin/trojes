@@ -5,11 +5,11 @@ import type React from "react";
 import { Pin, X, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { usePinnedIdeas } from "@/hooks/use-pinned-ideas";
 import { useIdeas } from "@/hooks/use-ideas";
 import { useHotkey } from "@tanstack/react-hotkeys";
@@ -202,15 +202,11 @@ export function PinnedTray() {
       )}
 
       {isMobile ? (
-        <Sheet open={isOpen} onOpenChange={setPinnedTrayOpen}>
-          <SheetContent
-            side="bottom"
-            className="flex max-h-[60vh] flex-col gap-0 p-0"
-          >
-            <SheetHeader className="sr-only">
-              <SheetTitle>Pinned ideas</SheetTitle>
-            </SheetHeader>
-            <div className="mx-auto mt-2 h-1 w-8 shrink-0 rounded-full bg-muted" />
+        <Drawer open={isOpen} onOpenChange={setPinnedTrayOpen}>
+          <DrawerContent className="flex max-h-[60vh] flex-col gap-0 p-0 border-t">
+            <DrawerHeader className="sr-only">
+              <DrawerTitle>Pinned ideas</DrawerTitle>
+            </DrawerHeader>
             <div className="flex items-center justify-between border-b px-4 py-3">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Pinned{" "}
@@ -226,8 +222,8 @@ export function PinnedTray() {
               {emptyState}
               {listContent}
             </div>
-          </SheetContent>
-        </Sheet>
+          </DrawerContent>
+        </Drawer>
       ) : (
         isOpen && (
           <div
