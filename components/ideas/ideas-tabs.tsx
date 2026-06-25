@@ -3,13 +3,14 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { IdeasList } from "@/components/ideas/ideas-list";
 import { Inbox, Archive, Trash2 } from "lucide-react";
-import type { ReactNode } from "react";
+import { useCallback, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ShortcutKbd } from "@/components/shortcuts/shortcut-kbd";
 import { SHORTCUTS } from "@/lib/shortcuts";
 import type { RegisterableHotkey } from "@tanstack/react-hotkeys";
 import { useUIStore } from "@/stores/ui-store";
+import { useSwipe } from "@/hooks/use-swipe";
 
 type TabValue = "inbox" | "archived" | "deleted";
 
@@ -79,6 +80,25 @@ export function IdeasTabs({
   const onValueChange = useUIStore((s) => s.setActiveTab)
   const mobile = !showLabels;
 
+  const handleSwipe = useCallback(
+    (direction: "left" | "right") => {
+      const currentIndex = TABS.findIndex((t) => t.value === value);
+      if (currentIndex === -1) return;
+
+      const targetIndex =
+        direction === "left"
+          ? Math.min(currentIndex + 1, TABS.length - 1)
+          : Math.max(currentIndex - 1, 0);
+
+      if (targetIndex !== currentIndex) {
+        onValueChange(TABS[targetIndex].value);
+      }
+    },
+    [value, onValueChange],
+  );
+
+  const swipeHandlers = useSwipe(handleSwipe);
+
   const tabsListContent = (
     <TabsList
       className={cn(
@@ -147,6 +167,7 @@ export function IdeasTabs({
       value={value}
       onValueChange={onValueChangeHandler}
       className={tabsClassName}
+      {...(mobile ? swipeHandlers : {})}
     >
       {tabsListWrapperClassName ? (
         <div className={tabsListWrapperClassName}>
