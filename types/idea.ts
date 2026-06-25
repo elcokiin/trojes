@@ -19,6 +19,7 @@ export interface IdeaCardProps {
   onStatusChange: (id: string, status: IdeaStatus) => Promise<void>;
   onPinChange: (id: string, pinned: boolean) => Promise<void>;
   onColorChange: (id: string, color: string | null) => Promise<void>;
+  onContentChange?: (id: string, content: string) => Promise<void>;
   onPermanentDelete?: (id: string) => Promise<void>;
   isSelected?: boolean;
   showTrashInfo?: boolean;

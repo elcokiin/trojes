@@ -6,6 +6,7 @@ import { SessionProvider } from '@/components/providers/session-provider'
 import { PwaRegister } from '@/components/providers/pwa-register'
 import { HotkeysRootProvider } from '@/components/providers/hotkeys-root-provider'
 import { DevtoolsClient } from '@/components/providers/devtools-client'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import './globals.css'
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -55,7 +56,9 @@ export default function RootLayout({
         <SessionProvider>
           <ThemeProvider>
             <HotkeysRootProvider>
-              {children}
+              <TooltipProvider>
+                {children}
+              </TooltipProvider>
               <DevtoolsClient />
             </HotkeysRootProvider>
           </ThemeProvider>

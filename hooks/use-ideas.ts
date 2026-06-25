@@ -90,6 +90,23 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
     [mutate]
   )
 
+  const updateContent = useCallback(async (id: string, content: string) => {
+    await mutate(
+      (currentData) => {
+        if (!currentData) return currentData
+        return {
+          ideas: currentData.ideas.map((idea) =>
+            idea.id === id ? { ...idea, content } : idea
+          ),
+        }
+      },
+      false
+    )
+
+    await ideasApi.update(id, { content })
+    mutate()
+  }, [mutate])
+
   const permanentDelete = useCallback(async (id: string) => {
     await mutate(
       (currentData) => {
@@ -113,6 +130,7 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
     updateStatus,
     updatePin,
     updateColor,
+    updateContent,
     permanentDelete,
   }
 }

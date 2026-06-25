@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Spinner } from "@/components/ui/spinner"
 import { ShortcutKbd } from "@/components/shortcuts/shortcut-kbd"
+import { EditorX } from "@/components/editor/editor-x"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import { Plus, Send } from "lucide-react"
@@ -21,36 +21,41 @@ interface QuickCaptureProps {
 export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: QuickCaptureProps) {
   const [content, setContent] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const contentRef = useRef(content)
+  const editorRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => { contentRef.current = content }, [content])
 
   const isMobile = useIsMobile()
   const isExpanded = isOpen ?? false
 
   useEffect(() => {
-    if (isExpanded && textareaRef.current) {
-      textareaRef.current.focus()
+    if (isExpanded) {
+      setTimeout(() => {
+        (editorRef.current?.querySelector("[contenteditable]") as HTMLElement)?.focus()
+      }, 0)
     }
   }, [isExpanded])
 
-  const handleSubmit = async () => {
-    if (!content.trim() || isSubmitting) return
+  const handleSubmit = useCallback(async () => {
+    const currentContent = contentRef.current
+    if (!currentContent.trim() || isSubmitting) return
 
     setIsSubmitting(true)
     try {
-      await onCapture(content.trim())
+      await onCapture(currentContent.trim())
       setContent("")
       onOpenChange?.(false)
     } finally {
       setIsSubmitting(false)
     }
-  }
+  }, [isSubmitting, onCapture, onOpenChange])
 
-  const handleClose = () => {
-    textareaRef.current?.blur()
+  const handleClose = useCallback(() => {
     onOpenChange?.(false)
     onClose?.()
     setContent("")
-  }
+  }, [onOpenChange, onClose])
 
   if (!isExpanded) {
     return (
@@ -58,11 +63,11 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
         onClick={() => onOpenChange?.(true)}
         variant="outline"
         className={cn(
-          "w-full h-12 justify-start gap-3 text-muted-foreground font-normal border-dashed bg-card",
+          "w-full h-12 justify-start gap-3 text-muted-foreground font-normal border-dashed bg-card group hover:border-solid transition-all duration-200",
           isMobile && "rounded-none border-x-0",
         )}
       >
-        <Plus className="size-4" />
+        <Plus className="size-4 transition-transform group-hover:scale-110" />
         <span>Capture a new idea...</span>
         <ShortcutKbd hotkey={SHORTCUTS.newIdea.hotkeys[0]} className="ml-auto" />
       </Button>
@@ -70,43 +75,34 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
   }
 
   return (
-    <Card className={cn("p-5", isMobile && "rounded-none border-x-0")}>
-      <div className="flex flex-col gap-4">
-        <Textarea
-          ref={textareaRef}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Escape") {
-              e.preventDefault()
-              e.stopPropagation()
-              handleClose()
-              return
-            }
-
-            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-              e.preventDefault()
-              handleSubmit()
-            }
-          }}
-          placeholder="What's on your mind?"
-          className="min-h-[112px] resize-none border-0 p-3 text-base focus-visible:ring-0"
-          disabled={isSubmitting}
-        />
-        <div className="flex items-center justify-between">
-          {!isMobile && (
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <ShortcutKbd hotkey={SHORTCUTS.cancelCapture.hotkeys[0]} /> cancel
-              <span className="mx-1">/</span>
-              <ShortcutKbd hotkey={SHORTCUTS.saveCapture.hotkeys[0]} /> save
-            </p>
-          )}
-          <div className={cn("flex gap-2", isMobile && "ml-auto")}>
+    <Card className={cn("p-0 overflow-hidden", isMobile && "rounded-none border-x-0")}>
+      <div className="flex flex-col">
+        <div ref={editorRef}>
+          <EditorX
+            value={content}
+            onChange={setContent}
+            placeholder="What's on your mind? Type **markdown** naturally..."
+            minHeight="120px"
+            disabled={isSubmitting}
+          />
+        </div>
+        <div className="flex items-center justify-between gap-2 border-t px-4 py-2.5">
+          <div className="flex items-center gap-2">
+            {!isMobile && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <ShortcutKbd hotkey={SHORTCUTS.cancelCapture.hotkeys[0]} /> cancel
+                <span className="mx-1">/</span>
+                <ShortcutKbd hotkey={SHORTCUTS.saveCapture.hotkeys[0]} /> save
+              </span>
+            )}
+          </div>
+          <div className={cn("flex items-center gap-2", isMobile && "ml-auto")}>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleClose}
               disabled={isSubmitting}
+              className="text-muted-foreground"
             >
               Cancel
             </Button>
