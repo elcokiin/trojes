@@ -15,9 +15,9 @@ Troje is an **idea capture and action layer** built for the moments inspiration 
 
 | |
 |---|
-| ![Main dashboard](YOUR_DASHBOARD_URL) |
+| ![Main dashboard](/screenshots/dashboard.png) |
 | **Main dashboard** – ideas in a masonry grid with color-coded cards, Inbox/Archived/Trash tabs, and bottom navigation. This is where you spend your time. |
-| ![Mobile](YOUR_MOBILE_URL) |
+| ![Mobile](/screenshots/mobile.jpeg) |
 | **Mobile PWA** – installable on your home screen, icon-only tab navigation, bottom sheet for pinned ideas. |
 
 ---
@@ -27,6 +27,7 @@ Troje is an **idea capture and action layer** built for the moments inspiration 
 - **Frictionless capture** — Press `n`, type, save with `⌘↵`. Done.
 - **Keyboard-first** — Navigate ideas with `j`/`k`, act with `Enter`, no mouse needed.
 - **Masonry grid** — Pinterest-style layout with color-coded cards.
+- **Markdown support** — Write with **bold**, *italics*, lists, code blocks, headings, and more. Rendered inline on cards.
 - **Pin & organize** — Pin important ideas to a persistent tray, archive the rest.
 - **Trash with recovery** — Soft delete with time tracking, permanent delete option.
 - **API-first capture** — Generate API keys from Settings, POST ideas from any tool.
