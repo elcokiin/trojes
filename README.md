@@ -142,6 +142,16 @@ curl -X POST "http://localhost:3000/api/ideas" \
 
 ---
 
+## Roadmap
+
+### Goal 1 — Troje as a Platform
+
+![Troje platform architecture](public/screenshots/platform-goal.png)
+
+> Track the full roadmap on [Fizzy](https://app.fizzy.do/6226632/public/boards/cKgowdGq5NpUrGW2NHHywCwz).
+
+---
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
