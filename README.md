@@ -150,6 +150,8 @@ curl -X POST "http://localhost:3000/api/ideas" \
 
 > Track the full roadmap on [Fizzy](https://app.fizzy.do/6226632/public/boards/cKgowdGq5NpUrGW2NHHywCwz).
 
+Feel free to collaborate, suggest ideas, or share feedback — all advice is welcome. Always learning, always building.
+
 ---
 
 ## License
