@@ -28,7 +28,7 @@ Troje is an **idea capture** built for the moments inspiration strikes. Optimize
 
 ## Features
 
-- **Frictionless capture** — Press `n`, type, save with `⌘↵`. Done.
+- **Frictionless capture** — Press `i`, type, save with `⌘↵`. Done.
 - **Keyboard-first** — Navigate ideas with `j`/`k`, act with `Enter`, no mouse needed.
 - **Masonry grid** — Pinterest-style layout.
 - **Markdown support** — Write with **bold**, *italics*, lists, code blocks, headings, and more. Rendered inline on cards.
@@ -68,7 +68,7 @@ Environment variables: see `.env.example` — only `DATABASE_URL` is required.
 
 | Key | Action |
 |-----|--------|
-| `n` | New idea |
+| `i` | New idea |
 | `j` / `k` | Navigate down / up |
 | `h` / `l` | Navigate left / right |
 | `Enter` | Open card menu |

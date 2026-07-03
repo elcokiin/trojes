@@ -24,7 +24,7 @@ const emptyState = {
   inbox: {
     icon: Inbox,
     title: "Your inbox is empty",
-    description: "Press 'n' to capture a new idea",
+    description: "Press 'i' to capture a new idea",
   },
   archived: {
     icon: Archive,

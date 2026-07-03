@@ -48,19 +48,11 @@ export const SHORTCUT_DEFAULTS: Record<ShortcutPreferenceKey, boolean> = {
   "troje-shortcut-hints": true,
 }
 
-const LEGACY_SHORTCUT_KEYS: Record<ShortcutPreferenceKey, string> = {
-  "troje-keyboard-nav": "brainbox-keyboard-nav",
-  "troje-shortcut-new-idea": "brainbox-shortcut-new-idea",
-  "troje-shortcut-theme-toggle": "brainbox-shortcut-theme-toggle",
-  "troje-shortcut-settings": "brainbox-shortcut-settings",
-  "troje-shortcut-hints": "brainbox-shortcut-hints",
-}
-
 export const SHORTCUTS = {
   newIdea: {
     id: "newIdea",
     label: "New idea",
-    hotkeys: ["N"],
+    hotkeys: ["I"],
     category: "Capture",
     preferenceKey: "troje-shortcut-new-idea",
   },
@@ -206,12 +198,6 @@ export function readShortcutPreference(key: ShortcutPreferenceKey) {
 
   const stored = window.localStorage.getItem(key)
   if (stored !== null) return stored === "true"
-
-  const legacyStored = window.localStorage.getItem(LEGACY_SHORTCUT_KEYS[key])
-  if (legacyStored !== null) {
-    window.localStorage.setItem(key, legacyStored)
-    return legacyStored === "true"
-  }
 
   return SHORTCUT_DEFAULTS[key]
 }
