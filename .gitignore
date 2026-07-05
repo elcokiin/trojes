@@ -11,6 +11,7 @@ tsconfig.tsbuildinfo
 
 # Environment variables
 .env*.local
+.env.test
 
 # Common ignores
 node_modules
