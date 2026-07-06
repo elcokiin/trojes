@@ -12,7 +12,7 @@ export default defineConfig({
       "tests/**/*.test.{ts,tsx}",
       "tests/**/*.test.{ts,tsx}",
     ],
-    exclude: ["node_modules", ".next", "e2e"],
+    exclude: ["node_modules", ".next", "tests/e2e"],
   },
   resolve: {
     alias: {

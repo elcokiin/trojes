@@ -1,7 +1,8 @@
 import { defineConfig, devices } from "@playwright/test"
 
 export default defineConfig({
-  testDir: "./e2e",
+  testDir: "./tests/e2e",
+  outputDir: "./tests/e2e-results",
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -19,15 +20,15 @@ export default defineConfig({
     {
       name: "authenticated",
       dependencies: ["setup"],
-      testIgnore: ["auth-redirect.spec.ts", "auth.setup.ts"],
+      testIgnore: ["auth-redirect.test.ts", "auth.setup.ts"],
       use: {
         ...devices["Desktop Chrome"],
-        storageState: "e2e/.auth/user.json",
+        storageState: "tests/e2e/.auth/user.json",
       },
     },
     {
       name: "unauthenticated",
-      testMatch: ["auth-redirect.spec.ts"],
+      testMatch: ["auth-redirect.test.ts"],
       use: {
         ...devices["Desktop Chrome"],
         storageState: undefined,
@@ -36,10 +37,10 @@ export default defineConfig({
     {
       name: "mobile",
       dependencies: ["setup"],
-      testMatch: ["mobile-layout.spec.ts"],
+      testMatch: ["mobile-layout.test.ts"],
       use: {
         ...devices["iPhone 13"],
-        storageState: "e2e/.auth/user.json",
+        storageState: "tests/e2e/.auth/user.json",
       },
     },
   ],

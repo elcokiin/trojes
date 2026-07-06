@@ -9,6 +9,10 @@ next.user-config.*
 next-env.d.ts
 tsconfig.tsbuildinfo
 
+# Playwright output
+tests/e2e-results/
+tests/e2e/.auth/
+
 # Environment variables
 .env*.local
 .env.test
