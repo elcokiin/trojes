@@ -16,6 +16,7 @@ export default defineConfig({
     {
       name: "setup",
       testMatch: /auth\.setup\.ts/,
+      timeout: 120_000,
       use: {
         launchOptions: {
           executablePath: "/usr/bin/chromium",

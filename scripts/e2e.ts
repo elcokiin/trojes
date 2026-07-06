@@ -10,7 +10,7 @@ if (!existsSync(AUTH_FILE)) {
   console.log("A browser will open - log in with Google.")
   console.log("")
 
-  const setup = Bun.spawnSync(["bunx", "playwright", "test", "--project=setup", "--headed"], {
+  Bun.spawnSync(["bunx", "playwright", "test", "--project=setup", "--headed"], {
     stdio: ["inherit", "inherit", "inherit"],
   })
 
@@ -25,7 +25,9 @@ if (!existsSync(AUTH_FILE)) {
   console.log("")
 }
 
-const pwArgs = args.length > 0 ? args : []
+const pwArgs = args.length > 0
+  ? args
+  : ["--project=authenticated", "--project=unauthenticated", "--project=mobile"]
 const result = Bun.spawnSync(["bunx", "playwright", "test", ...pwArgs], {
   stdio: ["inherit", "inherit", "inherit"],
 })
