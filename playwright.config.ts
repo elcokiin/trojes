@@ -16,6 +16,12 @@ export default defineConfig({
     {
       name: "setup",
       testMatch: /auth\.setup\.ts/,
+      use: {
+        launchOptions: {
+          executablePath: "/usr/bin/chromium",
+          args: ["--disable-blink-features=AutomationControlled"],
+        },
+      },
     },
     {
       name: "authenticated",
