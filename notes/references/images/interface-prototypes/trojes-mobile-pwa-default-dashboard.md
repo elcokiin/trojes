@@ -1,15 +1,15 @@
-# Troje Mobile PWA Default Dashboard
+# Trojes Mobile PWA Default Dashboard
 
-Image file: `troje-mobile-pwa-default-dashboard.png`
+Image file: `trojes-mobile-pwa-default-dashboard.png`
 
 ## Overview
 This image is a low-fidelity wireframe detailing the primary user interface (UI)
-layout of the Troje Mobile Progressive Web App (PWA). It maps out the core
+layout of the Trojes Mobile Progressive Web App (PWA). It maps out the core
 workspace optimized for rapid, frictionless idea capture and immediate feed
 review.
 
 ## Visual and Product Elements
-- **Top App Header**: Features the product name "Troje", a central circular
+- **Top App Header**: Features the product name "Trojes", a central circular
   asset placeholder, and a "Download" utility text button on the far right.
 - **Frictionless Capture Field**: A prominent, high-priority input box situated
   directly underneath the top header with the placeholder text

@@ -2,9 +2,9 @@ import { describe, it, expect } from "vitest"
 import { generateApiKey, hashApiKey } from "@/lib/api-keys"
 
 describe("generateApiKey", () => {
-  it('returns a key matching troje_[a-f0-9]{48}', () => {
+  it('returns a key matching trojes_[a-f0-9]{48}', () => {
     const key = generateApiKey()
-    expect(key).toMatch(/^troje_[a-f0-9]{48}$/)
+    expect(key).toMatch(/^trojes_[a-f0-9]{48}$/)
   })
 
   it("generates unique keys across multiple calls", () => {
@@ -22,7 +22,7 @@ describe("generateApiKey", () => {
 
 describe("hashApiKey", () => {
   it("returns a 64-character hex string", () => {
-    const hash = hashApiKey("troje_test_key")
+    const hash = hashApiKey("trojes_test_key")
     expect(hash).toMatch(/^[a-f0-9]{64}$/)
   })
 
@@ -32,8 +32,8 @@ describe("hashApiKey", () => {
   })
 
   it("produces different hashes for different keys", () => {
-    const keyA = "troje_a"
-    const keyB = "troje_b"
+    const keyA = "trojes_a"
+    const keyB = "trojes_b"
     expect(hashApiKey(keyA)).not.toBe(hashApiKey(keyB))
   })
 

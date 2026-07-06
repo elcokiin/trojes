@@ -3,11 +3,11 @@
 import type { RegisterableHotkey } from "@tanstack/react-hotkeys"
 
 export type ShortcutPreferenceKey =
-  | "troje-keyboard-nav"
-  | "troje-shortcut-new-idea"
-  | "troje-shortcut-theme-toggle"
-  | "troje-shortcut-settings"
-  | "troje-shortcut-hints"
+  | "trojes-keyboard-nav"
+  | "trojes-shortcut-new-idea"
+  | "trojes-shortcut-theme-toggle"
+  | "trojes-shortcut-settings"
+  | "trojes-shortcut-hints"
 
 export type ShortcutId =
   | "newIdea"
@@ -41,11 +41,11 @@ export interface ShortcutDefinition {
 }
 
 export const SHORTCUT_DEFAULTS: Record<ShortcutPreferenceKey, boolean> = {
-  "troje-keyboard-nav": true,
-  "troje-shortcut-new-idea": true,
-  "troje-shortcut-theme-toggle": true,
-  "troje-shortcut-settings": true,
-  "troje-shortcut-hints": true,
+  "trojes-keyboard-nav": true,
+  "trojes-shortcut-new-idea": true,
+  "trojes-shortcut-theme-toggle": true,
+  "trojes-shortcut-settings": true,
+  "trojes-shortcut-hints": true,
 }
 
 export const SHORTCUTS = {
@@ -54,28 +54,28 @@ export const SHORTCUTS = {
     label: "New idea",
     hotkeys: ["I"],
     category: "Capture",
-    preferenceKey: "troje-shortcut-new-idea",
+    preferenceKey: "trojes-shortcut-new-idea",
   },
   toggleTheme: {
     id: "toggleTheme",
     label: "Toggle theme",
     hotkeys: ["D"],
     category: "System",
-    preferenceKey: "troje-shortcut-theme-toggle",
+    preferenceKey: "trojes-shortcut-theme-toggle",
   },
   settings: {
     id: "settings",
     label: "Settings",
     hotkeys: ["S", ","],
     category: "System",
-    preferenceKey: "troje-shortcut-settings",
+    preferenceKey: "trojes-shortcut-settings",
   },
   expandSettings: {
     id: "expandSettings",
     label: "Expand settings dialog",
     hotkeys: ["Mod+E"],
     category: "System",
-    preferenceKey: "troje-shortcut-settings",
+    preferenceKey: "trojes-shortcut-settings",
   },
   help: {
     id: "help",
@@ -88,56 +88,56 @@ export const SHORTCUTS = {
     label: "Inbox",
     hotkeys: ["Mod+2"],
     category: "Views",
-    preferenceKey: "troje-keyboard-nav",
+    preferenceKey: "trojes-keyboard-nav",
   },
   archived: {
     id: "archived",
     label: "Archived",
     hotkeys: ["Mod+1"],
     category: "Views",
-    preferenceKey: "troje-keyboard-nav",
+    preferenceKey: "trojes-keyboard-nav",
   },
   trash: {
     id: "trash",
     label: "Trash",
     hotkeys: ["Mod+3"],
     category: "Views",
-    preferenceKey: "troje-keyboard-nav",
+    preferenceKey: "trojes-keyboard-nav",
   },
   navDown: {
     id: "navDown",
     label: "Navigate down",
     hotkeys: ["J", "ArrowDown"],
     category: "Navigation",
-    preferenceKey: "troje-keyboard-nav",
+    preferenceKey: "trojes-keyboard-nav",
   },
   navUp: {
     id: "navUp",
     label: "Navigate up",
     hotkeys: ["K", "ArrowUp"],
     category: "Navigation",
-    preferenceKey: "troje-keyboard-nav",
+    preferenceKey: "trojes-keyboard-nav",
   },
   navLeft: {
     id: "navLeft",
     label: "Navigate left",
     hotkeys: ["H", "ArrowLeft"],
     category: "Navigation",
-    preferenceKey: "troje-keyboard-nav",
+    preferenceKey: "trojes-keyboard-nav",
   },
   navRight: {
     id: "navRight",
     label: "Navigate right",
     hotkeys: ["L", "ArrowRight"],
     category: "Navigation",
-    preferenceKey: "troje-keyboard-nav",
+    preferenceKey: "trojes-keyboard-nav",
   },
   openActions: {
     id: "openActions",
     label: "Open actions",
     hotkeys: ["Enter"],
     category: "Navigation",
-    preferenceKey: "troje-keyboard-nav",
+    preferenceKey: "trojes-keyboard-nav",
   },
   copyIdea: {
     id: "copyIdea",
@@ -162,14 +162,14 @@ export const SHORTCUTS = {
     label: "Deselect",
     hotkeys: ["Escape"],
     category: "Navigation",
-    preferenceKey: "troje-keyboard-nav",
+    preferenceKey: "trojes-keyboard-nav",
   },
   closeDialog: {
     id: "closeDialog",
     label: "Close dialog",
     hotkeys: ["Q"],
     category: "Navigation",
-    preferenceKey: "troje-keyboard-nav",
+    preferenceKey: "trojes-keyboard-nav",
   },
   saveCapture: {
     id: "saveCapture",

@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="public/screenshots/logo-font.jpeg" width="300" alt="Troje logo" />
+  <img src="public/screenshots/logo-font.jpeg" width="300" alt="Trojes logo" />
 </p>
 
 <p align="center">
-  <em>Idea: "aprovechar el lote, comprar semillas pa' sembrar papa" → saved to Troje 🤗</em>
+  <em>Idea: "aprovechar el lote, comprar semillas pa' sembrar papa" → saved to Trojes 🤗</em>
 </p>
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -11,7 +11,7 @@
 [![Neon](https://img.shields.io/badge/Neon-PostgreSQL-00e599?logo=neon)](https://neon.tech)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-Troje is an **idea capture** built for the moments inspiration strikes. Optimized for speed of entry, not elaborate categorization at the point of capture.
+Trojes is an **idea capture** built for the moments inspiration strikes. Optimized for speed of entry, not elaborate categorization at the point of capture.
 
 ---
 
@@ -52,7 +52,7 @@ Open [http://localhost:3000](http://localhost:3000) — sign in with Google.
 
 ### Database
 
-Troje uses Drizzle ORM with Neon PostgreSQL:
+Trojes uses Drizzle ORM with Neon PostgreSQL:
 
 ```bash
 bun run db:generate   # Create migration
@@ -85,12 +85,12 @@ Environment variables: see `.env.example` — only `DATABASE_URL` is required.
 
 ## API Reference
 
-Send ideas to Troje from any tool that speaks HTTP.
+Send ideas to Trojes from any tool that speaks HTTP.
 
 ### Authentication
 
 ```http
-Authorization: Bearer troje_your_api_key_here
+Authorization: Bearer trojes_your_api_key_here
 ```
 
 Generate keys from **Settings → API Keys** (visible once on creation).
@@ -122,7 +122,7 @@ Generate keys from **Settings → API Keys** (visible once on creation).
 ```bash
 curl -X POST "http://localhost:3000/api/ideas" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer troje_your_api_key_here" \
+  -H "Authorization: Bearer trojes_your_api_key_here" \
   -d '{"content":"Idea from terminal"}'
 ```
 
@@ -144,9 +144,9 @@ curl -X POST "http://localhost:3000/api/ideas" \
 
 ## Roadmap
 
-### Goal 1 — Troje as a Platform
+### Goal 1 — Trojes as a Platform
 
-![Troje platform architecture](public/screenshots/platform-goal.png)
+![Trojes platform architecture](public/screenshots/platform-goal.png)
 
 > Track the full roadmap on [Fizzy](https://app.fizzy.do/6226632/public/boards/cKgowfGq5NpUrGW2NHHywCwz).
 

@@ -10,7 +10,7 @@ import { useUIStore } from "@/stores/ui-store";
 
 export function BottomNav() {
   const isMobile = useIsMobile();
-  const [showShortcutHints] = useShortcutPreference("troje-shortcut-hints");
+  const [showShortcutHints] = useShortcutPreference("trojes-shortcut-hints");
   const searchQuery = useSearchStore((s) => s.searchQuery);
   const setSearchQuery = useSearchStore((s) => s.setSearchQuery);
   const handleClearSearch = useSearchStore((s) => s.handleClearSearch);

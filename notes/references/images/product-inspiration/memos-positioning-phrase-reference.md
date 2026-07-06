@@ -3,7 +3,7 @@
 Image file: `memos-positioning-phrase-reference.png`
 
 This image captures a Memos landing page because of its positioning phrase, not
-because Troje should copy the page layout or visual design.
+because Trojes should copy the page layout or visual design.
 
 Extracted phrase:
 
@@ -18,7 +18,7 @@ Important words and ideas:
 - `second brain`: avoids the common promise that every captured thought needs to
   become a total knowledge system.
 
-Future agents should treat this as copy and positioning inspiration for Troje.
-The useful pattern is the restraint: name what Troje is intentionally not, so
+Future agents should treat this as copy and positioning inspiration for Trojes.
+The useful pattern is the restraint: name what Trojes is intentionally not, so
 the product can stay focused on fast capture, review, and close-at-hand ideas
 without promising to replace every workspace or knowledge-management tool.

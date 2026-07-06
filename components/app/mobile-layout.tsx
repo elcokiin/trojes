@@ -105,8 +105,8 @@ export function MobileLayout() {
         <header className="px-4 h-14 border-b bg-background flex items-center justify-center">
           <div className="flex-1 border-t border-foreground/10" />
           <div className="flex items-center gap-1.5 px-3">
-            <Image src="/icon.svg" alt="Troje" width={28} height={28} className="size-7" />
-            <span className="text-2xl font-bold">Troje</span>
+            <Image src="/icon.svg" alt="Trojes" width={28} height={28} className="size-7" />
+            <span className="text-2xl font-bold">Trojes</span>
           </div>
           <div className="flex-1 border-t border-foreground/10" />
         </header>
@@ -120,11 +120,11 @@ export function MobileLayout() {
             >
               <div className="marquee-content whitespace-nowrap text-xs text-primary/70">
                 <span>
-                  Tap to install Troje — Add to home screen for a native
+                  Tap to install Trojes — Add to home screen for a native
                   experience •{" "}
                 </span>
                 <span>
-                  Tap to install Troje — Add to home screen for a native
+                  Tap to install Trojes — Add to home screen for a native
                   experience •{" "}
                 </span>
               </div>

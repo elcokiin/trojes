@@ -26,11 +26,11 @@ step and the verification needed for the change.
 
 ## Project Context and Decisions
 
-- This project is an idea capture and management app named Troje. Preserve the
-  Troje naming on user-facing docs/UI unless a future task explicitly renames or
+- This project is an idea capture and management app named Trojes. Preserve the
+  Trojes naming on user-facing docs/UI unless a future task explicitly renames or
   rebrands the product.
 - For product direction, domain vocabulary, and long-term design guidance, read
-  and align with `notes/research/troje-product-model.md`.
+  and align with `notes/research/trojes-product-model.md`.
 - For currently documented behavior, setup, API examples, keyboard shortcuts,
   database shape, and feature list, read `README.md`.
 - There is no `DOMAIN_DOC.html` in this repo. Do not reference it as required

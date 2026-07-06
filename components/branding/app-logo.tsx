@@ -62,7 +62,7 @@ export function AppLogo({
       </svg>
       {showWordmark && (
         <span className="text-xl font-semibold tracking-normal text-foreground">
-          Troje
+          Trojes
         </span>
       )}
     </div>

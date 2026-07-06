@@ -4,7 +4,7 @@ test.describe("Auth redirect", () => {
   test("unauthenticated user at / redirects to /login", async ({ page }) => {
     await page.goto("/")
     await expect(page).toHaveURL("/login")
-    await expect(page.getByText("Welcome to Troje")).toBeVisible()
+    await expect(page.getByText("Welcome to Trojes")).toBeVisible()
   })
 
   test("unauthenticated user at /login stays at /login", async ({ page }) => {

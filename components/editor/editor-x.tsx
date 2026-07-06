@@ -170,7 +170,7 @@ export function EditorX({
   onBlur?: () => void
 }) {
   const initialConfig = useMemo(() => ({
-    namespace: "TrojeEditor",
+    namespace: "TrojesEditor",
     theme: editorTheme,
     nodes: [
       HeadingNode,

@@ -11,7 +11,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="items-center text-center">
           <AppLogo iconClassName="size-14" />
-          <CardTitle className="text-2xl font-bold">Welcome to Troje</CardTitle>
+          <CardTitle className="text-2xl font-bold">Welcome to Trojes</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button 

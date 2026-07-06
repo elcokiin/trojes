@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next"
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Troje",
-    short_name: "Troje",
+    name: "Trojes",
+    short_name: "Trojes",
     description: "Capture ideas fast and organize later.",
     start_url: "/",
     display: "standalone",

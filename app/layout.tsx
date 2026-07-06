@@ -13,14 +13,14 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
-  title: 'Troje - Capture Ideas Anywhere',
+  title: 'Trojes - Capture Ideas Anywhere',
   description: 'A personal idea management system for frictionless capture and thoughtful review.',
   generator: 'v0.app',
   manifest: '/manifest.webmanifest',
   icons: {
     icon: [
       {
-        url: '/favicon.ico?v=troje',
+        url: '/favicon.ico?v=trojes',
         sizes: 'any',
       },
       {
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
         type: 'image/svg+xml',
       },
     ],
-    shortcut: '/favicon.ico?v=troje',
+    shortcut: '/favicon.ico?v=trojes',
     apple: '/apple-icon.png',
   },
 }

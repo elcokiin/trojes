@@ -11,7 +11,7 @@ recommendations, travel moments, family stories, milestones, creative sparks,
 writing prompts, book takeaways, podcast gems, personal wins, life lessons,
 daily gratitude, and mood or self check-ins.
 
-The reference is useful for thinking about Troje's information architecture and
+The reference is useful for thinking about Trojes' information architecture and
 post-capture classification. It suggests that voice capture can be framed as a
 central input stream that later organizes itself into practical categories,
 personal memory, reflection, inspiration, and actionable reminders.

@@ -8,7 +8,7 @@ scannable.
 
 - `account/`: signed-in user controls and account-specific UI.
 - `app/`: top-level app shell and page composition components.
-- `branding/`: reusable Troje identity elements.
+- `branding/`: reusable Trojes identity elements.
 - `ideas/`: idea capture, idea cards, idea lists, and idea workflow UI.
 - `providers/`: client providers and browser-side app bootstrapping.
 - `settings/`: settings dialog sections and settings-owned controls.

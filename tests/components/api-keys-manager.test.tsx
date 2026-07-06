@@ -64,7 +64,7 @@ function findCreateButton(): HTMLButtonElement | null {
 describe("ApiKeysManager", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockCreate.mockResolvedValue("troje_full_key_here")
+    mockCreate.mockResolvedValue("trojes_full_key_here")
     mockRename.mockResolvedValue(true)
     mockIsLoading = false
     mockKeys = [
@@ -118,7 +118,7 @@ describe("ApiKeysManager", () => {
     const createButton = findCreateButton()
     await userEvent.click(createButton!)
     expect(mockCreate).toHaveBeenCalledWith("New Key")
-    expect(screen.getByText(/troje_full_key_here/)).toBeTruthy()
+    expect(screen.getByText(/trojes_full_key_here/)).toBeTruthy()
   })
 
   it("copy button copies full key to clipboard", async () => {
@@ -134,7 +134,7 @@ describe("ApiKeysManager", () => {
     const copyButton = findCopyButton(container)
     expect(copyButton).toBeTruthy()
     await userEvent.click(copyButton!)
-    expect(writeText).toHaveBeenCalledWith("troje_full_key_here")
+    expect(writeText).toHaveBeenCalledWith("trojes_full_key_here")
   })
 
   it("delete key calls remove", async () => {

@@ -17,7 +17,7 @@ interface ShortcutKbdProps {
 
 export function ShortcutKbd({ hotkey, className, alwaysVisible = false }: ShortcutKbdProps) {
   const isMobile = useIsMobile()
-  const [showShortcutHints] = useShortcutPreference("troje-shortcut-hints")
+  const [showShortcutHints] = useShortcutPreference("trojes-shortcut-hints")
 
   if (isMobile) return null
   if (!alwaysVisible && !showShortcutHints) return null
@@ -37,7 +37,7 @@ export function ShortcutKbdGroup({
   alwaysVisible = false,
 }: ShortcutKbdGroupProps) {
   const isMobile = useIsMobile()
-  const [showShortcutHints] = useShortcutPreference("troje-shortcut-hints")
+  const [showShortcutHints] = useShortcutPreference("trojes-shortcut-hints")
 
   if (isMobile) return null
   if (!alwaysVisible && !showShortcutHints) return null

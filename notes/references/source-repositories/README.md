@@ -6,7 +6,7 @@ repositories here.
 For each repository reference, include:
 
 - Source URL
-- Why it matters for Troje
+- Why it matters for Trojes
 - What files, flows, or implementation ideas are worth inspecting
 - Any known caveats or context needed before cloning
 

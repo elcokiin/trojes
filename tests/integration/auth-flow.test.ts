@@ -28,11 +28,11 @@ describe("getAuthenticatedUserId", () => {
     vi.mocked(getServerSession).mockResolvedValue(null)
     vi.mocked(getUserIdFromApiKey).mockResolvedValue("api-key-user-1")
     const request = new NextRequest(new Request("http://localhost", {
-      headers: { Authorization: "Bearer troje_valid_api_key_here" },
+      headers: { Authorization: "Bearer trojes_valid_api_key_here" },
     }))
     const result = await getAuthenticatedUserId(request)
     expect(result).toBe("api-key-user-1")
-    expect(getUserIdFromApiKey).toHaveBeenCalledWith("troje_valid_api_key_here")
+    expect(getUserIdFromApiKey).toHaveBeenCalledWith("trojes_valid_api_key_here")
   })
 
   it("returns null when no session and no auth header", async () => {
@@ -46,7 +46,7 @@ describe("getAuthenticatedUserId", () => {
     vi.mocked(getServerSession).mockResolvedValue(null)
     vi.mocked(getUserIdFromApiKey).mockResolvedValue(null)
     const request = new NextRequest(new Request("http://localhost", {
-      headers: { Authorization: "Bearer troje_invalid_key" },
+      headers: { Authorization: "Bearer trojes_invalid_key" },
     }))
     const result = await getAuthenticatedUserId(request)
     expect(result).toBeNull()

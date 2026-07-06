@@ -59,8 +59,8 @@ interface IdeasListProps {
 
 export function IdeasList({ status, active = true, hideCapture = false }: IdeasListProps) {
   const [captureOpen, setCaptureOpen] = useState(false)
-  const [keyboardEnabled] = useShortcutPreference("troje-keyboard-nav")
-  const [newIdeaKeyEnabled] = useShortcutPreference("troje-shortcut-new-idea")
+  const [keyboardEnabled] = useShortcutPreference("trojes-keyboard-nav")
+  const [newIdeaKeyEnabled] = useShortcutPreference("trojes-shortcut-new-idea")
   const debouncedSearch = useSearchStore((s) => s.debouncedSearch)
   const focusIdeaId = useUIStore((s) => s.focusIdeaId)
   const storeSetCaptureOpen = useUIStore((s) => s.setCaptureOpen)

@@ -2,7 +2,7 @@ import crypto from "crypto"
 import { findUserIdByApiKeyHash, markApiKeyUsed } from "@/db/api-keys"
 
 export function generateApiKey(): string {
-  return `troje_${crypto.randomBytes(24).toString("hex")}`
+  return `trojes_${crypto.randomBytes(24).toString("hex")}`
 }
 
 export function hashApiKey(key: string): string {

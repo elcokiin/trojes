@@ -9,6 +9,6 @@ drawer. Each card has compact metadata chips attached to the top edge, a strong
 border on the focused item, dense typography, and a small pin affordance near
 the card edge.
 
-Future agents should interpret this as the target interaction model for Troje's
+Future agents should interpret this as the target interaction model for Trojes'
 desktop pinned tray: a bottom-left, nav-width column of pinned cards that keeps
 the bottom Pin/Pinned control visible while expanded.

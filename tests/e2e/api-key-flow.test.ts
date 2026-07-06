@@ -18,7 +18,7 @@ test.describe("API key flow", () => {
     await page.getByText("Create", { exact: true }).click();
     const fullKey = page.locator("code").first();
     await expect(fullKey).toBeVisible();
-    await expect(fullKey).toContainText(/troje_/);
+    await expect(fullKey).toContainText(/trojes_/);
   });
 
   test("delete key removes it from the list", async ({ page }) => {
@@ -37,7 +37,7 @@ test.describe("API key flow", () => {
     await page.getByText("Create", { exact: true }).click();
     const rawKey = await page.locator("code").first().textContent();
     const apiKey = rawKey?.trim();
-    expect(apiKey).toMatch(/^troje_/);
+    expect(apiKey).toMatch(/^trojes_/);
 
     const res = await page.request.post("/api/ideas", {
       headers: {

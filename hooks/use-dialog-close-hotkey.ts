@@ -5,7 +5,7 @@ import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
 import { SHORTCUTS } from "@/lib/shortcuts"
 
 export function useDialogCloseHotkey(open: boolean, onClose: () => void) {
-  const [keyboardEnabled] = useShortcutPreference("troje-keyboard-nav")
+  const [keyboardEnabled] = useShortcutPreference("trojes-keyboard-nav")
 
   useHotkey(SHORTCUTS.closeDialog.hotkeys[0], onClose, {
     enabled: open && keyboardEnabled,

@@ -5,7 +5,7 @@ implementation decisions: inspiration repos, product examples, technical docs,
 articles, package references, design references, or URLs provided by the user.
 
 When adding a reference, include the source, why it matters, and which part of
-Troje it may influence.
+Trojes it may influence.
 
 ## Organization Strategy
 
@@ -25,7 +25,7 @@ image directly.
 
 Current image subfolders:
 
-- `notes/references/images/interface-prototypes/`: original Troje screen
+- `notes/references/images/interface-prototypes/`: original Trojes screen
   concepts, UI sketches, and product-surface prototypes. Includes the default
   universal inbox view and the contextual CTA dashboard view with a temporal
   enhancement banner for PWA installation.
@@ -34,19 +34,19 @@ Current image subfolders:
   positioning phrase reference for copy that defines a note product by what it
   intentionally is not: not a workspace, and not a second brain. Also includes
   `fizzy-pins/`, which captures Fizzy's bottom-left pinned tray in collapsed and
-  expanded states for Troje's desktop pinned UI.
+  expanded states for Trojes's desktop pinned UI.
 
 ### `notes/references/source-repositories/`
 
 Link-only references to GitHub, GitLab, or other source repositories. Do not
 commit cloned repositories here. Store the repository URL, what to inspect, why
-it matters for Troje, and any useful notes so a future agent can clone it into a
+it matters for Trojes, and any useful notes so a future agent can clone it into a
 disposable location when needed.
 
 Current source repository references:
 
 - `git@github.com:elcokiin/Andean-Water-Stress-Simulator.git`: design reference
-  for Troje's settings dialog structure, especially the configuration modal with
+  for Trojes's settings dialog structure, especially the configuration modal with
   a persistent header, sidebar navigation, scrollable content, footer actions,
   and `Mod+E` expand/restore behavior. Inspect in a disposable clone; do not
   commit the repository.
@@ -63,12 +63,12 @@ Current source repository references:
   no position/reorder column. The pin button on each card is lazy-loaded via
   Turbo Frame. Pins auto-clean when users lose board access.
   
-  **Key differences from Troje:**
-  - Fizzy: per-user pins via join table | Troje: global `pinned` boolean on idea
-  - Fizzy: completely separate UI (bottom tray) | Troje: inline sections
-  - Fizzy: reverse chronological order | Troje: no sort order
-  - Fizzy: max ~10 visible items | Troje: no limit
-  - Fizzy: Hotwire real-time updates | Troje: no real-time pin updates
+  **Key differences from Trojes:**
+  - Fizzy: per-user pins via join table | Trojes: global `pinned` boolean on idea
+  - Fizzy: completely separate UI (bottom tray) | Trojes: inline sections
+  - Fizzy: reverse chronological order | Trojes: no sort order
+  - Fizzy: max ~10 visible items | Trojes: no limit
+  - Fizzy: Hotwire real-time updates | Trojes: no real-time pin updates
   
   Relevant files in clone:
   - `app/models/pin.rb` — model with `ordered` scope

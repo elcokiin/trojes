@@ -33,8 +33,8 @@ export function Dashboard({ user }: DashboardProps) {
   const captureOpen = useUIStore((s) => s.captureOpen);
   const setCaptureOpen = useUIStore((s) => s.setCaptureOpen);
   const searchMode = useSearchStore((s) => s.searchMode);
-  const [keyboardEnabled] = useShortcutPreference("troje-keyboard-nav");
-  const [settingsKeyEnabled] = useShortcutPreference("troje-shortcut-settings");
+  const [keyboardEnabled] = useShortcutPreference("trojes-keyboard-nav");
+  const [settingsKeyEnabled] = useShortcutPreference("trojes-shortcut-settings");
 
   const hotkeys: Array<UseHotkeyDefinition> = [
     {

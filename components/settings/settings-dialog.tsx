@@ -81,19 +81,19 @@ type SettingsSection = "appearance" | "keyboard" | "api" | "install" | "account"
 
 export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps) {
   const { theme, setTheme } = useTheme()
-  const [keyboardNav, setKeyboardNav] = useShortcutPreference("troje-keyboard-nav")
-  const [newIdeaKeyEnabled, setNewIdeaKeyEnabled] = useShortcutPreference("troje-shortcut-new-idea")
-  const [themeToggleKeyEnabled, setThemeToggleKeyEnabled] = useShortcutPreference("troje-shortcut-theme-toggle")
-  const [settingsKeyEnabled, setSettingsKeyEnabled] = useShortcutPreference("troje-shortcut-settings")
-  const [shortcutHintsEnabled, setShortcutHintsEnabled] = useShortcutPreference("troje-shortcut-hints")
+  const [keyboardNav, setKeyboardNav] = useShortcutPreference("trojes-keyboard-nav")
+  const [newIdeaKeyEnabled, setNewIdeaKeyEnabled] = useShortcutPreference("trojes-shortcut-new-idea")
+  const [themeToggleKeyEnabled, setThemeToggleKeyEnabled] = useShortcutPreference("trojes-shortcut-theme-toggle")
+  const [settingsKeyEnabled, setSettingsKeyEnabled] = useShortcutPreference("trojes-shortcut-settings")
+  const [shortcutHintsEnabled, setShortcutHintsEnabled] = useShortcutPreference("trojes-shortcut-hints")
   const [section, setSection] = useState<SettingsSection>("appearance")
   const [isExpanded, setIsExpanded] = useState(() => {
     if (typeof window === "undefined") return false
-    return localStorage.getItem("troje-settings-expanded") === "true"
+    return localStorage.getItem("trojes-settings-expanded") === "true"
   })
 
   useEffect(() => {
-    localStorage.setItem("troje-settings-expanded", String(isExpanded))
+    localStorage.setItem("trojes-settings-expanded", String(isExpanded))
   }, [isExpanded])
 
   const [isMobile, setIsMobile] = useState(() => {
@@ -157,7 +157,7 @@ export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps
             <div className="min-w-0">
               <DialogTitle className="text-xl">Settings</DialogTitle>
               <DialogDescription>
-                Configure your Troje experience
+                Configure your Trojes experience
               </DialogDescription>
             </div>
           </div>

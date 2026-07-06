@@ -130,7 +130,7 @@ describe("POST /api/ideas", () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer troje_some_key",
+        Authorization: "Bearer trojes_some_key",
       },
       body: JSON.stringify({ content: "New idea" }),
     }))

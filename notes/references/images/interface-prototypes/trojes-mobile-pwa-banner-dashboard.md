@@ -1,9 +1,9 @@
-# Troje Mobile PWA Banner Dashboard
+# Trojes Mobile PWA Banner Dashboard
 
-Image file: `troje-mobile-pwa-banner-dashboard.png`
+Image file: `trojes-mobile-pwa-banner-dashboard.png`
 
 ## Overview
-This image displays an active state variation of the core Troje Mobile PWA
+This image displays an active state variation of the core Trojes Mobile PWA
 dashboard. It introduces a conditional system-level promotional element
 positioned at the very top of the interface to encourage user action toward
 application optimization.
@@ -11,7 +11,7 @@ application optimization.
 ## Visual and Product Elements
 - **Temporal Enhancement Banner**: A distinct horizontal notification block
   labeled `"Temporal banner for enhance download"` inserted directly underneath
-  the primary "Troje" header. It is designed to nudge the user to install the
+  the primary "Trojes" header. It is designed to nudge the user to install the
   PWA or upgrade their environment to benefit from full offline-first
   capabilities.
 - **Frictionless Capture Field**: The main `+ Capture a new idea...` input bar

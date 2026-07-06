@@ -63,9 +63,9 @@ export function PwaInstallManager() {
   return (
     <div className="space-y-4">
       <div>
-        <Label className="text-sm font-medium">Install Troje</Label>
+        <Label className="text-sm font-medium">Install Trojes</Label>
         <p className="mt-1 text-xs text-muted-foreground">
-          Add Troje to your home screen for a native app-like experience.
+          Add Trojes to your home screen for a native app-like experience.
         </p>
       </div>
 

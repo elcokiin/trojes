@@ -7,7 +7,7 @@ import { SHORTCUTS } from "@/lib/shortcuts"
 
 function GlobalThemeShortcut() {
   const { resolvedTheme, setTheme } = useTheme()
-  const [themeToggleKeyEnabled] = useShortcutPreference("troje-shortcut-theme-toggle")
+  const [themeToggleKeyEnabled] = useShortcutPreference("trojes-shortcut-theme-toggle")
 
   useHotkey(SHORTCUTS.toggleTheme.hotkeys[0], () => {
     if (!resolvedTheme) return

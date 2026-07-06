@@ -1,12 +1,12 @@
-# Troje PWA Audio Capture First Screen
+# Trojes PWA Audio Capture First Screen
 
-Image file: `troje-pwa-audio-capture-first-screen.png`
+Image file: `trojes-pwa-audio-capture-first-screen.png`
 
-This image is an original prototype concept for the first screen of the Troje
+This image is an original prototype concept for the first screen of the Trojes
 PWA. It shows a mobile phone mockup with a dark green interface focused on
-audio capture. The top label reads "Troje PWA first screen"; inside the phone,
+audio capture. The top label reads "Trojes PWA first screen"; inside the phone,
 a recording card displays "GRABANDO: 00:03:45" above a glowing waveform and the
-text "Troje Audio In-Progress." Near the bottom, there is a secondary "VER
+text "Trojes Audio In-Progress." Near the bottom, there is a secondary "VER
 DASHBOARD" button and a large circular microphone action button, suggesting
 quick capture as the primary mobile workflow with dashboard access kept
 available but secondary.
