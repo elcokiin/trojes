@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test"
+import { SETUP_TIMEOUT_MS } from "./scripts/e2e"
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -16,7 +17,7 @@ export default defineConfig({
     {
       name: "setup",
       testMatch: /auth\.setup\.ts/,
-      timeout: 120_000,
+      timeout: SETUP_TIMEOUT_MS,
       use: {
         launchOptions: {
           executablePath: "/usr/bin/chromium",
@@ -26,7 +27,6 @@ export default defineConfig({
     },
     {
       name: "authenticated",
-      dependencies: ["setup"],
       testIgnore: ["auth-redirect.test.ts", "auth.setup.ts"],
       use: {
         ...devices["Desktop Chrome"],
@@ -43,7 +43,6 @@ export default defineConfig({
     },
     {
       name: "mobile",
-      dependencies: ["setup"],
       testMatch: ["mobile-layout.test.ts"],
       use: {
         ...devices["iPhone 13"],

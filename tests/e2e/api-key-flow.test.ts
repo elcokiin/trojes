@@ -13,7 +13,8 @@ test.describe("API key flow", () => {
   });
 
   test("create key shows full key once and allows copy", async ({ page }) => {
-    await page.getByPlaceholder("e.g. n8n local workflow").fill("E2E Test Key");
+    const keyName = `E2E Test Key ${crypto.randomUUID()}`;
+    await page.getByPlaceholder("e.g. n8n local workflow").fill(keyName);
     await page.getByText("Create", { exact: true }).click();
     const fullKey = page.locator("code").first();
     await expect(fullKey).toBeVisible();
@@ -21,16 +22,18 @@ test.describe("API key flow", () => {
   });
 
   test("delete key removes it from the list", async ({ page }) => {
-    await page.getByPlaceholder("e.g. n8n local workflow").fill("E2E To Delete");
+    const keyName = `E2E To Delete ${crypto.randomUUID()}`;
+    await page.getByPlaceholder("e.g. n8n local workflow").fill(keyName);
     await page.getByText("Create", { exact: true }).click();
-    const keyCard = page.locator("div").filter({ hasText: "E2E To Delete" }).first();
+    const keyCard = page.locator("div").filter({ hasText: keyName }).first();
     await expect(keyCard).toBeVisible();
     await keyCard.getByRole("button").last().click();
     await expect(keyCard).not.toBeVisible();
   });
 
   test("can use API key to create idea with source=api", async ({ page }) => {
-    await page.getByPlaceholder("e.g. n8n local workflow").fill("E2E Test Key");
+    const keyName = `E2E API Key ${crypto.randomUUID()}`;
+    await page.getByPlaceholder("e.g. n8n local workflow").fill(keyName);
     await page.getByText("Create", { exact: true }).click();
     const rawKey = await page.locator("code").first().textContent();
     const apiKey = rawKey?.trim();

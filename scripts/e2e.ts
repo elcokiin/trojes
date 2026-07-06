@@ -1,35 +1,61 @@
 import { existsSync } from "fs"
 import { resolve } from "path"
 
+export const SETUP_TIMEOUT_MS = 120_000
+export const SETUP_TIMEOUT_MIN = SETUP_TIMEOUT_MS / 60_000
+
 const AUTH_FILE = resolve("tests/e2e/.auth/user.json")
 const args = process.argv.slice(2)
 
-if (!existsSync(AUTH_FILE)) {
-  console.log("")
-  console.log("No session found. Running auth setup...")
-  console.log("A browser will open - log in with Google.")
-  console.log("")
+const PROJECTS = [
+  "--project=authenticated",
+  "--project=unauthenticated",
+  "--project=mobile",
+]
 
-  Bun.spawnSync(["bunx", "playwright", "test", "--project=setup", "--headed"], {
-    stdio: ["inherit", "inherit", "inherit"],
-  })
+// ─── Helpers ────────────────────────────────────────────
 
-  if (!existsSync(AUTH_FILE)) {
-    console.log("")
-    console.log("Setup failed - session not saved.")
+function sessionExists(): boolean {
+  return existsSync(AUTH_FILE)
+}
+
+function printBanner(): void {
+  console.log(`
+╔════════════════════════════════════════════╗
+║       E2E Auth Setup Required             ║
+║                                           ║
+║  A browser will open.                     ║
+║  You have ${SETUP_TIMEOUT_MIN} minutes to log in with       ║
+║  Google and save your session.            ║
+╚════════════════════════════════════════════╝
+`)
+}
+
+function run(cmd: string[]): number {
+  return Bun.spawnSync(cmd, { stdio: ["inherit", "inherit", "inherit"] }).exitCode
+}
+
+// ─── Modes ──────────────────────────────────────────────
+
+function runSetup(): never {
+  printBanner()
+  run(["bunx", "playwright", "test", "--project=setup", "--headed"])
+
+  if (!sessionExists()) {
+    console.log("\n✗ Setup failed — session not saved.")
     process.exit(1)
   }
 
-  console.log("")
-  console.log("Session saved. Running full test suite...")
-  console.log("")
+  console.log("\n✓ Session saved. Re-running full suite...\n")
+  process.exit(run(["bun", "run", "test:e2e", ...args]))
 }
 
-const pwArgs = args.length > 0
-  ? args
-  : ["--project=authenticated", "--project=unauthenticated", "--project=mobile"]
-const result = Bun.spawnSync(["bunx", "playwright", "test", ...pwArgs], {
-  stdio: ["inherit", "inherit", "inherit"],
-})
+function runTests(): never {
+  const flags = args.length > 0 ? args : PROJECTS
+  process.exit(run(["bunx", "playwright", "test", ...flags]))
+}
 
-process.exit(result.exitCode)
+// ─── Main ───────────────────────────────────────────────
+
+if (sessionExists()) runTests()
+else runSetup()
