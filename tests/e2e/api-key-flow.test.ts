@@ -1,13 +1,18 @@
 import { test, expect } from "@playwright/test";
 
+async function openApiKeysSection(page: import("@playwright/test").Page) {
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+  await page.keyboard.press("s");
+  await page.getByRole("button", { name: "API Keys" }).click();
+}
+
 test.describe("API key flow", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await openApiKeysSection(page);
   });
 
   test("create key shows full key once and allows copy", async ({ page }) => {
-    await page.goto("/settings");
     await page.getByPlaceholder("e.g. n8n local workflow").fill("E2E Test Key");
     await page.getByText("Create", { exact: true }).click();
     const fullKey = page.locator("code").first();
@@ -16,27 +21,17 @@ test.describe("API key flow", () => {
   });
 
   test("delete key removes it from the list", async ({ page }) => {
-    await page.goto("/settings");
-    const keyName = page.getByText("E2E Test Key");
-    if (await keyName.isVisible()) {
-      const deleteButton = keyName.locator("..").getByText("Delete");
-      await deleteButton.click();
-      await expect(keyName).not.toBeVisible();
-    }
+    await page.getByPlaceholder("e.g. n8n local workflow").fill("E2E To Delete");
+    await page.getByText("Create", { exact: true }).click();
+    const keyCard = page.locator("div").filter({ hasText: "E2E To Delete" }).first();
+    await expect(keyCard).toBeVisible();
+    await keyCard.getByRole("button").last().click();
+    await expect(keyCard).not.toBeVisible();
   });
 
-  test("can use API key to create idea with source=api", async ({
-    page,
-    context,
-  }) => {
-    await page.goto("/settings");
-    const keyName = page.getByText("E2E Test Key");
-    if (!(await keyName.isVisible())) {
-      await page
-        .getByPlaceholder("e.g. n8n local workflow")
-        .fill("E2E Test Key");
-      await page.getByText("Create", { exact: true }).click();
-    }
+  test("can use API key to create idea with source=api", async ({ page }) => {
+    await page.getByPlaceholder("e.g. n8n local workflow").fill("E2E Test Key");
+    await page.getByText("Create", { exact: true }).click();
     const rawKey = await page.locator("code").first().textContent();
     const apiKey = rawKey?.trim();
     expect(apiKey).toMatch(/^troje_/);
