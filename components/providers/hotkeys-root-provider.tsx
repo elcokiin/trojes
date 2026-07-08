@@ -1,7 +1,7 @@
 "use client"
 
 import { HotkeysProvider, useHotkey } from "@tanstack/react-hotkeys"
-import { useTheme } from "next-themes"
+import { useTheme } from "@/components/providers/theme-provider"
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
 import { SHORTCUTS } from "@/lib/shortcuts"
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { signOut } from "next-auth/react"
 import { useHotkey } from "@tanstack/react-hotkeys"
-import { useTheme } from "next-themes"
+import { useTheme } from "@/components/providers/theme-provider"
 import {
   Dialog,
   DialogContent,
