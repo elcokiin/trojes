@@ -23,7 +23,7 @@ export function GoogleSignInButton({ onClick }: { onClick?: () => void }) {
     return (
       <Button
         onClick={onClick}
-        className="w-full h-14 gap-3 rounded-xl text-base font-bold"
+        className="w-full h-14 gap-3 rounded-xl text-base font-bold bg-[var(--card-color-terracotta)] text-primary-foreground hover:brightness-90 border-2 border-[color-mix(in_oklch,var(--card-color-terracotta),black_20%)]"
         size="lg"
       >
         <GoogleIcon />
