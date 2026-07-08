@@ -13,6 +13,10 @@ export function LoginSceneBackground() {
     if (!el) return
 
     const onMove = (e: MouseEvent) => {
+      if ((e.target as Element)?.closest("#gbtn")) {
+        el!.style.transform = "translate3d(0, 0, 0)"
+        return
+      }
       if (rafRef.current) return
       rafRef.current = requestAnimationFrame(() => {
         rafRef.current = 0
@@ -30,9 +34,11 @@ export function LoginSceneBackground() {
   }, [])
 
   return (
-    <div
-      ref={ref}
-      className="absolute inset-0 z-10 bg-cover bg-center bg-[url(/assets/backgrounds/login-day.webp)] dark:bg-[url(/assets/backgrounds/login-night.webp)] transition-transform duration-200 ease-out will-change-transform"
-    />
+    <div className="absolute inset-0 z-10 overflow-hidden">
+      <div
+        ref={ref}
+        className="absolute -inset-4 bg-cover bg-center bg-[url(/assets/backgrounds/login-day.webp)] dark:bg-[url(/assets/backgrounds/login-night.webp)] transition-transform duration-200 ease-out will-change-transform"
+      />
+    </div>
   )
 }
