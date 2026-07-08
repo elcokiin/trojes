@@ -1,14 +1,20 @@
-"use client"
+"use client";
 
-import { signIn } from "next-auth/react"
-import { GoogleSignInButton } from "@/components/login/google-sign-in-button"
+import { signIn } from "next-auth/react";
+import { GoogleSignInButton } from "@/components/login/google-sign-in-button";
+import { LoginBackground } from "@/components/login/login-background";
+import { LoginSceneBackground } from "@/components/login/login-scene-background";
 
 export default function LoginPage() {
   return (
-    <div className="h-dvh flex items-center justify-center p-4 bg-cover bg-center bg-[url(/assets/backgrounds/login-day.webp)] dark:bg-[url(/assets/backgrounds/login-night.webp)] overflow-hidden">
-      <div className="-mt-5">
-        <GoogleSignInButton onClick={() => signIn("google", { callbackUrl: "/" })} />
+    <div className="relative h-dvh overflow-hidden">
+      <LoginBackground />
+      <LoginSceneBackground />
+      <div className="absolute inset-0 z-20 grid place-items-center p-4 -mt-5">
+        <GoogleSignInButton
+          onClick={() => signIn("google", { callbackUrl: "/" })}
+        />
       </div>
     </div>
-  )
+  );
 }
