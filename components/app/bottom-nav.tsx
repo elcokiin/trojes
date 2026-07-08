@@ -113,21 +113,21 @@ export function BottomNav() {
           <button
             type="button"
             onClick={togglePinnedTray}
-            className="flex items-center justify-center text-muted-foreground px-4"
+            className="flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer px-4"
           >
             <Pin className="size-4" />
           </button>
           <button
             type="button"
             onClick={handleOpenSearch}
-            className="flex-1 flex items-center justify-center text-muted-foreground border-x border-dashed border-muted-foreground h-full"
+            className="flex-1 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer border-x border-dashed border-muted-foreground h-full"
           >
             <span className="text-xs font-bold tracking-widest">SEARCH</span>
           </button>
           <button
             type="button"
             onClick={() => setSettingsOpen(true)}
-            className="flex items-center justify-center text-muted-foreground px-4"
+            className="flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer px-4"
           >
             <Settings className="size-4" />
           </button>
@@ -137,7 +137,7 @@ export function BottomNav() {
           <button
             type="button"
             onClick={togglePinnedTray}
-            className="flex-1 flex items-center justify-center gap-1.5 text-muted-foreground h-full"
+            className="flex-1 flex items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer h-full"
           >
             <Pin className="size-4" />
             <span className="text-sm font-medium">Pin</span>
@@ -146,7 +146,7 @@ export function BottomNav() {
           <button
             type="button"
             onClick={handleOpenSearch}
-            className="flex-1 flex items-center justify-center gap-1.5 text-muted-foreground border-x border-dashed border-muted-foreground h-full"
+            className="flex-1 flex items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer border-x border-dashed border-muted-foreground h-full"
           >
             <Search className="size-4" />
             <span className="text-sm font-medium">Search</span>
@@ -155,7 +155,7 @@ export function BottomNav() {
           <button
             type="button"
             onClick={() => setSettingsOpen(true)}
-            className="flex-1 flex items-center justify-center gap-1.5 text-muted-foreground h-full"
+            className="flex-1 flex items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer h-full"
           >
             <Settings className="size-4" />
             <span className="text-sm font-medium">Settings</span>
