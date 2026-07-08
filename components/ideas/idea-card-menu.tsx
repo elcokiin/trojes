@@ -87,8 +87,8 @@ export function IdeaCardMenu({
                       "ring-2 ring-primary ring-offset-1",
                   )}
                   style={
-                    colorOption.color
-                      ? { backgroundColor: colorOption.color }
+                    colorOption.id
+                      ? { backgroundColor: `var(--card-color-${colorOption.id})` }
                       : undefined
                   }
                   title={colorOption.name}

@@ -1,22 +1,21 @@
 export interface ColorOption {
   id: string | null;
   name: string;
-  color: string | null;
 }
 
 export const CARD_COLORS: ColorOption[] = [
-  { id: null, name: "Default", color: null },
-  { id: "coral", name: "Coral", color: "oklch(0.75 0.12 25)" },
-  { id: "peach", name: "Peach", color: "oklch(0.80 0.10 55)" },
-  { id: "sand", name: "Sand", color: "oklch(0.85 0.06 85)" },
-  { id: "mint", name: "Mint", color: "oklch(0.85 0.08 155)" },
-  { id: "sage", name: "Sage", color: "oklch(0.78 0.06 145)" },
-  { id: "fog", name: "Fog", color: "oklch(0.82 0.04 250)" },
-  { id: "storm", name: "Storm", color: "oklch(0.70 0.06 260)" },
-  { id: "dusk", name: "Dusk", color: "oklch(0.75 0.10 300)" },
-  { id: "lavender", name: "Lavender", color: "oklch(0.80 0.08 290)" },
-  { id: "blossom", name: "Blossom", color: "oklch(0.82 0.10 350)" },
-  { id: "rose", name: "Rose", color: "oklch(0.78 0.12 10)" },
+  { id: null, name: "Default" },
+  { id: "red", name: "Red" },
+  { id: "green", name: "Green" },
+  { id: "blue", name: "Blue" },
+  { id: "orange", name: "Orange" },
+  { id: "amber", name: "Amber" },
+  { id: "olive", name: "Olive" },
+  { id: "teal", name: "Teal" },
+  { id: "indigo", name: "Indigo" },
+  { id: "purple", name: "Purple" },
+  { id: "coral", name: "Coral" },
+  { id: "terracotta", name: "Terracotta" },
 ];
 
 export function formatTimeInTrash(deletedAt: string | null): string | null {

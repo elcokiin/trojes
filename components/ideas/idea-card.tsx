@@ -26,7 +26,6 @@ import { mdComponents, remarkPlugins } from "@/lib/markdown-components"
 import { cn } from "@/lib/utils"
 import { SHORTCUTS } from "@/lib/shortcuts"
 import {
-  CARD_COLORS,
   formatTimeInTrash,
   formatRelativeDate,
 } from "@/lib/ideas"
@@ -127,9 +126,8 @@ export function IdeaCard({
     conflictBehavior: "allow",
   })
 
-  const selectedColor = CARD_COLORS.find((c) => c.id === idea.background_color)
-  const cardStyle = selectedColor?.color
-    ? { backgroundColor: selectedColor.color }
+  const cardStyle = idea.background_color
+    ? { backgroundColor: `var(--card-color-${idea.background_color})` }
     : undefined
 
   return (
