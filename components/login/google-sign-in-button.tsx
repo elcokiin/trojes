@@ -1,9 +1,36 @@
-"use client"
+"use client";
 
-import { use3DButton } from "@/hooks/use-3d-button"
+import { use3DButton } from "@/hooks/use-3d-button";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
+
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="size-6" fill="none">
+      <path
+        fill="#EA4335"
+        d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.667s3.773-8.667 8.6-8.667c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
+      />
+    </svg>
+  );
+}
 
 export function GoogleSignInButton({ onClick }: { onClick?: () => void }) {
-  const { btnRef, handlers } = use3DButton()
+  const isMobile = useIsMobile();
+  const { btnRef, handlers } = use3DButton();
+
+  if (isMobile) {
+    return (
+      <Button
+        onClick={onClick}
+        className="w-full h-14 gap-3 rounded-xl text-base font-bold"
+        size="lg"
+      >
+        <GoogleIcon />
+        Continue with Google
+      </Button>
+    );
+  }
 
   return (
     <>
@@ -187,31 +214,109 @@ export function GoogleSignInButton({ onClick }: { onClick?: () => void }) {
               </defs>
               <g filter="url(#blob)">
                 <g id="mossL">
-                  <ellipse cx={14} cy={10} rx={12} ry={9} fill="var(--moss-1)" />
+                  <ellipse
+                    cx={14}
+                    cy={10}
+                    rx={12}
+                    ry={9}
+                    fill="var(--moss-1)"
+                  />
                   <ellipse cx={24} cy={6} rx={9} ry={7} fill="var(--moss-2)" />
                   <ellipse cx={6} cy={18} rx={8} ry={10} fill="var(--moss-3)" />
                   <ellipse cx={60} cy={4} rx={10} ry={7} fill="var(--moss-4)" />
                   <ellipse cx={68} cy={10} rx={8} ry={6} fill="var(--moss-2)" />
                   <ellipse cx={150} cy={3} rx={9} ry={7} fill="var(--moss-3)" />
                   <ellipse cx={158} cy={9} rx={7} ry={6} fill="var(--moss-5)" />
-                  <ellipse cx={230} cy={4} rx={10} ry={7} fill="var(--moss-4)" />
-                  <ellipse cx={238} cy={10} rx={8} ry={6} fill="var(--moss-2)" />
+                  <ellipse
+                    cx={230}
+                    cy={4}
+                    rx={10}
+                    ry={7}
+                    fill="var(--moss-4)"
+                  />
+                  <ellipse
+                    cx={238}
+                    cy={10}
+                    rx={8}
+                    ry={6}
+                    fill="var(--moss-2)"
+                  />
                   <ellipse cx={300} cy={3} rx={9} ry={7} fill="var(--moss-3)" />
                   <ellipse cx={292} cy={9} rx={7} ry={6} fill="var(--moss-5)" />
-                  <ellipse cx={346} cy={10} rx={12} ry={9} fill="var(--moss-1)" />
-                  <ellipse cx={352} cy={20} rx={8} ry={10} fill="var(--moss-3)" />
+                  <ellipse
+                    cx={346}
+                    cy={10}
+                    rx={12}
+                    ry={9}
+                    fill="var(--moss-1)"
+                  />
+                  <ellipse
+                    cx={352}
+                    cy={20}
+                    rx={8}
+                    ry={10}
+                    fill="var(--moss-3)"
+                  />
                 </g>
                 <g id="mossB">
-                  <ellipse cx={14} cy={68} rx={12} ry={9} fill="var(--moss-4)" />
+                  <ellipse
+                    cx={14}
+                    cy={68}
+                    rx={12}
+                    ry={9}
+                    fill="var(--moss-4)"
+                  />
                   <ellipse cx={6} cy={58} rx={8} ry={10} fill="var(--moss-3)" />
-                  <ellipse cx={90} cy={74} rx={10} ry={7} fill="var(--moss-2)" />
+                  <ellipse
+                    cx={90}
+                    cy={74}
+                    rx={10}
+                    ry={7}
+                    fill="var(--moss-2)"
+                  />
                   <ellipse cx={98} cy={68} rx={8} ry={6} fill="var(--moss-4)" />
-                  <ellipse cx={180} cy={75} rx={9} ry={7} fill="var(--moss-3)" />
-                  <ellipse cx={188} cy={69} rx={7} ry={6} fill="var(--moss-5)" />
-                  <ellipse cx={270} cy={74} rx={10} ry={7} fill="var(--moss-4)" />
-                  <ellipse cx={262} cy={68} rx={8} ry={6} fill="var(--moss-2)" />
-                  <ellipse cx={346} cy={68} rx={12} ry={9} fill="var(--moss-1)" />
-                  <ellipse cx={352} cy={58} rx={8} ry={10} fill="var(--moss-3)" />
+                  <ellipse
+                    cx={180}
+                    cy={75}
+                    rx={9}
+                    ry={7}
+                    fill="var(--moss-3)"
+                  />
+                  <ellipse
+                    cx={188}
+                    cy={69}
+                    rx={7}
+                    ry={6}
+                    fill="var(--moss-5)"
+                  />
+                  <ellipse
+                    cx={270}
+                    cy={74}
+                    rx={10}
+                    ry={7}
+                    fill="var(--moss-4)"
+                  />
+                  <ellipse
+                    cx={262}
+                    cy={68}
+                    rx={8}
+                    ry={6}
+                    fill="var(--moss-2)"
+                  />
+                  <ellipse
+                    cx={346}
+                    cy={68}
+                    rx={12}
+                    ry={9}
+                    fill="var(--moss-1)"
+                  />
+                  <ellipse
+                    cx={352}
+                    cy={58}
+                    rx={8}
+                    ry={10}
+                    fill="var(--moss-3)"
+                  />
                 </g>
               </g>
               <rect
@@ -280,5 +385,5 @@ export function GoogleSignInButton({ onClick }: { onClick?: () => void }) {
         </span>
       </button>
     </>
-  )
+  );
 }
