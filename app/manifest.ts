@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Capture ideas fast and organize later.",
     start_url: "/",
     display: "standalone",
-    background_color: "#090716",
-    theme_color: "#6f5be8",
+    background_color: "#2c2a28",
+    theme_color: "#ba322b",
     icons: [
       {
         src: "/apple-icon.png",

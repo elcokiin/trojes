@@ -6,6 +6,7 @@ import { SessionProvider } from '@/components/providers/session-provider'
 import { PwaRegister } from '@/components/providers/pwa-register'
 import { HotkeysRootProvider } from '@/components/providers/hotkeys-root-provider'
 import { DevtoolsClient } from '@/components/providers/devtools-client'
+import { ThemeColorProvider } from '@/components/providers/theme-color-provider'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import './globals.css'
 
@@ -41,9 +42,7 @@ export const metadata: Metadata = {
   },
 }
 
-export const viewport: Viewport = {
-  themeColor: '#6f5be8',
-}
+export const viewport: Viewport = {}
 
 export default function RootLayout({
   children,
@@ -57,6 +56,7 @@ export default function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <HotkeysRootProvider>
               <TooltipProvider>
+                <ThemeColorProvider />
                 {children}
               </TooltipProvider>
               <DevtoolsClient />

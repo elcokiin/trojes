@@ -55,7 +55,7 @@ export function AppLogo({
           />
           <path
             d="M103 124C103 112.954 111.954 104 123 104C123 115.046 114.046 124 103 124Z"
-            fill="#D6A935"
+            className="fill-primary"
           />
           <circle cx="103" cy="124" r="6" className="fill-foreground" />
         </g>
