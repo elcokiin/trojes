@@ -51,6 +51,11 @@ Current source repository references:
   and `Mod+E` expand/restore behavior. Inspect in a disposable clone; do not
   commit the repository.
 
+- `git@github.com:rcaferati/react-awesome-button.git`: 3D button reference with
+  performant CSS-only animated buttons, multi-stage click feedback, and social
+  button variants. Inspect for Trojes button design — 3D depth, press animation,
+  hover states, and accessible interactive elements.
+
 - `https://github.com/basecamp/fizzy`: Fizzy by 37signals/Basecamp — helped
   with visual design decisions, e.g. the bottom bar style. Cloned to
   `notes/references/source-repositories/fizzy/` and gitignored.
