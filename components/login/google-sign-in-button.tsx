@@ -53,8 +53,8 @@ export function GoogleSignInButton({ onClick }: { onClick?: () => void }) {
           --transform-speed: 0.15s;
           --release-speed: 0.12s;
           --hover-pressure: 1;
-          --btn-shadow: rgba(0, 0, 0, 0.4);
-          --depth-face: #3d2514;
+          --btn-shadow: transparent;
+          --depth-face: transparent;
         }
         .dark #gbtn {
           --moss-1: #3f6b26;
@@ -68,8 +68,8 @@ export function GoogleSignInButton({ onClick }: { onClick?: () => void }) {
           --wood-inner-stroke: #2e1b0c;
           --grain: #4a2f18;
           --text: #f2e6d3;
-          --depth-face: #2e1b0c;
-          --btn-shadow: rgba(0, 0, 0, 0.55);
+          --depth-face: transparent;
+          --btn-shadow: transparent;
         }
 
         #gbtn {
