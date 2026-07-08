@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
-import Script from "next/script";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { PwaRegister } from "@/components/providers/pwa-register";
@@ -59,11 +58,8 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
-        <Script id="theme-init" strategy="beforeInteractive">
-          {`!function(){try{var e=localStorage.getItem("theme")||"light";if(e==="system"){e=window.matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"}document.documentElement.classList.toggle("dark",e==="dark")}catch(e){}}()`}
-        </Script>
         <SessionProvider>
-          <ThemeProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <HotkeysRootProvider>
               <TooltipProvider>
                 <ThemeColorProvider />

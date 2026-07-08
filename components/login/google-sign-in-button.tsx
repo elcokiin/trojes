@@ -1,7 +1,6 @@
 "use client";
 
 import { use3DButton } from "@/hooks/use-3d-button";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 
 function GoogleLogoPaths() {
@@ -24,24 +23,19 @@ function GoogleIcon() {
 }
 
 export function GoogleSignInButton({ onClick }: { onClick?: () => void }) {
-  const isMobile = useIsMobile();
   const { btnRef, handlers } = use3DButton();
 
-  if (isMobile) {
-    return (
-      <Button
-        onClick={onClick}
-        className="w-full h-14 gap-3 rounded-xl text-base font-bold bg-[var(--card-color-terracotta)] text-white hover:brightness-90 border-2 border-[color-mix(in_oklch,var(--card-color-terracotta),black_20%)] shadow-[0_4px_0_color-mix(in_oklch,var(--card-color-terracotta),black_30%)] active:translate-y-[3px] active:shadow-[0_1px_0_color-mix(in_oklch,var(--card-color-terracotta),black_30%)] transition-all duration-75 ease-out"
-        size="lg"
-      >
-        <GoogleIcon />
-        Continue with Google
-      </Button>
-    );
-  }
-
   return (
-    <>
+    <><div className="md:hidden">
+        <Button
+          onClick={onClick}
+          className="w-full h-14 gap-3 rounded-xl text-base font-bold bg-[var(--card-color-terracotta)] text-white hover:brightness-90 border-2 border-[color-mix(in_oklch,var(--card-color-terracotta),black_20%)] shadow-[0_4px_0_color-mix(in_oklch,var(--card-color-terracotta),black_30%)] active:translate-y-[3px] active:shadow-[0_1px_0_color-mix(in_oklch,var(--card-color-terracotta),black_30%)] transition-all duration-75 ease-out"
+          size="lg"
+        >
+          <GoogleIcon />
+          Continue with Google
+        </Button>
+      </div><div className="hidden md:block">
       <style>{`
         #gbtn {
           --moss-1: #4d8a30;
@@ -377,6 +371,7 @@ export function GoogleSignInButton({ onClick }: { onClick?: () => void }) {
           </span>
         </span>
       </button>
+      </div>
     </>
   );
 }
