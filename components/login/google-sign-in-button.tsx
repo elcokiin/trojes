@@ -29,7 +29,7 @@ export function GoogleSignInButton({ onClick }: { onClick?: () => void }) {
     <><div className="md:hidden">
         <Button
           onClick={onClick}
-          className="w-full h-14 gap-3 rounded-xl text-base font-bold bg-[var(--card-color-terracotta)] text-white hover:brightness-90 border-2 border-[color-mix(in_oklch,var(--card-color-terracotta),black_20%)] shadow-[0_4px_0_color-mix(in_oklch,var(--card-color-terracotta),black_30%)] active:translate-y-[3px] active:shadow-[0_1px_0_color-mix(in_oklch,var(--card-color-terracotta),black_30%)] transition-all duration-75 ease-out"
+          className="w-full h-14 gap-3 rounded-xl text-base font-bold bg-[var(--card-color-terracotta)] text-white border-2 border-[color-mix(in_oklch,var(--card-color-terracotta),black_20%)] shadow-[0_4px_0_color-mix(in_oklch,var(--card-color-terracotta),black_30%)] active:translate-y-[3px] active:shadow-[0_1px_0_color-mix(in_oklch,var(--card-color-terracotta),black_30%)] active:bg-[var(--card-color-terracotta)] hover:bg-[var(--card-color-terracotta)] focus-visible:ring-0 transition-all duration-75 ease-out"
           size="lg"
         >
           <GoogleIcon />
