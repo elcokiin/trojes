@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/screenshots/logo-font.jpeg" width="300" alt="Trojes logo" />
+  <img src="public/screenshots/logo-font.png" width="300" alt="Trojes logo" />
 </p>
 
 <p align="center">
@@ -21,7 +21,7 @@ Trojes is an **idea capture** built for the moments inspiration strikes. Optimiz
 |---|
 | ![Main dashboard](public/screenshots/dashboard.png) |
 | **Main dashboard** – ideas in a masonry grid, Inbox/Archived/Trash tabs, and bottom navigation. This is where you spend your time. |
-| <img src="public/screenshots/mobile.jpeg" width="280" alt="Mobile" style="display: block; margin: 0 auto;" /> |
+| <img src="public/screenshots/mobile.png" width="280" alt="Mobile" style="display: block; margin: 0 auto;" /> |
 | **Mobile PWA** – installable on your home screen, icon-only tab navigation, bottom sheet for pinned ideas. |
 
 ---
