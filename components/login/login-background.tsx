@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useThemeToggle } from "@/hooks/use-theme-toggle";
+import { LoginClouds } from "@/components/login/login-clouds";
 import sunImg from "@/public/assets/backgrounds/sun.webp";
 import moonImg from "@/public/assets/backgrounds/moon.webp";
 
@@ -98,6 +99,7 @@ export function LoginBackground() {
           style={{ backgroundImage: starGradients }}
         />
       </div>
+      <LoginClouds />
       <div
         className="absolute top-4 right-24 size-56 rounded-full blur-[80px] pointer-events-none select-none z-20 bg-[rgba(255,160,0,0.6)] dark:bg-[rgba(255,255,255,0.5)]"
       />
