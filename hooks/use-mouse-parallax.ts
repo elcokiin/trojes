@@ -2,18 +2,24 @@
 
 import { useState, useRef, useEffect } from "react"
 
-interface MouseParallax {
+interface MouseParallaxState {
   x: number
   y: number
 }
 
-export function useMouseParallax(): MouseParallax {
-  const [mouse, setMouse] = useState<MouseParallax>({ x: 0, y: 0 })
+interface UseMouseParallaxOptions {
+  ignoreSelector?: string
+}
+
+export function useMouseParallax(
+  { ignoreSelector }: UseMouseParallaxOptions = {},
+): MouseParallaxState {
+  const [mouse, setMouse] = useState<MouseParallaxState>({ x: 0, y: 0 })
   const rafRef = useRef(0)
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
-      if ((e.target as Element)?.closest("#gbtn")) {
+      if (ignoreSelector && (e.target as Element)?.closest(ignoreSelector)) {
         if (rafRef.current) {
           cancelAnimationFrame(rafRef.current)
           rafRef.current = 0
@@ -36,7 +42,7 @@ export function useMouseParallax(): MouseParallax {
       window.removeEventListener("mousemove", onMove)
       cancelAnimationFrame(rafRef.current)
     }
-  }, [])
+  }, [ignoreSelector])
 
   return mouse
 }

@@ -1,10 +1,9 @@
 import { existsSync } from "fs"
-import { resolve } from "path"
-
-export const SETUP_TIMEOUT_MS = 120_000
-export const SETUP_TIMEOUT_MIN = SETUP_TIMEOUT_MS / 60_000
-
-const AUTH_FILE = resolve("tests/e2e/.auth/user.json")
+import {
+  SETUP_TIMEOUT_MS,
+  SETUP_TIMEOUT_MIN,
+  AUTH_FILE,
+} from "./e2e-constants"
 const args = process.argv.slice(2)
 
 const PROJECTS = [

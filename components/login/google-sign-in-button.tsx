@@ -3,6 +3,9 @@
 import { use3DButton } from "@/hooks/use-3d-button";
 import { Button } from "@/components/ui/button";
 
+export const GOOGLE_BTN_ID = "gbtn"
+export const GOOGLE_BTN_SELECTOR = `#${GOOGLE_BTN_ID}`
+
 function GoogleLogoPaths() {
   return (
     <>
@@ -177,7 +180,7 @@ export function GoogleSignInButton({ onClick }: { onClick?: () => void }) {
       `}</style>
       <button
         ref={btnRef}
-        id="gbtn"
+        id={GOOGLE_BTN_ID}
         onPointerDown={handlers.onPointerDown}
         onPointerUp={handlers.onPointerUp}
         onPointerMove={handlers.onPointerMove}

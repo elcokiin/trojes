@@ -1,5 +1,5 @@
 import { defineConfig, devices } from "@playwright/test"
-import { SETUP_TIMEOUT_MS } from "./scripts/e2e"
+import { SETUP_TIMEOUT_MS } from "./scripts/e2e-constants"
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -20,7 +20,6 @@ export default defineConfig({
       timeout: SETUP_TIMEOUT_MS,
       use: {
         launchOptions: {
-          executablePath: "/usr/bin/chromium",
           args: ["--disable-blink-features=AutomationControlled"],
         },
       },
