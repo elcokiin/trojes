@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useTheme } from "@/components/providers/theme-provider";
+import { useThemeToggle } from "@/hooks/use-theme-toggle";
 import sunImg from "@/public/assets/backgrounds/sun.webp";
 import moonImg from "@/public/assets/backgrounds/moon.webp";
 
@@ -81,9 +81,7 @@ const stars = [
 ];
 
 export function LoginBackground() {
-  const { resolvedTheme, setTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-  const toggleTheme = () => setTheme(isDark ? "light" : "dark");
+  const { toggleTheme } = useThemeToggle();
 
   const starGradients = stars
     .map(
@@ -101,19 +99,25 @@ export function LoginBackground() {
         />
       </div>
       <div
-        className="absolute top-4 right-24 size-56 rounded-full blur-[80px] pointer-events-none select-none z-20"
-        style={{ backgroundColor: isDark ? "rgba(255,255,255,0.5)" : "rgba(255,160,0,0.6)" }}
+        className="absolute top-4 right-24 size-56 rounded-full blur-[80px] pointer-events-none select-none z-20 bg-[rgba(255,160,0,0.6)] dark:bg-[rgba(255,255,255,0.5)]"
       />
       <button
         type="button"
-        onClick={toggleTheme}
+        onClick={(e) => toggleTheme({ x: e.clientX, y: e.clientY })}
         className="absolute top-12 right-32 size-32 cursor-pointer z-30"
-        aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+        aria-label="Toggle theme"
       >
         <Image
-          src={isDark ? moonImg : sunImg}
-          alt={isDark ? "Moon" : "Sun"}
-          className="size-full pointer-events-none select-none"
+          src={sunImg}
+          alt="Sun"
+          className="size-full pointer-events-none select-none dark:hidden"
+          priority
+        />
+        <Image
+          src={moonImg}
+          alt="Moon"
+          className="size-full pointer-events-none select-none hidden dark:block"
+          priority
         />
       </button>
     </>

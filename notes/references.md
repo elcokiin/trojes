@@ -56,6 +56,11 @@ Current source repository references:
   button variants. Inspect for Trojes button design — 3D depth, press animation,
   hover states, and accessible interactive elements.
 
+- `git@github.com:jnsahaj/tweakcn.git`: Theme management reference for shadcn/ui
+  and Tailwind CSS color scheme toggling. Inspect for theme toggle patterns,
+  color variable management, and light/dark mode switching. Intended as reference
+  for Trojes's theme handling in login and settings.
+
 - `https://github.com/basecamp/fizzy`: Fizzy by 37signals/Basecamp — helped
   with visual design decisions, e.g. the bottom bar style. Cloned to
   `notes/references/source-repositories/fizzy/` and gitignored.
