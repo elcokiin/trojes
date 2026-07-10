@@ -3,10 +3,14 @@
 import Image from "next/image";
 import { useThemeToggle } from "@/hooks/use-theme-toggle";
 import { LoginClouds } from "@/components/login/login-clouds";
+import type { MousePosition } from "@/hooks/use-mouse-parallax";
 import sunImg from "@/public/assets/backgrounds/sun.webp";
 import moonImg from "@/public/assets/backgrounds/moon.webp";
 
+const STAR_PARALLAX_INTENSITY = 6;
+
 const stars = [
+  // [sizePx, opacity, leftPercent, topPercent]
   [1, 0.8, 5, 4],
   [1.5, 0.9, 10, 8],
   [2, 0.7, 15, 3],
@@ -81,36 +85,33 @@ const stars = [
   [1, 0.5, 25, 40],
 ];
 
-interface MouseParallax {
-  x: number
-  y: number
-}
-
-export function LoginBackground({ mouse }: { mouse: MouseParallax }) {
+export function LoginBackground({
+  mouseCoordinates,
+}: {
+  mouseCoordinates: MousePosition;
+}) {
   const { toggleTheme } = useThemeToggle();
 
   const starGradients = stars
     .map(
-      ([size, opacity, left, top]) =>
-        `radial-gradient(${size}px ${size}px at ${left}% ${top}%, rgba(255,255,255,${opacity}), transparent)`,
+      ([sizePx, opacity, leftPercent, topPercent]) =>
+        `radial-gradient(${sizePx}px ${sizePx}px at ${leftPercent}% ${topPercent}%, rgba(255,255,255,${opacity}), transparent)`,
     )
     .join(",");
 
   return (
     <>
-      <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#4fc3f7] to-[#fff] dark:from-[#0f0c29] dark:to-[#302b63]">
+      <div className="absolute inset-0 z-0 bg-linear-to-b from-[#4fc3f7] to-white dark:from-[#0f0c29] dark:to-[#302b63]">
         <div
           className="absolute -inset-4 opacity-0 dark:opacity-100 transition-[opacity,transform] duration-200 ease-out will-change-transform"
           style={{
             backgroundImage: starGradients,
-            transform: `translate3d(${-mouse.x * 6}px, ${-mouse.y * 6}px, 0)`,
+            transform: `translate3d(${-mouseCoordinates.x * STAR_PARALLAX_INTENSITY}px, ${-mouseCoordinates.y * STAR_PARALLAX_INTENSITY}px, 0)`,
           }}
         />
       </div>
-      <LoginClouds mouse={mouse} />
-      <div
-        className="absolute top-4 right-24 size-56 rounded-full blur-[80px] pointer-events-none select-none z-20 bg-[rgba(255,160,0,0.6)] dark:bg-[rgba(255,255,255,0.5)] max-[1200px]:hidden"
-      />
+      <LoginClouds mouseCoordinates={mouseCoordinates} />
+      <div className="absolute top-4 right-24 size-56 rounded-full blur-[80px] pointer-events-none select-none z-20 bg-[rgba(255,160,0,0.6)] dark:bg-[rgba(255,255,255,0.5)] max-[1200px]:hidden" />
       <button
         type="button"
         onClick={(e) => toggleTheme({ x: e.clientX, y: e.clientY })}

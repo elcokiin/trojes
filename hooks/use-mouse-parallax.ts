@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 
-interface MouseParallaxState {
+export interface MousePosition {
   x: number
   y: number
 }
@@ -13,8 +13,8 @@ interface UseMouseParallaxOptions {
 
 export function useMouseParallax(
   { ignoreSelector }: UseMouseParallaxOptions = {},
-): MouseParallaxState {
-  const [mouse, setMouse] = useState<MouseParallaxState>({ x: 0, y: 0 })
+): MousePosition {
+  const [mouse, setMouse] = useState<MousePosition>({ x: 0, y: 0 })
   const rafRef = useRef(0)
 
   useEffect(() => {

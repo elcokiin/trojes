@@ -20,7 +20,6 @@ export const metadata: Metadata = {
   title: "Trojes - Capture Ideas Anywhere",
   description:
     "A personal idea management system for frictionless capture and thoughtful review.",
-  generator: "v0.app",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
