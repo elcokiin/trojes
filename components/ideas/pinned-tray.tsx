@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useRef, useEffect } from "react";
-import type React from "react";
 import { Pin, X, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -36,7 +35,11 @@ function PinnedCard({
       <button
         type="button"
         className="absolute inset-0 z-10 w-full cursor-pointer rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
-        aria-label={idea.content ? `Focus pinned idea: ${idea.content.slice(0, 60)}` : "Focus pinned idea"}
+        aria-label={
+          idea.content
+            ? `Focus pinned idea: ${idea.content.slice(0, 60)}`
+            : "Focus pinned idea"
+        }
         onClick={() => onFocus?.(idea.id)}
       />
       <div className="relative z-20 pointer-events-none px-3 pb-3 pt-5">
@@ -83,10 +86,13 @@ export function PinnedTray() {
   const trayRef = useRef<HTMLDivElement>(null);
   const previewCount = Math.min(ideas.length, 3);
 
-  const handleFocusIdea = useCallback((id: string) => {
-    setFocusIdeaId(id)
-    setActiveTab("inbox")
-  }, [setFocusIdeaId, setActiveTab])
+  const handleFocusIdea = useCallback(
+    (id: string) => {
+      setFocusIdeaId(id);
+      setActiveTab("inbox");
+    },
+    [setFocusIdeaId, setActiveTab],
+  );
 
   useHotkey(
     SHORTCUTS.togglePinnedTray.hotkeys[0],
@@ -97,7 +103,11 @@ export function PinnedTray() {
   useEffect(() => {
     if (!isOpen || isMobile) return;
     const handler = (e: MouseEvent) => {
-      if (trayRef.current && e.target instanceof Node && !trayRef.current.contains(e.target)) {
+      if (
+        trayRef.current &&
+        e.target instanceof Node &&
+        !trayRef.current.contains(e.target)
+      ) {
         setPinnedTrayOpen(false);
       }
     };

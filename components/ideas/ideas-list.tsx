@@ -13,7 +13,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useKeyboardNavigation } from "@/hooks/use-keyboard-navigation"
+import { useIdeaCardNavigation } from "@/hooks/use-idea-card-navigation"
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
 import { useIdeas } from "@/hooks/use-ideas"
 import { useSearchStore } from "@/stores/search-store"
@@ -92,7 +92,7 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
     }
   }, [status, storeSetCaptureOpen])
 
-  useKeyboardNavigation({
+  useIdeaCardNavigation({
     itemCount: ideas.length,
     selectedIndex,
     onSelect: handleSelect,
