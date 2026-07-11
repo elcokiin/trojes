@@ -38,7 +38,7 @@ export function ShortcutHelp() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-h-[85vh] overflow-hidden sm:max-w-[620px]">
+      <DialogContent className="max-h-[85vh] overflow-hidden sm:max-w-[620px] grid-rows-[auto_minmax(0,1fr)]">
         <DialogHeader>
           <DialogTitle>Keyboard Shortcuts</DialogTitle>
           <DialogDescription>

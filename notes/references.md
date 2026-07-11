@@ -61,6 +61,32 @@ Current source repository references:
   color variable management, and light/dark mode switching. Intended as reference
   for Trojes's theme handling in login and settings.
 
+- `git@github.com:shadcn-ui/ui.git`: Official shadcn/ui monorepo (v4). Primary
+  reference for component implementation patterns, registry schema, style variant
+  system (New York vs. default), base color tokens, and the shadcn CLI. Cloned to
+  `notes/references/source-repositories/shadcn-ui/` and gitignored.
+  
+  **Relevant areas for Trojes:**
+  - `apps/v4/registry/` — component registry definitions, style variants, and
+    base color configuration (v4 uses CSS variables in
+    `apps/v4/styles/`). The `__components__.tsx` and `__blocks__.tsx` files show
+    how components/blocks are registered for the CLI.
+  - `apps/v4/components/` — actual component source for the v4 docs site,
+    mirrors the published registry components.
+  - `packages/react/` — shared React utilities (hooks like `use-render`,
+    `message-scroller`) used by shadcn/ui components. Not the same as
+    `registry/default` or `registry/new-york` — those are in a separate
+    deployment repo for v3.
+  - Note: v3 components (the ones Trojes currently uses via `shadcn/ui`
+    package) live in a separate deployment branch. This v4 clone is the current
+    monorepo with the CLI, registry tooling, and v4 component system.
+  
+  **What to inspect when needed:**
+  - Registry schema in `apps/v4/registry/config.ts` and `config.test.ts`
+  - Base color generation in `apps/v4/registry/bases/`
+  - Component source patterns in `apps/v4/components/ui/`
+  - CLI source in `packages/shadcn/src/`
+
 - `https://github.com/basecamp/fizzy`: Fizzy by 37signals/Basecamp — helped
   with visual design decisions, e.g. the bottom bar style. Cloned to
   `notes/references/source-repositories/fizzy/` and gitignored.
