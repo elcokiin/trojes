@@ -112,10 +112,8 @@ describe("useIdeas", () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false))
 
     await expect(
-      act(async () => {
-        await result.current.create("New test idea")
-      }),
-    ).resolves.toBeUndefined()
+      act(async () => result.current.create("New test idea")),
+    ).resolves.toEqual({ ok: true })
   })
 
   it("updateStatus() optimistically removes idea", async () => {

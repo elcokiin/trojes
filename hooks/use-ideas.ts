@@ -3,10 +3,10 @@
 import { useCallback } from "react"
 import useSWR, { mutate as globalMutate } from "swr"
 import { fetcher, ideasApi } from "@/lib/api-client"
-import type { Idea } from "@/types/idea"
+import type { Idea, IdeaStatus } from "@/types/idea"
 
 interface UseIdeasOptions {
-  status: "inbox" | "archived" | "deleted"
+  status: IdeaStatus
   search?: string
   enabled?: boolean
 }
@@ -25,102 +25,88 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
     }
   )
 
+  async function mutateWithOptimistic(
+    updateFn: (current: { ideas: Idea[] }) => { ideas: Idea[] },
+    apiCall: () => Promise<Response>,
+  ): Promise<{ ok: boolean }> {
+    await mutate((current) => {
+      if (!current) return current
+      return updateFn(current)
+    }, false)
+    const res = await apiCall()
+    mutate()
+    return { ok: res.ok }
+  }
+
   const create = useCallback(async (content: string) => {
-    const response = await ideasApi.create(content)
-    if (response.ok) {
-      globalMutate(
-        (key) => typeof key === "string" && key.startsWith("/api/ideas")
-      )
-    }
+    const res = await ideasApi.create(content)
+    if (!res.ok) return { ok: false }
+    globalMutate(
+      (key) => typeof key === "string" && key.startsWith("/api/ideas")
+    )
+    return { ok: true }
   }, [])
 
   const updateStatus = useCallback(
-    async (id: string, newStatus: "inbox" | "archived" | "deleted") => {
-      await mutate(
-        (currentData) => {
-          if (!currentData) return currentData
-          return {
-            ideas: currentData.ideas.filter((idea) => idea.id !== id),
-          }
-        },
-        false
-      )
-
-      await ideasApi.update(id, { status: newStatus })
-      mutate()
-    },
-    [mutate]
+    async (id: string, newStatus: IdeaStatus) =>
+      mutateWithOptimistic(
+        (current) => ({
+          ideas: current.ideas.filter((idea) => idea.id !== id),
+        }),
+        () => ideasApi.update(id, { status: newStatus }),
+      ),
+    [mutate],
   )
 
-  const updatePin = useCallback(async (id: string, pinned: boolean) => {
-    await mutate(
-      (currentData) => {
-        if (!currentData) return currentData
-        return {
-          ideas: currentData.ideas.map((idea) =>
-            idea.id === id ? { ...idea, pinned } : idea
+  const updatePin = useCallback(
+    async (id: string, pinned: boolean) =>
+      mutateWithOptimistic(
+        (current) => ({
+          ideas: current.ideas.map((idea) =>
+            idea.id === id ? { ...idea, pinned } : idea,
           ),
-        }
-      },
-      false
-    )
-
-    await ideasApi.update(id, { pinned })
-    mutate()
-    globalMutate("/api/ideas?pinned=true")
-  }, [mutate])
+        }),
+        () => ideasApi.update(id, { pinned }),
+      ),
+    [mutate],
+  )
 
   const updateColor = useCallback(
-    async (id: string, background_color: string | null) => {
-      await mutate(
-        (currentData) => {
-          if (!currentData) return currentData
-          return {
-            ideas: currentData.ideas.map((idea) =>
-              idea.id === id ? { ...idea, background_color } : idea
-            ),
-          }
-        },
-        false
-      )
-
-      await ideasApi.update(id, { background_color })
-      mutate()
-    },
-    [mutate]
+    async (id: string, background_color: string | null) =>
+      mutateWithOptimistic(
+        (current) => ({
+          ideas: current.ideas.map((idea) =>
+            idea.id === id ? { ...idea, background_color } : idea,
+          ),
+        }),
+        () => ideasApi.update(id, { background_color }),
+      ),
+    [mutate],
   )
 
-  const updateContent = useCallback(async (id: string, content: string) => {
-    await mutate(
-      (currentData) => {
-        if (!currentData) return currentData
-        return {
-          ideas: currentData.ideas.map((idea) =>
-            idea.id === id ? { ...idea, content } : idea
+  const updateContent = useCallback(
+    async (id: string, content: string) =>
+      mutateWithOptimistic(
+        (current) => ({
+          ideas: current.ideas.map((idea) =>
+            idea.id === id ? { ...idea, content } : idea,
           ),
-        }
-      },
-      false
-    )
+        }),
+        () => ideasApi.update(id, { content }),
+      ),
+    [mutate],
+  )
 
-    await ideasApi.update(id, { content })
-    mutate()
-  }, [mutate])
-
-  const permanentDelete = useCallback(async (id: string) => {
-    await mutate(
-      (currentData) => {
-        if (!currentData) return currentData
-        return {
-          ideas: currentData.ideas.filter((idea) => idea.id !== id),
-        }
-      },
-      false
-    )
-
-    await ideasApi.remove(id)
-    mutate()
-  }, [mutate])
+  const permanentDelete = useCallback(
+    async (id: string) =>
+      mutateWithOptimistic(
+        (current) => ({
+          ideas: current.ideas.filter((idea) => idea.id !== id),
+        }),
+        () => ideasApi.remove(id),
+      ),
+    [mutate],
+  )
 
   return {
     ideas: data?.ideas ?? [],
