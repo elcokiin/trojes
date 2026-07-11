@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useThemeToggle } from "@/hooks/use-theme-toggle";
 import { LoginClouds } from "@/components/login/login-clouds";
 import type { MousePosition } from "@/hooks/use-mouse-parallax";
+import { Z } from "@/components/login/layers";
 import sunImg from "@/public/assets/backgrounds/sun.webp";
 import moonImg from "@/public/assets/backgrounds/moon.webp";
 
@@ -101,7 +102,7 @@ export function LoginBackground({
 
   return (
     <>
-      <div className="absolute inset-0 z-0 bg-linear-to-b from-[#4fc3f7] to-white dark:from-[#0f0c29] dark:to-[#302b63]">
+      <div className={`absolute inset-0 ${Z.SKY} bg-linear-to-b from-[#4fc3f7] to-white dark:from-[#0f0c29] dark:to-[#302b63]`}>
         <div
           className="absolute -inset-4 opacity-0 dark:opacity-100 transition-[opacity,transform] duration-200 ease-out will-change-transform"
           style={{
@@ -111,11 +112,11 @@ export function LoginBackground({
         />
       </div>
       <LoginClouds mouseCoordinates={mouseCoordinates} />
-      <div className="absolute top-4 right-24 size-56 rounded-full blur-[80px] pointer-events-none select-none z-20 bg-[rgba(255,160,0,0.6)] dark:bg-[rgba(255,255,255,0.5)] max-[1200px]:hidden" />
+      <div className={`absolute top-4 right-24 size-56 rounded-full blur-[80px] pointer-events-none select-none ${Z.GLOW} bg-[rgba(255,160,0,0.6)] dark:bg-[rgba(255,255,255,0.5)] max-[1200px]:hidden`} />
       <button
         type="button"
         onClick={(e) => toggleTheme({ x: e.clientX, y: e.clientY })}
-        className="absolute top-12 right-32 size-32 cursor-pointer z-30 max-[1200px]:hidden"
+        className={`absolute top-12 right-32 size-32 cursor-pointer ${Z.TOGGLE} max-[1200px]:hidden`}
         aria-label="Toggle theme"
       >
         <Image

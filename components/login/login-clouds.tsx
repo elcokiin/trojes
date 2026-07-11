@@ -1,14 +1,16 @@
 import type { MousePosition } from "@/hooks/use-mouse-parallax";
+import { Z } from "@/components/login/layers";
 
+const PARALLAX_FACTOR = 8;
 export function LoginClouds({ mouseCoordinates }: { mouseCoordinates: MousePosition }) {
   return (
     <div
-      className="absolute -inset-4 z-1 pointer-events-none overflow-hidden dark:hidden transition-transform duration-200 ease-out will-change-transform"
+      className={`absolute -inset-4 ${Z.CLOUDS} pointer-events-none overflow-hidden dark:hidden transition-transform duration-200 ease-out will-change-transform`}
       style={{
-        transform: `translate3d(${-mouseCoordinates.x * 8}px, ${-mouseCoordinates.y * 8}px, 0)`,
+        transform: `translate3d(${-mouseCoordinates.x * PARALLAX_FACTOR}px, ${-mouseCoordinates.y * PARALLAX_FACTOR}px, 0)`,
       }}
     >
-      {/* Nube 1 - grande, arriba izquierda */}
+      {/* Cloud 1 - large, top left */}
       <div className="absolute top-20 left-6">
         <div className="relative w-72 h-32">
           <div className="absolute bottom-0 left-6 w-40 h-24 bg-white/90 rounded-full" />
@@ -21,7 +23,7 @@ export function LoginClouds({ mouseCoordinates }: { mouseCoordinates: MousePosit
         </div>
       </div>
 
-      {/* Nube 2 - mediana, izquierda media */}
+      {/* Cloud 2 - medium, middle left */}
       <div className="absolute top-40 left-[8%] max-[768px]:hidden">
         <div className="relative w-56 h-24">
           <div className="absolute bottom-0 left-4 w-28 h-4.5 bg-white/85 rounded-full" />
@@ -31,7 +33,7 @@ export function LoginClouds({ mouseCoordinates }: { mouseCoordinates: MousePosit
         </div>
       </div>
 
-      {/* Nube 3 - pequeña, izquierda baja */}
+      {/* Cloud 3 - small, bottom left */}
       <div className="absolute top-[60%] left-[5%] opacity-75 max-[768px]:hidden">
         <div className="relative w-44 h-4.5">
           <div className="absolute bottom-0 left-2 w-5.5 h-3.5 bg-white/80 rounded-full" />
@@ -40,7 +42,7 @@ export function LoginClouds({ mouseCoordinates }: { mouseCoordinates: MousePosit
         </div>
       </div>
 
-      {/* Nube 4 - grande, fondo translúcido, izquierda */}
+      {/* Cloud 4 - large, translucent background, left */}
       <div className="absolute top-36 left-[3%] opacity-50 max-[768px]:hidden">
         <div className="relative w-80 h-28 blur-[1px]">
           <div className="absolute bottom-0 left-6 w-40 h-20 bg-white rounded-full" />
@@ -50,7 +52,7 @@ export function LoginClouds({ mouseCoordinates }: { mouseCoordinates: MousePosit
         </div>
       </div>
 
-      {/* Nube 5 - grande, centro superior */}
+      {/* Cloud 5 - large, top center */}
       <div className="absolute top-10 left-[38%] -translate-x-1/2 max-[768px]:hidden">
         <div className="relative w-64 h-28">
           <div className="absolute bottom-0 left-4 w-36 h-20 bg-white/85 rounded-full" />
@@ -61,7 +63,7 @@ export function LoginClouds({ mouseCoordinates }: { mouseCoordinates: MousePosit
         </div>
       </div>
 
-      {/* Nube 6 - pequeña, centro */}
+      {/* Cloud 6 - small, center */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 opacity-70 max-[768px]:hidden">
         <div className="relative w-48 h-20">
           <div className="absolute bottom-0 left-3 w-24 h-16 bg-white/75 rounded-full" />
@@ -70,7 +72,7 @@ export function LoginClouds({ mouseCoordinates }: { mouseCoordinates: MousePosit
         </div>
       </div>
 
-      {/* Nube 7 - grande, fondo centro */}
+      {/* Cloud 7 - large, background center */}
       <div className="absolute top-[55%] left-[40%] opacity-45 max-[768px]:hidden">
         <div className="relative w-72 h-24 blur-[1px]">
           <div className="absolute bottom-0 left-4 w-36 h-4.5 bg-white rounded-full" />
@@ -79,7 +81,7 @@ export function LoginClouds({ mouseCoordinates }: { mouseCoordinates: MousePosit
         </div>
       </div>
 
-      {/* Nube 8 - mediana, centro-derecha arriba */}
+      {/* Cloud 8 - medium, top center-right */}
       <div className="absolute top-28 right-[22%] max-[768px]:hidden">
         <div className="relative w-52 h-22">
           <div className="absolute bottom-0 left-4 w-28 h-4 bg-white/80 rounded-full" />
@@ -89,7 +91,7 @@ export function LoginClouds({ mouseCoordinates }: { mouseCoordinates: MousePosit
         </div>
       </div>
 
-      {/* Nube 9 - pequeña, centro-derecha media */}
+      {/* Cloud 9 - small, middle center-right */}
       <div className="absolute top-[45%] right-[18%] opacity-75 max-[768px]:hidden">
         <div className="relative w-40 h-16">
           <div className="absolute bottom-0 left-2 w-20 h-12 bg-white/75 rounded-full" />
@@ -98,7 +100,7 @@ export function LoginClouds({ mouseCoordinates }: { mouseCoordinates: MousePosit
         </div>
       </div>
 
-      {/* Nube 10 - mediana, centro-derecha baja */}
+      {/* Cloud 10 - medium, bottom center-right */}
       <div className="absolute bottom-32 right-[20%] opacity-65 max-[768px]:hidden">
         <div className="relative w-56 h-20">
           <div className="absolute bottom-0 left-4 w-28 h-14 bg-white/70 rounded-full" />
@@ -107,7 +109,7 @@ export function LoginClouds({ mouseCoordinates }: { mouseCoordinates: MousePosit
         </div>
       </div>
 
-      {/* Nube 11 - mediana, abajo izquierda */}
+      {/* Cloud 11 - medium, bottom left */}
       <div className="absolute bottom-16 left-[18%] opacity-70 max-[768px]:hidden">
         <div className="relative w-80 h-28">
           <div className="absolute bottom-0 left-6 w-40 h-20 bg-white/75 rounded-full" />
@@ -117,7 +119,7 @@ export function LoginClouds({ mouseCoordinates }: { mouseCoordinates: MousePosit
         </div>
       </div>
 
-      {/* Nube 12 - pequeña, abajo centro */}
+      {/* Cloud 12 - small, bottom center */}
       <div className="absolute bottom-8 left-[55%] opacity-80 max-[768px]:hidden">
         <div className="relative w-44 h-16">
           <div className="absolute bottom-0 left-2 w-20 h-12 bg-white/70 rounded-full" />

@@ -5,6 +5,7 @@ import { useMouseParallax } from "@/hooks/use-mouse-parallax";
 import { GoogleSignInButton, GOOGLE_BTN_SELECTOR } from "@/components/login/google-sign-in-button";
 import { LoginBackground } from "@/components/login/login-background";
 import { LoginSceneBackground } from "@/components/login/login-scene-background";
+import { Z } from "@/components/login/layers";
 
 export default function LoginPage() {
   const mouseCoordinates = useMouseParallax({ ignoreSelector: GOOGLE_BTN_SELECTOR });
@@ -13,7 +14,7 @@ export default function LoginPage() {
     <div className="relative h-dvh overflow-hidden">
       <LoginBackground mouseCoordinates={mouseCoordinates} />
       <LoginSceneBackground mouseCoordinates={mouseCoordinates} />
-      <div className="absolute inset-0 z-20 grid place-items-center p-4 -mt-5">
+      <div className={`absolute inset-0 ${Z.CONTENT} grid place-items-center p-4 -mt-5`}>
         <GoogleSignInButton
           onClick={() => signIn("google", { callbackUrl: "/" })}
         />
