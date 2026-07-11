@@ -14,6 +14,7 @@ vi.mock("@/db/ideas", () => ({
 
 import { getAuthenticatedUserId } from "@/lib/auth"
 import { findIdeas, findPinnedIdeas, createIdea } from "@/db/ideas"
+import type { Idea } from "@/db/schema"
 
 const mockIdea = {
   id: "idea-1",
@@ -27,7 +28,7 @@ const mockIdea = {
   deleted_at: null,
   created_at: "2024-06-01T12:00:00Z",
   updated_at: "2024-06-01T12:00:00Z",
-}
+} satisfies Idea
 
 describe("GET /api/ideas", () => {
   beforeEach(() => {
