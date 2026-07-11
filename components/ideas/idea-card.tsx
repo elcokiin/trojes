@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback, memo } from "react"
 import { useHotkey } from "@tanstack/react-hotkeys"
+import { useRegisterHotkeyScope, selectNoOverlays } from "@/hooks/use-hotkey-scope"
+import { useUIStore } from "@/stores/ui-store"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -44,6 +46,9 @@ export const IdeaCard = memo(function IdeaCard({
   const [menuOpen, setMenuOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
+
+  useRegisterHotkeyScope(menuOpen, "dropdown")
+  const noOverlays = useUIStore(selectNoOverlays)
 
   const showPin = idea.status === "inbox"
 
@@ -102,7 +107,7 @@ export const IdeaCard = memo(function IdeaCard({
   }, [isSelected])
 
   useHotkey(SHORTCUTS.openActions.hotkeys[0], () => setMenuOpen(true), {
-    enabled: isSelected && !menuOpen,
+    enabled: isSelected && !menuOpen && noOverlays,
     ignoreInputs: true,
     preventDefault: true,
     conflictBehavior: "allow",
@@ -115,14 +120,14 @@ export const IdeaCard = memo(function IdeaCard({
   }, [idea.content])
 
   useHotkey(SHORTCUTS.copyIdea.hotkeys[0], handleCopy, {
-    enabled: isSelected,
+    enabled: isSelected && noOverlays,
     ignoreInputs: true,
     preventDefault: true,
     conflictBehavior: "allow",
   })
 
   useHotkey(SHORTCUTS.togglePin.hotkeys[0], () => handlePinToggle(), {
-    enabled: isSelected && showPin,
+    enabled: isSelected && showPin && noOverlays,
     ignoreInputs: true,
     preventDefault: true,
     conflictBehavior: "allow",

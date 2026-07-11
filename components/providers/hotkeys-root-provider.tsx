@@ -1,24 +1,10 @@
 "use client"
 
-import { HotkeysProvider, useHotkey } from "@tanstack/react-hotkeys"
-import { useThemeToggle } from "@/hooks/use-theme-toggle"
-import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
-import { SHORTCUTS } from "@/lib/shortcuts"
+import { HotkeysProvider } from "@tanstack/react-hotkeys"
+import { useGlobalHotkeys } from "@/hooks/use-hotkey-scope"
 
-function GlobalThemeShortcut() {
-  const { toggleTheme, resolvedTheme } = useThemeToggle()
-  const [themeToggleKeyEnabled] = useShortcutPreference("trojes-shortcut-theme-toggle")
-
-  useHotkey(SHORTCUTS.toggleTheme.hotkeys[0], () => {
-    if (!resolvedTheme) return
-    toggleTheme()
-  }, {
-    enabled: themeToggleKeyEnabled,
-    ignoreInputs: true,
-    preventDefault: true,
-    stopPropagation: true,
-  })
-
+function GlobalHotkeysRegistrar() {
+  useGlobalHotkeys()
   return null
 }
 
@@ -39,7 +25,7 @@ export function HotkeysRootProvider({ children }: { children: React.ReactNode })
         },
       }}
     >
-      <GlobalThemeShortcut />
+      <GlobalHotkeysRegistrar />
       {children}
     </HotkeysProvider>
   )

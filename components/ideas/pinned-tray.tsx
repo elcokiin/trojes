@@ -11,8 +11,6 @@ import {
 } from "@/components/ui/drawer";
 import { usePinnedIdeas } from "@/hooks/use-pinned-ideas";
 import { useIdeas } from "@/hooks/use-ideas";
-import { useHotkey } from "@tanstack/react-hotkeys";
-import { SHORTCUTS } from "@/lib/shortcuts";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useUIStore } from "@/stores/ui-store";
 import { cn } from "@/lib/utils";
@@ -92,12 +90,6 @@ export function PinnedTray() {
       setActiveTab("inbox");
     },
     [setFocusIdeaId, setActiveTab],
-  );
-
-  useHotkey(
-    SHORTCUTS.togglePinnedTray.hotkeys[0],
-    () => setPinnedTrayOpen(!isOpen),
-    { enabled: true },
   );
 
   useEffect(() => {

@@ -4,6 +4,7 @@ import { useMemo, useEffect, useRef } from "react"
 import { useHotkeys, type UseHotkeyDefinition } from "@tanstack/react-hotkeys"
 import { SHORTCUTS } from "@/lib/shortcuts"
 import { useUIStore } from "@/stores/ui-store"
+import { selectNoOverlays } from "@/hooks/use-hotkey-scope"
 
 const NO_SELECTION = -1
 const COLUMN_THRESHOLD = 20
@@ -132,10 +133,10 @@ export function useIdeaCardNavigation({
     return registrations
   }, [itemCount, onAction, onNew, onSelect, selectedIndex])
 
-  const overlaysOpen = useUIStore((s) => s.overlaysOpen)
+  const noOverlays = useUIStore(selectNoOverlays)
 
   useHotkeys(hotkeys, {
-    enabled: enabled && overlaysOpen === 0,
+    enabled: enabled && noOverlays,
     ignoreInputs: true,
     preventDefault: true,
     stopPropagation: true,

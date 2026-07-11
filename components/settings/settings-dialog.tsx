@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react"
 import { signOut } from "next-auth/react"
 import { useHotkey } from "@tanstack/react-hotkeys"
+import { useRegisterHotkeyScope, selectNoDropdowns } from "@/hooks/use-hotkey-scope"
+import { useUIStore } from "@/stores/ui-store"
 import { useTheme } from "@/components/providers/theme-provider"
 import {
   Dialog,
@@ -92,6 +94,8 @@ export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps
     return localStorage.getItem("trojes-settings-expanded") === "true"
   })
 
+  useRegisterHotkeyScope(!!open)
+
   useEffect(() => {
     localStorage.setItem("trojes-settings-expanded", String(isExpanded))
   }, [isExpanded])
@@ -113,11 +117,13 @@ export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps
     return () => media.removeEventListener("change", onMediaChange)
   }, [])
 
+  const noDropdowns = useUIStore(selectNoDropdowns)
+
   useHotkey(SHORTCUTS.expandSettings.hotkeys[0], () => {
     onOpenChange?.(true)
     setIsExpanded((prev) => !prev)
   }, {
-    enabled: settingsKeyEnabled,
+    enabled: settingsKeyEnabled && noDropdowns,
     ignoreInputs: true,
     preventDefault: true,
     stopPropagation: true,
