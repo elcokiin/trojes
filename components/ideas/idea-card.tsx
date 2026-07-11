@@ -45,6 +45,8 @@ export function IdeaCard({
   const [copied, setCopied] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
 
+  const showPin = idea.status === "inbox"
+
   const handleMenuOpenChange = useCallback((open: boolean) => {
     if (!open && document.activeElement instanceof HTMLElement) {
       document.activeElement.blur()
@@ -120,7 +122,7 @@ export function IdeaCard({
   })
 
   useHotkey(SHORTCUTS.togglePin.hotkeys[0], () => handlePinToggle(), {
-    enabled: isSelected,
+    enabled: isSelected && showPin,
     ignoreInputs: true,
     preventDefault: true,
     conflictBehavior: "allow",
@@ -141,24 +143,26 @@ export function IdeaCard({
         idea.background_color && "border-transparent",
       )}
     >
-      <IconTooltip
-        icon={
-          idea.pinned ? (
-            <PinOff className="size-3.5" />
-          ) : (
-            <Pin className="size-3.5" />
-          )
-        }
-        label={idea.pinned ? "Unpin" : "Pin to top"}
-        shortcut={SHORTCUTS.togglePin.hotkeys[0]}
-        side="top"
-        onClick={handlePinToggle}
-        className={cn(
-          "absolute top-2 right-10 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity",
-          idea.pinned && "text-primary sm:opacity-100",
-          isSelected && "sm:opacity-100",
-        )}
-      />
+      {showPin && (
+        <IconTooltip
+          icon={
+            idea.pinned ? (
+              <PinOff className="size-3.5" />
+            ) : (
+              <Pin className="size-3.5" />
+            )
+          }
+          label={idea.pinned ? "Unpin" : "Pin to top"}
+          shortcut={SHORTCUTS.togglePin.hotkeys[0]}
+          side="top"
+          onClick={handlePinToggle}
+          className={cn(
+            "absolute top-2 right-10 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity",
+            idea.pinned && "text-primary sm:opacity-100",
+            isSelected && "sm:opacity-100",
+          )}
+        />
+      )}
 
       <IconTooltip
         icon={

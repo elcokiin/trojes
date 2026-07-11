@@ -93,4 +93,16 @@ describe("IdeaCard", () => {
     renderCard()
     expect(screen.getByText(/Jun 1/)).toBeTruthy()
   })
+
+  it("does not show pin button when status is archived", () => {
+    renderCard({ idea: { ...baseIdea, status: "archived" } })
+    expect(screen.queryByText("Pin to top")).toBeNull()
+    expect(screen.queryByText("Unpin")).toBeNull()
+  })
+
+  it("does not show pin button when status is deleted", () => {
+    renderCard({ idea: { ...baseIdea, status: "deleted" } })
+    expect(screen.queryByText("Pin to top")).toBeNull()
+    expect(screen.queryByText("Unpin")).toBeNull()
+  })
 })

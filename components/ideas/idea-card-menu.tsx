@@ -51,19 +51,21 @@ export function IdeaCardMenu({
       className="w-48"
       onCloseAutoFocus={(e) => e.preventDefault()}
     >
-      <DropdownMenuItem onClick={onPinToggle}>
-        {idea.pinned ? (
-          <>
-            <PinOff className="size-4 mr-2" />
-            Unpin
-          </>
-        ) : (
-          <>
-            <Pin className="size-4 mr-2" />
-            Pin to top
-          </>
-        )}
-      </DropdownMenuItem>
+      {idea.status === "inbox" && (
+        <DropdownMenuItem onClick={onPinToggle}>
+          {idea.pinned ? (
+            <>
+              <PinOff className="size-4 mr-2" />
+              Unpin
+            </>
+          ) : (
+            <>
+              <Pin className="size-4 mr-2" />
+              Pin to top
+            </>
+          )}
+        </DropdownMenuItem>
+      )}
 
       <DropdownMenuSub>
         <DropdownMenuSubTrigger>
