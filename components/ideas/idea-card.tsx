@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback, memo } from "react"
 import { useHotkey } from "@tanstack/react-hotkeys"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -31,7 +31,7 @@ import {
 } from "@/lib/ideas"
 import type { IdeaCardProps } from "@/types/idea"
 
-export function IdeaCard({
+export const IdeaCard = memo(function IdeaCard({
   idea,
   onStatusChange,
   onPinChange,
@@ -252,4 +252,4 @@ export function IdeaCard({
       </DropdownMenu>
     </Card>
   )
-}
+})

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef } from "react"
 import { IdeaCard } from "@/components/ideas/idea-card"
 import type { Idea } from "@/types/idea"
 import { QuickCapture } from "@/components/ideas/quick-capture"
@@ -77,14 +77,19 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
     permanentDelete,
   } = useIdeas({ status, search: debouncedSearch, enabled: active })
 
+  const ideasRef = useRef(ideas)
+  ideasRef.current = ideas
+
   const selectedIndex = focusIdeaId
     ? ideas.findIndex((idea) => idea.id === focusIdeaId)
     : -1
 
   const handleSelect = useCallback((index: number) => {
-    const id = index >= 0 && index < ideas.length ? ideas[index].id : null
+    const id = index >= 0 && index < ideasRef.current.length
+      ? ideasRef.current[index].id
+      : null
     setFocusIdeaId(id)
-  }, [ideas, setFocusIdeaId])
+  }, [setFocusIdeaId])
 
   const handleNew = useCallback(() => {
     if (status === "inbox") {
@@ -108,23 +113,23 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
     setCaptureOpen(false)
   }
 
-  const handleStatusChange = async (id: string, newStatus: "inbox" | "archived" | "deleted") => {
+  const handleStatusChange = useCallback(async (id: string, newStatus: "inbox" | "archived" | "deleted") => {
     await updateStatus(id, newStatus)
     setFocusIdeaId(null)
-  }
+  }, [updateStatus, setFocusIdeaId])
 
-  const handlePinChange = async (id: string, pinned: boolean) => {
+  const handlePinChange = useCallback(async (id: string, pinned: boolean) => {
     await updatePin(id, pinned)
-  }
+  }, [updatePin])
 
-  const handleColorChange = async (id: string, background_color: string | null) => {
+  const handleColorChange = useCallback(async (id: string, background_color: string | null) => {
     await updateColor(id, background_color)
-  }
+  }, [updateColor])
 
-  const handlePermanentDelete = async (id: string) => {
+  const handlePermanentDelete = useCallback(async (id: string) => {
     await permanentDelete(id)
     setFocusIdeaId(null)
-  }
+  }, [permanentDelete, setFocusIdeaId])
 
   if (isLoading) {
     return (
