@@ -59,6 +59,7 @@ interface IdeasListProps {
 
 export function IdeasList({ status, active = true, hideCapture = false }: IdeasListProps) {
   const [captureOpen, setCaptureOpen] = useState(false)
+  const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(null)
   const [keyboardEnabled] = useShortcutPreference("trojes-keyboard-nav")
   const [newIdeaKeyEnabled] = useShortcutPreference("trojes-shortcut-new-idea")
   const debouncedSearch = useSearchStore((s) => s.debouncedSearch)
@@ -103,6 +104,7 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
     onSelect: handleSelect,
     onNew: newIdeaKeyEnabled ? handleNew : undefined,
     enabled: active && keyboardEnabled && !captureOpen,
+    containerNode,
   })
 
   const handleCapture = async (content: string) => {
@@ -152,7 +154,7 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
   const EmptyIcon = emptyState[status].icon
 
   const renderIdeas = (ideaList: Idea[], startIndex: number) => (
-    <div className="columns-1 sm:columns-2 md:columns-3 gap-3 space-y-3">
+    <div ref={setContainerNode} className="columns-1 sm:columns-2 md:columns-3 gap-3 space-y-3">
       {ideaList.map((idea, index) => (
         <IdeaCard
           key={idea.id}
