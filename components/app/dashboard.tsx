@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback } from "react";
-import { mutate } from "swr";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
 import { ShortcutHelp } from "@/components/shortcuts/shortcut-help";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -11,6 +10,7 @@ import { MobileLayout } from "@/components/app/mobile-layout";
 import { IdeasTabs } from "@/components/ideas/ideas-tabs";
 import { QuickCapture } from "@/components/ideas/quick-capture";
 import { ideasApi } from "@/lib/api-client";
+import { revalidateAllIdeas } from "@/lib/swr-helpers";
 import { BottomNav } from "@/components/app/bottom-nav";
 import { PinnedTray } from "@/components/ideas/pinned-tray";
 
@@ -32,11 +32,7 @@ export function Dashboard({ user }: DashboardProps) {
 
   const handleCapture = useCallback(async (content: string) => {
     const response = await ideasApi.create(content)
-    if (response.ok) {
-      mutate(
-        (key) => typeof key === "string" && key.startsWith("/api/ideas"),
-      )
-    }
+    if (response.ok) revalidateAllIdeas()
   }, [])
 
   return (

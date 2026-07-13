@@ -1,8 +1,9 @@
 "use client"
 
 import { useCallback } from "react"
-import useSWR, { mutate as globalMutate } from "swr"
+import useSWR from "swr"
 import { fetcher, ideasApi } from "@/lib/api-client"
+import { revalidateAllIdeas } from "@/lib/swr-helpers"
 import type { Idea, IdeaStatus } from "@/types/idea"
 
 interface UseIdeasOptions {
@@ -34,16 +35,14 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
       return updateFn(current)
     }, false)
     const res = await apiCall()
-    mutate()
+    if (res.ok) revalidateAllIdeas()
     return { ok: res.ok }
   }
 
   const create = useCallback(async (content: string) => {
     const res = await ideasApi.create(content)
     if (!res.ok) return { ok: false }
-    globalMutate(
-      (key) => typeof key === "string" && key.startsWith("/api/ideas")
-    )
+    revalidateAllIdeas()
     return { ok: true }
   }, [])
 

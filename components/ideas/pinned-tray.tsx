@@ -72,7 +72,7 @@ function PinnedCard({
 }
 
 export function PinnedTray() {
-  const { ideas, isLoading, mutate } = usePinnedIdeas();
+  const { ideas, isLoading } = usePinnedIdeas();
   const { updatePin } = useIdeas({ status: "inbox" });
   const isMobile = useIsMobile();
   const isOpen = useUIStore((s) => s.pinnedTrayOpen);
@@ -116,9 +116,8 @@ export function PinnedTray() {
   const handleUnpin = useCallback(
     async (id: string) => {
       await updatePin(id, false);
-      mutate();
     },
-    [updatePin, mutate],
+    [updatePin],
   );
 
   const loadingState = isLoading && ideas.length === 0 && (

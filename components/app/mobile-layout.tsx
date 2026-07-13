@@ -8,7 +8,7 @@ import { QuickCapture } from "@/components/ideas/quick-capture";
 import { BottomNav } from "@/components/app/bottom-nav";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
-import { mutate as globalMutate } from "swr";
+import { revalidateAllIdeas } from "@/lib/swr-helpers";
 import { ideasApi } from "@/lib/api-client";
 
 function isBeforeInstallPromptEvent(e: Event): e is BeforeInstallPromptEvent {
@@ -91,11 +91,7 @@ export function MobileLayout() {
 
   const handleCapture = useCallback(async (content: string) => {
     const response = await ideasApi.create(content);
-    if (response.ok) {
-      globalMutate(
-        (key) => typeof key === "string" && key.startsWith("/api/ideas")
-      );
-    }
+    if (response.ok) revalidateAllIdeas()
     setCaptureOpen(false);
   }, [setCaptureOpen]);
 
