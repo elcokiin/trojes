@@ -12,13 +12,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { ShortcutKbdGroup } from "@/components/shortcuts/shortcut-kbd"
-import { useIsMobile } from "@/hooks/use-mobile"
 import { useDialogCloseHotkey } from "@/hooks/use-dialog-close-hotkey"
 import { SHORTCUT_GROUPS, SHORTCUTS } from "@/lib/shortcuts"
 import { cn } from "@/lib/utils"
 
 export function ShortcutHelp() {
-  const isMobile = useIsMobile()
   const [open, setOpen] = useState(false)
   useRegisterHotkeyScope(open)
   const noOverlays = useUIStore(selectNoOverlays)
@@ -27,17 +25,16 @@ export function ShortcutHelp() {
   const shortcuts = Object.values(SHORTCUTS)
 
   useHotkey(SHORTCUTS.help.hotkeys[0], () => setOpen(true), {
-    enabled: !isMobile && noOverlays,
+    enabled: noOverlays,
     ignoreInputs: true,
     preventDefault: true,
   })
 
   useDialogCloseHotkey(open, () => setOpen(false))
 
-  if (isMobile) return null
-
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <div className="max-md:hidden">
+      <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-h-[85vh] overflow-hidden sm:max-w-[620px] grid-rows-[auto_minmax(0,1fr)]">
         <DialogHeader>
           <DialogTitle>Keyboard Shortcuts</DialogTitle>
@@ -85,5 +82,6 @@ export function ShortcutHelp() {
         </div>
       </DialogContent>
     </Dialog>
+    </div>
   )
 }

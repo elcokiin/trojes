@@ -17,10 +17,7 @@ function isBeforeInstallPromptEvent(e: Event): e is BeforeInstallPromptEvent {
 
 export function MobileLayout() {
   const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
-  const [isStandalone, setIsStandalone] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia("(display-mode: standalone)").matches;
-  });
+  const [isStandalone, setIsStandalone] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [topHidden, setTopHidden] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -30,6 +27,7 @@ export function MobileLayout() {
 
   useEffect(() => {
     const media = window.matchMedia("(display-mode: standalone)");
+    setIsStandalone(media.matches);
 
     const onStandaloneChange = (e: MediaQueryListEvent) =>
       setIsStandalone(e.matches);

@@ -3,7 +3,6 @@
 import { formatForDisplay, type RegisterableHotkey } from "@tanstack/react-hotkeys"
 import { Kbd, KbdGroup } from "@/components/ui/kbd"
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
-import { useIsMobile } from "@/hooks/use-mobile"
 
 function shortcutHotkeyKey(hotkey: RegisterableHotkey) {
   return typeof hotkey === "string" ? hotkey : JSON.stringify(hotkey)
@@ -16,13 +15,11 @@ interface ShortcutKbdProps {
 }
 
 export function ShortcutKbd({ hotkey, className, alwaysVisible = false }: ShortcutKbdProps) {
-  const isMobile = useIsMobile()
   const [showShortcutHints] = useShortcutPreference("trojes-shortcut-hints")
 
-  if (isMobile) return null
   if (!alwaysVisible && !showShortcutHints) return null
 
-  return <Kbd className={className}>{formatForDisplay(hotkey)}</Kbd>
+  return <Kbd className={`max-md:hidden ${className ?? ""}`}>{formatForDisplay(hotkey)}</Kbd>
 }
 
 interface ShortcutKbdGroupProps {
@@ -36,14 +33,12 @@ export function ShortcutKbdGroup({
   className,
   alwaysVisible = false,
 }: ShortcutKbdGroupProps) {
-  const isMobile = useIsMobile()
   const [showShortcutHints] = useShortcutPreference("trojes-shortcut-hints")
 
-  if (isMobile) return null
   if (!alwaysVisible && !showShortcutHints) return null
 
   return (
-    <KbdGroup className={className}>
+    <KbdGroup className={`max-md:hidden ${className ?? ""}`}>
       {hotkeys.map((hotkey) => (
         <Kbd key={shortcutHotkeyKey(hotkey)}>{formatForDisplay(hotkey)}</Kbd>
       ))}

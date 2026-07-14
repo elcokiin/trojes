@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { ShortcutKbd } from "@/components/shortcuts/shortcut-kbd"
 import { EditorX } from "@/components/editor/editor-x"
-import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import { Plus, X, Check } from "lucide-react"
 
@@ -24,7 +23,6 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
   const [openCount, setOpenCount] = useState(0)
   const [isFocused, setIsFocused] = useState(false)
 
-  const isMobile = useIsMobile()
   const isExpanded = isOpen ?? false
 
   const handleOpen = useCallback(() => {
@@ -75,8 +73,7 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
         onClick={handleOpen}
         variant="outline"
         className={cn(
-          "w-full h-12 justify-start gap-3 text-muted-foreground font-normal border-dashed bg-card group hover:border-solid transition-all duration-200",
-          isMobile && "rounded-none border-x-0",
+          "w-full h-12 justify-start gap-3 text-muted-foreground font-normal border-dashed bg-card group hover:border-solid transition-all duration-200 max-md:rounded-none max-md:border-x-0",
         )}
       >
         <Plus className="size-4 transition-transform group-hover:scale-110" />
@@ -90,9 +87,7 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
     <div
       key={openCount}
       className={cn(
-        "relative rounded-md min-h-12 border border-dashed border-input bg-card transition-colors duration-200",
-        "hover:border-solid",
-        isMobile && "rounded-none border-x-0"
+        "relative rounded-md min-h-12 border border-dashed border-input bg-card transition-colors duration-200 hover:border-solid max-md:rounded-none max-md:border-x-0"
       )}
     >
       <EditorX

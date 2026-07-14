@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
+  ArrowLeft,
   Key,
   Keyboard,
   Maximize2,
@@ -123,13 +124,11 @@ export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps
     router.replace(url.pathname + url.search, { scroll: false })
   }, [open, section])
 
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window === "undefined") return false
-    return window.matchMedia("(max-width: 767px)").matches
-  })
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 767px)")
+    setIsMobile(media.matches)
     const onMediaChange = (e: MediaQueryListEvent) => {
       setIsMobile(e.matches)
       setSection((prev) => e.matches && prev === "keyboard" ? "appearance" : prev)
@@ -164,25 +163,40 @@ export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        showCloseButton={!isMobile}
         className={cn(
           "flex flex-col gap-0 overflow-hidden p-0",
-          isExpanded
-            ? "!h-[calc(100vh-2rem)] !max-h-[calc(100vh-2rem)] !w-[calc(100vw-2rem)] !max-w-[calc(100vw-2rem)] sm:!max-w-[calc(100vw-2rem)]"
-            : "h-[min(720px,calc(100vh-2rem))] sm:max-w-4xl"
+          isMobile
+            ? "!fixed !inset-0 !z-50 !h-dvh !w-dvw !max-w-none !max-h-none !translate-x-0 !translate-y-0 !rounded-none !border-0 !shadow-none"
+            : isExpanded
+              ? "!h-[calc(100vh-2rem)] !max-h-[calc(100vh-2rem)] !w-[calc(100vw-2rem)] !max-w-[calc(100vw-2rem)] sm:!max-w-[calc(100vw-2rem)]"
+              : "h-[min(720px,calc(100vh-2rem))] sm:max-w-4xl"
         )}
       >
         <DialogHeader className="shrink-0 border-b px-6 py-4">
           <div className="flex items-start gap-3 pr-8">
-            <IconTooltip
-              icon={isExpanded ? <Minimize2 /> : <Maximize2 />}
-              label={isExpanded ? "Collapse settings" : "Expand settings"}
-              shortcut={SHORTCUTS.expandSettings.hotkeys[0]}
-              side="top"
-              onClick={() => setIsExpanded((prev) => !prev)}
-              aria-label={isExpanded ? "Restore settings dialog" : "Expand settings dialog"}
-              className="-ml-2"
-              size="icon"
-            />
+            {isMobile ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onOpenChange?.(false)}
+                aria-label="Go back"
+                className="-ml-2"
+              >
+                <ArrowLeft />
+              </Button>
+            ) : (
+              <IconTooltip
+                icon={isExpanded ? <Minimize2 /> : <Maximize2 />}
+                label={isExpanded ? "Collapse settings" : "Expand settings"}
+                shortcut={SHORTCUTS.expandSettings.hotkeys[0]}
+                side="top"
+                onClick={() => setIsExpanded((prev) => !prev)}
+                aria-label={isExpanded ? "Restore settings dialog" : "Expand settings dialog"}
+                className="-ml-2"
+                size="icon"
+              />
+            )}
             <div className="min-w-0">
               <DialogTitle className="text-xl">Settings</DialogTitle>
               <DialogDescription>
