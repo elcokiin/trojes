@@ -5,32 +5,14 @@ import { Switch } from "@/components/ui/switch"
 import { Keyboard } from "lucide-react"
 import { ShortcutKbdGroup } from "@/components/shortcuts/shortcut-kbd"
 import { SHORTCUTS } from "@/lib/shortcuts"
+import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
 
-interface SettingsKeyboardProps {
-  keyboardNav: boolean
-  setKeyboardNav: (v: boolean) => void
-  shortcutHintsEnabled: boolean
-  setShortcutHintsEnabled: (v: boolean) => void
-  newIdeaKeyEnabled: boolean
-  setNewIdeaKeyEnabled: (v: boolean) => void
-  themeToggleKeyEnabled: boolean
-  setThemeToggleKeyEnabled: (v: boolean) => void
-  settingsKeyEnabled: boolean
-  setSettingsKeyEnabled: (v: boolean) => void
-}
-
-export function SettingsKeyboard({
-  keyboardNav,
-  setKeyboardNav,
-  shortcutHintsEnabled,
-  setShortcutHintsEnabled,
-  newIdeaKeyEnabled,
-  setNewIdeaKeyEnabled,
-  themeToggleKeyEnabled,
-  setThemeToggleKeyEnabled,
-  settingsKeyEnabled,
-  setSettingsKeyEnabled,
-}: SettingsKeyboardProps) {
+export function SettingsKeyboard() {
+  const [keyboardNav, setKeyboardNav] = useShortcutPreference("trojes-keyboard-nav")
+  const [shortcutHintsEnabled, setShortcutHintsEnabled] = useShortcutPreference("trojes-shortcut-hints")
+  const [newIdeaKeyEnabled, setNewIdeaKeyEnabled] = useShortcutPreference("trojes-shortcut-new-idea")
+  const [themeToggleKeyEnabled, setThemeToggleKeyEnabled] = useShortcutPreference("trojes-shortcut-theme-toggle")
+  const [settingsKeyEnabled, setSettingsKeyEnabled] = useShortcutPreference("trojes-shortcut-settings")
   return (
     <>
       <div className="flex items-center justify-between">

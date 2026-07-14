@@ -2,41 +2,22 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import {
   useRegisterHotkeyScope,
   selectNoDropdowns,
 } from "@/hooks/use-hotkey-scope";
 import { useUIStore } from "@/stores/ui-store";
-import { useTheme } from "@/components/providers/theme-provider";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  ArrowLeft,
-  Key,
-  Keyboard,
-  Maximize2,
-  Minimize2,
-  Monitor,
-  Moon,
-  Palette,
-  LogOut,
-  Smartphone,
-  Sun,
-  User,
-} from "lucide-react";
-import { IconTooltip } from "@/components/ui/icon-tooltip";
 import { cn } from "@/lib/utils";
+import { SettingsHeader } from "@/components/settings/settings-header";
+import { SettingsSidebar } from "@/components/settings/settings-sidebar";
+import { SettingsAppearance } from "@/components/settings/settings-appearance";
+import { SettingsAccount } from "@/components/settings/settings-account";
 import { ApiKeysManager } from "@/components/settings/api-keys-manager";
 import { PwaInstallManager } from "@/components/settings/pwa-install-manager";
 import { SettingsKeyboard } from "@/components/settings/settings-keyboard";
@@ -44,35 +25,12 @@ import { SHORTCUTS } from "@/lib/shortcuts";
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences";
 import { useDialogCloseHotkey } from "@/hooks/use-dialog-close-hotkey";
 
-const sidebarItems = [
-  {
-    id: "install",
-    icon: Smartphone,
-    label: "Install App",
-    mobileOnly: true,
-  },
-  {
-    id: "keyboard",
-    icon: Keyboard,
-    label: "Keybindings",
-    desktopOnly: true,
-  },
-  {
-    id: "api",
-    icon: Key,
-    label: "API Keys",
-  },
-  {
-    id: "appearance",
-    icon: Palette,
-    label: "Theme",
-  },
-  {
-    id: "account",
-    icon: User,
-    label: "Account",
-  },
-] as const;
+type SettingsSection =
+  | "appearance"
+  | "keyboard"
+  | "api"
+  | "install"
+  | "account";
 
 interface SettingsDialogProps {
   open?: boolean;
@@ -84,35 +42,16 @@ interface SettingsDialogProps {
   };
 }
 
-type SettingsSection =
-  | "appearance"
-  | "keyboard"
-  | "api"
-  | "install"
-  | "account";
-
 export function SettingsDialog({
   open,
   onOpenChange,
   user,
 }: SettingsDialogProps) {
-  const { theme, setTheme } = useTheme();
-  const [keyboardNav, setKeyboardNav] = useShortcutPreference(
-    "trojes-keyboard-nav",
-  );
-  const [newIdeaKeyEnabled, setNewIdeaKeyEnabled] = useShortcutPreference(
-    "trojes-shortcut-new-idea",
-  );
-  const [themeToggleKeyEnabled, setThemeToggleKeyEnabled] =
-    useShortcutPreference("trojes-shortcut-theme-toggle");
-  const [settingsKeyEnabled, setSettingsKeyEnabled] = useShortcutPreference(
-    "trojes-shortcut-settings",
-  );
-  const [shortcutHintsEnabled, setShortcutHintsEnabled] = useShortcutPreference(
-    "trojes-shortcut-hints",
-  );
+  const [settingsKeyEnabled] = useShortcutPreference("trojes-shortcut-settings");
+
   const router = useRouter();
   const params = useSearchParams();
+
   const validSections: readonly string[] = [
     "appearance",
     "keyboard",
@@ -127,6 +66,14 @@ export function SettingsDialog({
   const [isExpanded, setIsExpanded] = useState(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("trojes-settings-expanded") === "true";
+  });
+  const [isMobile, setIsMobile] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return (
+      window.matchMedia("(display-mode: standalone)").matches ||
+      navigator.standalone === true
+    );
   });
 
   useRegisterHotkeyScope(!!open);
@@ -151,8 +98,6 @@ export function SettingsDialog({
     router.replace(url.pathname + url.search, { scroll: false });
   }, [open, section]);
 
-  const [isMobile, setIsMobile] = useState(false);
-
   useEffect(() => {
     const media = window.matchMedia("(max-width: 767px)");
     setIsMobile(media.matches);
@@ -167,14 +112,6 @@ export function SettingsDialog({
 
     return () => media.removeEventListener("change", onMediaChange);
   }, []);
-
-  const [isInstalled, setIsInstalled] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return (
-      window.matchMedia("(display-mode: standalone)").matches ||
-      navigator.standalone === true
-    );
-  });
 
   useEffect(() => {
     const media = window.matchMedia("(display-mode: standalone)");
@@ -207,14 +144,6 @@ export function SettingsDialog({
 
   useDialogCloseHotkey(!!open, () => onOpenChange?.(false));
 
-  const initials =
-    user.name
-      ?.split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2) || "U";
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -228,168 +157,29 @@ export function SettingsDialog({
               : "h-[min(720px,calc(100vh-2rem))] sm:max-w-4xl",
         )}
       >
-        <DialogHeader className="shrink-0 border-b px-6 py-4">
-          <div className="flex items-start gap-3 pr-8">
-            {isMobile ? (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onOpenChange?.(false)}
-                aria-label="Go back"
-                className="-ml-2"
-              >
-                <ArrowLeft />
-              </Button>
-            ) : (
-              <IconTooltip
-                icon={isExpanded ? <Minimize2 /> : <Maximize2 />}
-                label={isExpanded ? "Collapse settings" : "Expand settings"}
-                shortcut={SHORTCUTS.expandSettings.hotkeys[0]}
-                side="top"
-                onClick={() => setIsExpanded((prev) => !prev)}
-                aria-label={
-                  isExpanded
-                    ? "Restore settings dialog"
-                    : "Expand settings dialog"
-                }
-                className="-ml-2"
-                size="icon"
-              />
-            )}
-            <div className="min-w-0">
-              <DialogTitle className="text-xl">Settings</DialogTitle>
-              <DialogDescription>
-                Configure your Trojes experience
-              </DialogDescription>
-            </div>
-          </div>
-        </DialogHeader>
-
+        <SettingsHeader
+          isExpanded={isExpanded}
+          setIsExpanded={setIsExpanded}
+          isMobile={isMobile}
+          onClose={() => onOpenChange?.(false)}
+        />
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
-          <aside className="shrink-0 border-b bg-muted/20 md:w-64 md:border-b-0 md:border-r">
-            <ScrollArea className="w-full md:h-full">
-              <nav className="flex gap-1 p-3 overflow-x-auto md:overflow-visible md:flex-col">
-                {sidebarItems.map((item) => {
-                  if (item.id === "install" && isInstalled) return null;
-                  if ("desktopOnly" in item && item.desktopOnly && isMobile)
-                    return null;
-                  if ("mobileOnly" in item && item.mobileOnly && !isMobile)
-                    return null;
-
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => setSection(item.id)}
-                      className={cn(
-                        "grid shrink-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground md:w-full",
-                        section === item.id
-                          ? "bg-accent text-accent-foreground"
-                          : "text-muted-foreground",
-                      )}
-                    >
-                      <item.icon />
-                      <span className="truncate">{item.label}</span>
-                    </button>
-                  );
-                })}
-              </nav>
-            </ScrollArea>
-          </aside>
-
+          <SettingsSidebar
+            section={section}
+            onSectionChange={setSection}
+            isMobile={isMobile}
+            isInstalled={isInstalled}
+          />
           <div className="min-h-0 flex-1 bg-background">
             <ScrollArea className="h-full">
               <section className="flex flex-col gap-6 p-6">
-                {section === "appearance" && (
-                  <div className="flex flex-col gap-3">
-                    <Label className="text-sm font-medium">Theme</Label>
-                    <div className="grid grid-cols-3 gap-2">
-                      <Button
-                        variant={theme === "light" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setTheme("light")}
-                        className="gap-2"
-                      >
-                        <Sun className="size-4" />
-                        Light
-                      </Button>
-                      <Button
-                        variant={theme === "dark" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setTheme("dark")}
-                        className="gap-2"
-                      >
-                        <Moon className="size-4" />
-                        Dark
-                      </Button>
-                      <Button
-                        variant={theme === "system" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setTheme("system")}
-                        className="gap-2"
-                      >
-                        <Monitor className="size-4" />
-                        System
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {!isMobile && section === "keyboard" && (
-                  <SettingsKeyboard
-                    keyboardNav={keyboardNav}
-                    setKeyboardNav={setKeyboardNav}
-                    shortcutHintsEnabled={shortcutHintsEnabled}
-                    setShortcutHintsEnabled={setShortcutHintsEnabled}
-                    newIdeaKeyEnabled={newIdeaKeyEnabled}
-                    setNewIdeaKeyEnabled={setNewIdeaKeyEnabled}
-                    themeToggleKeyEnabled={themeToggleKeyEnabled}
-                    setThemeToggleKeyEnabled={setThemeToggleKeyEnabled}
-                    settingsKeyEnabled={settingsKeyEnabled}
-                    setSettingsKeyEnabled={setSettingsKeyEnabled}
-                  />
-                )}
-
+                {section === "appearance" && <SettingsAppearance />}
+                {!isMobile && section === "keyboard" && <SettingsKeyboard />}
                 {section === "api" && <ApiKeysManager />}
                 {isMobile && section === "install" && !isInstalled && (
                   <PwaInstallManager />
                 )}
-
-                {section === "account" && (
-                  <div className="flex flex-col gap-6">
-                    <div className="flex items-center gap-4">
-                      <Avatar className="size-14">
-                        <AvatarImage
-                          src={user.image || undefined}
-                          alt={user.name || "User"}
-                        />
-                        <AvatarFallback className="bg-primary/10 text-primary text-lg">
-                          {initials}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex flex-col gap-1">
-                        {user.name && (
-                          <p className="text-sm font-medium leading-none truncate">
-                            {user.name}
-                          </p>
-                        )}
-                        {user.email && (
-                          <p className="text-sm text-muted-foreground truncate">
-                            {user.email}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      className="w-fit gap-2 text-destructive hover:text-destructive"
-                      onClick={() => signOut({ callbackUrl: "/login" })}
-                    >
-                      <LogOut className="size-4" />
-                      Sign out
-                    </Button>
-                  </div>
-                )}
+                {section === "account" && <SettingsAccount user={user} />}
               </section>
             </ScrollArea>
           </div>
