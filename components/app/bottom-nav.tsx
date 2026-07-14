@@ -87,7 +87,8 @@ export function BottomNav() {
           <Search className="size-4 text-muted-foreground shrink-0" />
           <input
             ref={searchInputRef}
-            type="text"
+            type="search"
+            inputMode="search"
             value={inputValue}
             onChange={handleInputChange}
             placeholder="Find your ideas..."
@@ -97,6 +98,8 @@ export function BottomNav() {
               if (e.key === "Escape") handleCloseSearch();
             }}
             autoComplete="off"
+            autoCapitalize="off"
+            autoCorrect="off"
             spellCheck={false}
           />
           <button
