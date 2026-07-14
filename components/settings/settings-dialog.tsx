@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import { signOut } from "next-auth/react"
 import { useHotkey } from "@tanstack/react-hotkeys"
 import { useRegisterHotkeyScope, selectNoDropdowns } from "@/hooks/use-hotkey-scope"
@@ -88,7 +89,13 @@ export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps
   const [themeToggleKeyEnabled, setThemeToggleKeyEnabled] = useShortcutPreference("trojes-shortcut-theme-toggle")
   const [settingsKeyEnabled, setSettingsKeyEnabled] = useShortcutPreference("trojes-shortcut-settings")
   const [shortcutHintsEnabled, setShortcutHintsEnabled] = useShortcutPreference("trojes-shortcut-hints")
-  const [section, setSection] = useState<SettingsSection>("appearance")
+  const router = useRouter()
+  const params = useSearchParams()
+  const validSections: readonly string[] = ["appearance", "keyboard", "api", "install", "account"]
+  const initialSection = validSections.includes(params.get("settings") || "")
+    ? (params.get("settings") as SettingsSection)
+    : "appearance"
+  const [section, setSection] = useState<SettingsSection>(initialSection)
   const [isExpanded, setIsExpanded] = useState(() => {
     if (typeof window === "undefined") return false
     return localStorage.getItem("trojes-settings-expanded") === "true"
@@ -99,6 +106,22 @@ export function SettingsDialog({ open, onOpenChange, user }: SettingsDialogProps
   useEffect(() => {
     localStorage.setItem("trojes-settings-expanded", String(isExpanded))
   }, [isExpanded])
+
+  useEffect(() => {
+    if (params.has("settings")) {
+      onOpenChange?.(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    if (open) {
+      url.searchParams.set("settings", section)
+    } else {
+      url.searchParams.delete("settings")
+    }
+    router.replace(url.pathname + url.search, { scroll: false })
+  }, [open, section])
 
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window === "undefined") return false

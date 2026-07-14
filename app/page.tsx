@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
@@ -10,5 +11,9 @@ export default async function Home() {
     redirect("/login")
   }
 
-  return <Dashboard user={session.user} />
+  return (
+    <Suspense>
+      <Dashboard user={session.user} />
+    </Suspense>
+  )
 }
