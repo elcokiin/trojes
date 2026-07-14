@@ -14,7 +14,7 @@ describe("generateApiKey", () => {
 
   it("includes only hex characters after the prefix", () => {
     const key = generateApiKey()
-    const suffix = key.slice(6)
+    const suffix = key.slice(7)
     expect(suffix).toMatch(/^[a-f0-9]+$/)
     expect(suffix).toHaveLength(48)
   })

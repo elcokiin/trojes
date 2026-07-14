@@ -122,7 +122,7 @@ export function SettingsDialog({
   ];
   const initialSection = validSections.includes(params.get("settings") || "")
     ? (params.get("settings") as SettingsSection)
-    : "appearance";
+    : "api";
   const [section, setSection] = useState<SettingsSection>(initialSection);
   const [isExpanded, setIsExpanded] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -182,6 +182,12 @@ export function SettingsDialog({
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
   }, []);
+
+  useEffect(() => {
+    if (!params.has("settings") && !isInstalled && isMobile) {
+      setSection("install");
+    }
+  }, [isInstalled, isMobile]);
 
   const noDropdowns = useUIStore(selectNoDropdowns);
 
