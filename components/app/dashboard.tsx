@@ -59,7 +59,7 @@ export function Dashboard({ user }: DashboardProps) {
               />
             </div>
           </main>
-          <div className="fixed bottom-0 left-0 right-0 z-40">
+          <div className="fixed bottom-0 left-0 right-0 z-40 max-md:hidden">
             <BottomNav />
           </div>
         </>

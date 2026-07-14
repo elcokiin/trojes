@@ -81,7 +81,7 @@ export function BottomNav() {
   }, [setSearchMode, setPinnedTrayOpen])
 
   return (
-    <nav className="shrink-0 h-12 border-t bg-background flex items-stretch">
+    <nav data-slot="bottom-nav" className="shrink-0 h-12 border-t bg-background flex items-stretch pb-[env(safe-area-inset-bottom)]">
       {searchMode ? (
         <div className="flex-1 flex items-center gap-2 px-3">
           <Search className="size-4 text-muted-foreground shrink-0" />

@@ -45,7 +45,7 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport: Viewport = {};
+export const viewport: Viewport = { viewportFit: "cover" };
 
 export default function RootLayout({
   children,
