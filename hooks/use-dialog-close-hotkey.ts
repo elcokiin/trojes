@@ -4,7 +4,7 @@ import { useHotkey } from "@tanstack/react-hotkeys"
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
 import { SHORTCUTS } from "@/lib/shortcuts"
 
-export function useDialogCloseHotkey(open: boolean, onClose: () => void) {
+export function useDialogCloseHotkey(open: boolean | undefined, onClose: () => void) {
   const [keyboardEnabled] = useShortcutPreference("trojes-keyboard-nav")
 
   useHotkey(SHORTCUTS.closeDialog.hotkeys[0], onClose, {

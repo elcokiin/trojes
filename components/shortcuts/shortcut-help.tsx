@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useHeldKeys, useHotkey, useKeyHold } from "@tanstack/react-hotkeys"
-import { useRegisterHotkeyScope, selectNoOverlays } from "@/hooks/use-hotkey-scope"
+import { useSuppressGlobalHotkeys, selectNoOverlays } from "@/hooks/use-hotkey-scope"
 import { useUIStore } from "@/stores/ui-store"
 import {
   Dialog,
@@ -18,18 +18,18 @@ import { cn } from "@/lib/utils"
 
 export function ShortcutHelp() {
   const [open, setOpen] = useState(false)
-  useRegisterHotkeyScope(open)
-  const noOverlays = useUIStore(selectNoOverlays)
   const heldKeys = useHeldKeys()
   const shiftHeld = useKeyHold("Shift")
   const shortcuts = Object.values(SHORTCUTS)
 
+  // ── Hotkeys: suppress global shortcuts while dialog is open ──
+  const noOverlays = useUIStore(selectNoOverlays)
+  useSuppressGlobalHotkeys(open)
   useHotkey(SHORTCUTS.help.hotkeys[0], () => setOpen(true), {
     enabled: noOverlays,
     ignoreInputs: true,
     preventDefault: true,
   })
-
   useDialogCloseHotkey(open, () => setOpen(false))
 
   return (

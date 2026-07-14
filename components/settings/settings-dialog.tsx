@@ -4,10 +4,13 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import {
-  useRegisterHotkeyScope,
+  useSuppressGlobalHotkeys,
   selectNoDropdowns,
 } from "@/hooks/use-hotkey-scope";
 import { useUIStore } from "@/stores/ui-store";
+import { useShortcutPreference } from "@/hooks/use-shortcut-preferences";
+import { useDialogCloseHotkey } from "@/hooks/use-dialog-close-hotkey";
+import { SHORTCUTS } from "@/lib/shortcuts";
 import {
   Dialog,
   DialogContent,
@@ -21,9 +24,6 @@ import { SettingsAccount } from "@/components/settings/settings-account";
 import { ApiKeysManager } from "@/components/settings/api-keys-manager";
 import { PwaInstallManager } from "@/components/settings/pwa-install-manager";
 import { SettingsKeyboard } from "@/components/settings/settings-keyboard";
-import { SHORTCUTS } from "@/lib/shortcuts";
-import { useShortcutPreference } from "@/hooks/use-shortcut-preferences";
-import { useDialogCloseHotkey } from "@/hooks/use-dialog-close-hotkey";
 
 type SettingsSection =
   | "appearance"
@@ -47,8 +47,6 @@ export function SettingsDialog({
   onOpenChange,
   user,
 }: SettingsDialogProps) {
-  const [settingsKeyEnabled] = useShortcutPreference("trojes-shortcut-settings");
-
   const router = useRouter();
   const params = useSearchParams();
 
@@ -75,8 +73,6 @@ export function SettingsDialog({
       navigator.standalone === true
     );
   });
-
-  useRegisterHotkeyScope(!!open);
 
   useEffect(() => {
     localStorage.setItem("trojes-settings-expanded", String(isExpanded));
@@ -126,23 +122,20 @@ export function SettingsDialog({
     }
   }, [isInstalled, isMobile]);
 
+  // ── Hotkeys: suppress global shortcuts while dialog is open ──
+  const [settingsKeyEnabled] = useShortcutPreference("trojes-shortcut-settings");
   const noDropdowns = useUIStore(selectNoDropdowns);
-
-  useHotkey(
-    SHORTCUTS.expandSettings.hotkeys[0],
-    () => {
-      onOpenChange?.(true);
-      setIsExpanded((prev) => !prev);
-    },
-    {
-      enabled: settingsKeyEnabled && noDropdowns,
-      ignoreInputs: true,
-      preventDefault: true,
-      stopPropagation: true,
-    },
-  );
-
-  useDialogCloseHotkey(!!open, () => onOpenChange?.(false));
+  useSuppressGlobalHotkeys(open);
+  useHotkey(SHORTCUTS.expandSettings.hotkeys[0], () => {
+    onOpenChange?.(true);
+    setIsExpanded((prev) => !prev);
+  }, {
+    enabled: settingsKeyEnabled && noDropdowns,
+    ignoreInputs: true,
+    preventDefault: true,
+    stopPropagation: true,
+  });
+  useDialogCloseHotkey(open, () => onOpenChange?.(false));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

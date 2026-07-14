@@ -11,7 +11,7 @@ import { SHORTCUTS } from "@/lib/shortcuts"
 export const selectNoOverlays = (s: UIStore) => s.overlaysOpen === 0
 export const selectNoDropdowns = (s: UIStore) => s.dropdownOpen === 0
 
-export function useRegisterHotkeyScope(isOpen: boolean, level: "overlay" | "dropdown" = "overlay") {
+export function useSuppressGlobalHotkeys(isOpen?: boolean, level: "overlay" | "dropdown" = "overlay") {
   const pushOverlay = useUIStore((s) => s.pushOverlay)
   const popOverlay = useUIStore((s) => s.popOverlay)
   const pushDropdown = useUIStore((s) => s.pushDropdown)

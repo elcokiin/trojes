@@ -20,7 +20,7 @@ vi.mock("@tanstack/react-hotkeys", () => ({
 }))
 
 vi.mock("@/hooks/use-hotkey-scope", () => ({
-  useRegisterHotkeyScope: vi.fn(),
+  useSuppressGlobalHotkeys: vi.fn(),
   selectNoDropdowns: () => true,
 }))
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, memo } from "react"
 import { useHotkey } from "@tanstack/react-hotkeys"
-import { useRegisterHotkeyScope, selectNoOverlays } from "@/hooks/use-hotkey-scope"
+import { useSuppressGlobalHotkeys, selectNoOverlays } from "@/hooks/use-hotkey-scope"
 import { useUIStore } from "@/stores/ui-store"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -47,7 +47,7 @@ export const IdeaCard = memo(function IdeaCard({
   const [copied, setCopied] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
 
-  useRegisterHotkeyScope(menuOpen, "dropdown")
+  useSuppressGlobalHotkeys(menuOpen, "dropdown")
   const noOverlays = useUIStore(selectNoOverlays)
 
   const showPin = idea.status === "inbox"
