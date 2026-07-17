@@ -61,6 +61,14 @@ Current source repository references:
   color variable management, and light/dark mode switching. Intended as reference
   for Trojes's theme handling in login and settings.
 
+- `git@github.com:serwist/serwist.git`: Serwist — a comprehensive service worker
+  and PWA toolkit for Next.js (App Router) and other frameworks. Provides
+  type-safe SW configuration, precaching, runtime caching strategies, offline
+  analytics, background sync, and a Webpack/Vite plugin for build-time SW
+  generation. Inspect to evaluate whether it should replace Trojes's hand-rolled
+  `public/sw.js` and basic PWA setup. Cloned to a disposable location for
+  evaluation; do not commit the repository.
+
 - `git@github.com:shadcn-ui/ui.git`: Official shadcn/ui monorepo (v4). Primary
   reference for component implementation patterns, registry schema, style variant
   system (New York vs. default), base color tokens, and the shadcn CLI. Cloned to
