@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback } from "react";
+import { useState, useCallback } from "react";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
 import { ShortcutHelp } from "@/components/shortcuts/shortcut-help";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useUIStore } from "@/stores/ui-store";
 import { useSearchStore } from "@/stores/search-store";
 import { MobileLayout } from "@/components/app/mobile-layout";
+import { MobileCaptureEntry } from "@/components/app/mobile-entry";
 import { IdeasTabs } from "@/components/ideas/ideas-tabs";
 import { QuickCapture } from "@/components/ideas/quick-capture";
 import { ideasApi } from "@/lib/api-client";
@@ -24,6 +25,7 @@ interface DashboardProps {
 
 export function Dashboard({ user }: DashboardProps) {
   const isMobile = useIsMobile();
+  const [showEntry, setShowEntry] = useState(true);
   const settingsOpen = useUIStore((s) => s.settingsOpen);
   const setSettingsOpen = useUIStore((s) => s.setSettingsOpen);
   const captureOpen = useUIStore((s) => s.captureOpen);
@@ -41,7 +43,11 @@ export function Dashboard({ user }: DashboardProps) {
       <ShortcutHelp />
 
       {isMobile ? (
-        <MobileLayout />
+        showEntry ? (
+          <MobileCaptureEntry onEnterDashboard={() => setShowEntry(false)} />
+        ) : (
+          <MobileLayout />
+        )
       ) : (
         <>
           <main className="flex-1 container max-w-5xl mx-auto px-4 pt-6 pb-12">

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { X } from "lucide-react";
 import { IdeasTabs } from "@/components/ideas/ideas-tabs";
 import { QuickCapture } from "@/components/ideas/quick-capture";
+import { MobileEditor } from "@/components/editor/mobile-editor";
 import { BottomNav } from "@/components/app/bottom-nav";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
@@ -20,10 +21,18 @@ export function MobileLayout() {
   const [isStandalone, setIsStandalone] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [topHidden, setTopHidden] = useState(false);
+  const [mobileEditorOpen, setMobileEditorOpen] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const prevScrollY = useRef(0);
   const captureOpen = useUIStore((s) => s.captureOpen);
   const setCaptureOpen = useUIStore((s) => s.setCaptureOpen);
+
+  useEffect(() => {
+    if (captureOpen && !mobileEditorOpen) {
+      setMobileEditorOpen(true);
+      setCaptureOpen(false);
+    }
+  }, [captureOpen, mobileEditorOpen, setCaptureOpen]);
 
   useEffect(() => {
     const media = window.matchMedia("(display-mode: standalone)");
@@ -60,7 +69,7 @@ export function MobileLayout() {
       const scrollY = container.scrollTop;
       const delta = scrollY - prevScrollY.current;
 
-      if (delta > 5 && scrollY > 150 && !captureOpen) {
+      if (delta > 5 && scrollY > 150 && !mobileEditorOpen) {
         setTopHidden(true);
       } else if (delta < -5 || scrollY === 0) {
         setTopHidden(false);
@@ -70,7 +79,7 @@ export function MobileLayout() {
 
     container.addEventListener("scroll", handleScroll, { passive: true });
     return () => container.removeEventListener("scroll", handleScroll);
-  }, [captureOpen]);
+  }, [mobileEditorOpen]);
 
   const showBanner =
     !isStandalone && deferredPrompt !== null && !bannerDismissed;
@@ -90,8 +99,16 @@ export function MobileLayout() {
   const handleCapture = useCallback(async (content: string) => {
     const response = await ideasApi.create(content);
     if (response.ok) revalidateAllIdeas()
+  }, []);
+
+  const handleOpenCapture = useCallback(() => {
+    setMobileEditorOpen(true);
     setCaptureOpen(false);
   }, [setCaptureOpen]);
+
+  const handleCloseEditor = useCallback(() => {
+    setMobileEditorOpen(false);
+  }, []);
 
   return (
     <div className="flex flex-col h-dvh">
@@ -147,12 +164,19 @@ export function MobileLayout() {
           <div className="pb-0">
             <QuickCapture
               onCapture={handleCapture}
-              isOpen={captureOpen}
-              onOpenChange={setCaptureOpen}
+              isOpen={false}
+              onOpenChange={handleOpenCapture}
             />
           </div>
         </IdeasTabs>
       </div>
+
+      {mobileEditorOpen && (
+        <MobileEditor
+          onCapture={handleCapture}
+          onClose={handleCloseEditor}
+        />
+      )}
 
       <BottomNav />
     </div>

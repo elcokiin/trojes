@@ -5,9 +5,13 @@ const MOBILE_BREAKPOINT = 768;
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState(false);
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
     setIsMobile(mql.matches);
+  }, []);
+
+  React.useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
     const onChange = (e: MediaQueryListEvent) => {
       setIsMobile(e.matches);
     };
