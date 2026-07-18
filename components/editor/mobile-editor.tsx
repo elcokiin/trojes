@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback } from "react"
 import { EditorX } from "@/components/editor/editor-x"
 import { Spinner } from "@/components/ui/spinner"
 
@@ -12,14 +12,6 @@ interface MobileEditorProps {
 export function MobileEditor({ onCapture, onClose }: MobileEditorProps) {
   const [content, setContent] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  useEffect(() => {
-    const id = setTimeout(() => {
-      const el = document.querySelector("[contenteditable]") as HTMLElement | null
-      el?.focus()
-    }, 50)
-    return () => clearTimeout(id)
-  }, [])
 
   const handleSubmit = useCallback(async () => {
     if (!content.trim() || isSubmitting) return
@@ -53,6 +45,7 @@ export function MobileEditor({ onCapture, onClose }: MobileEditorProps) {
           placeholder="What's on your mind?..."
           className="flex-1"
           minHeight="30dvh"
+          focusOnMount
         />
       </div>
 

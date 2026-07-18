@@ -33,6 +33,19 @@ import { editorTheme } from "@/components/editor/themes/editor-theme"
 import "@/components/editor/themes/editor-theme.css"
 import { cn } from "@/lib/utils"
 
+function AutoFocusPlugin() {
+  const [editor] = useLexicalComposerContext()
+
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => {
+      editor.focus()
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [editor])
+
+  return null
+}
+
 function MarkdownShortcutsPlugin() {
   const [editor] = useLexicalComposerContext()
 
@@ -153,6 +166,7 @@ export function EditorX({
   className,
   minHeight = "1lh",
   disabled,
+  focusOnMount,
   onEscape,
   onModEnter,
   onFocus,
@@ -164,6 +178,7 @@ export function EditorX({
   className?: string
   minHeight?: string
   disabled?: boolean
+  focusOnMount?: boolean
   onEscape?: () => void
   onModEnter?: () => void
   onFocus?: () => void
@@ -210,6 +225,7 @@ export function EditorX({
           setIsLinkEditMode={setIsLinkEditMode}
         />
         <HistoryPlugin />
+        {focusOnMount && <AutoFocusPlugin />}
         <KeyboardPlugin onEscape={onEscape} onModEnter={onModEnter} />
         <EditorContentPlugin
           initialContent={value}

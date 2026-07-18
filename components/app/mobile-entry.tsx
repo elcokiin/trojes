@@ -25,20 +25,9 @@ export function MobileCaptureEntry({ onEnterDashboard }: MobileCaptureEntryProps
   const touchStartY = useRef(0)
 
   useEffect(() => {
-    if (showEditor) {
-      const id = setTimeout(() => {
-        const el = document.querySelector("[contenteditable]") as HTMLElement | null
-        el?.focus()
-      }, 50)
-      return () => clearTimeout(id)
-    }
-  }, [showEditor])
-
-  useEffect(() => {
-    if (showCreatedToast) {
-      const id = setTimeout(() => setShowCreatedToast(false), 2000)
-      return () => clearTimeout(id)
-    }
+    if (!showCreatedToast) return
+    const timer = setTimeout(() => setShowCreatedToast(false), 2000)
+    return () => clearTimeout(timer)
   }, [showCreatedToast])
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -117,6 +106,7 @@ export function MobileCaptureEntry({ onEnterDashboard }: MobileCaptureEntryProps
               placeholder="What's on your mind?..."
               className="flex-1"
               minHeight="30dvh"
+              focusOnMount
             />
           </div>
           <div className="grid grid-cols-2 border-t border-border shrink-0">
