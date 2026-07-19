@@ -2,10 +2,9 @@ import { Suspense } from "react"
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
-import { Dashboard } from "@/components/app/dashboard"
-import { DeviceRedirect } from "@/components/app/device-redirect"
+import { MobileCaptureEntry } from "@/components/app/mobile-entry"
 
-export default async function Home() {
+export default async function MobileEntryPage() {
   const session = await getServerSession(authOptions)
 
   if (!session?.user) {
@@ -14,8 +13,7 @@ export default async function Home() {
 
   return (
     <Suspense>
-      <DeviceRedirect mobileHref="/mobile" />
-      <Dashboard user={session.user} />
+      <MobileCaptureEntry />
     </Suspense>
   )
 }

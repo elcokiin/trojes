@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useCallback, useRef, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { mutate } from "swr"
 import { Keyboard, Mic, ChevronUp } from "lucide-react"
 import Image from "next/image"
 import { EditorX } from "@/components/editor/editor-x"
@@ -10,17 +12,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ideasApi } from "@/lib/api-client"
 import { revalidateAllIdeas } from "@/lib/swr-helpers"
 
-interface MobileCaptureEntryProps {
-  onEnterDashboard: () => void
-}
+const DASHBOARD_HREF = "/dashboard"
 
-export function MobileCaptureEntry({ onEnterDashboard }: MobileCaptureEntryProps) {
+export function MobileCaptureEntry() {
+  const router = useRouter()
   const [showEditor, setShowEditor] = useState(false)
   const [showMicDialog, setShowMicDialog] = useState(false)
   const [content, setContent] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSwipingUp, setIsSwipingUp] = useState(false)
   const [showCreatedToast, setShowCreatedToast] = useState(false)
+  const prefetched = useRef(false)
 
   const touchStartY = useRef(0)
 
@@ -30,10 +32,35 @@ export function MobileCaptureEntry({ onEnterDashboard }: MobileCaptureEntryProps
     return () => clearTimeout(timer)
   }, [showCreatedToast])
 
+  // Precarga los datos del dashboard (sin montar la UI) para que el swipe
+  // hacia /dashboard sea instantáneo. Se difiere al idle para no penalizar
+  // el primer pintado de la pantalla de captura.
+  useEffect(() => {
+    const warm = () => {
+      for (const status of ["inbox", "archived", "deleted"] as const) {
+        mutate(`/api/ideas?status=${status}`, undefined, { revalidate: true })
+      }
+    }
+    const w = window as Window & {
+      requestIdleCallback?: (cb: () => void) => number
+      cancelIdleCallback?: (id: number) => void
+    }
+    if (typeof w.requestIdleCallback === "function") {
+      const id = w.requestIdleCallback(warm)
+      return () => w.cancelIdleCallback?.(id)
+    }
+    const t = setTimeout(warm, 300)
+    return () => clearTimeout(t)
+  }, [])
+
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY
     setIsSwipingUp(false)
-  }, [])
+    if (!prefetched.current) {
+      prefetched.current = true
+      router.prefetch(DASHBOARD_HREF)
+    }
+  }, [router])
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     const deltaY = e.touches[0].clientY - touchStartY.current
@@ -45,10 +72,10 @@ export function MobileCaptureEntry({ onEnterDashboard }: MobileCaptureEntryProps
       setIsSwipingUp(false)
       const deltaY = e.changedTouches[0].clientY - touchStartY.current
       if (deltaY < -50) {
-        onEnterDashboard()
+        router.push(DASHBOARD_HREF)
       }
     },
-    [onEnterDashboard],
+    [router],
   )
 
   const handleOpenEditor = useCallback(() => {
