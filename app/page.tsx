@@ -1,21 +1,23 @@
-import { Suspense } from "react"
-import { getServerSession } from "next-auth"
-import { redirect } from "next/navigation"
-import { authOptions } from "@/lib/auth"
-import { Dashboard } from "@/components/app/dashboard"
-import { DeviceRedirect } from "@/components/app/device-redirect"
+"use client"
 
-export default async function Home() {
-  const session = await getServerSession(authOptions)
+import { useSession } from "next-auth/react"
+import { redirect } from "next/navigation"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { Dashboard } from "@/components/app/dashboard"
+
+export default function Home() {
+  const { data: session, status } = useSession()
+  const isMobile = useIsMobile()
+
+  if (status === "loading") return null
 
   if (!session?.user) {
     redirect("/login")
   }
 
-  return (
-    <Suspense>
-      <DeviceRedirect mobileHref="/mobile" />
-      <Dashboard user={session.user} />
-    </Suspense>
-  )
+  if (isMobile) {
+    redirect("/mobile")
+  }
+
+  return <Dashboard user={session.user} />
 }

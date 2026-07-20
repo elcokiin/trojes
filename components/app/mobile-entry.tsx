@@ -2,15 +2,29 @@
 
 import { useState, useCallback, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import dynamic from "next/dynamic"
 import { mutate } from "swr"
 import { Keyboard, Mic, ChevronUp } from "lucide-react"
 import Image from "next/image"
-import { EditorX } from "@/components/editor/editor-x"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ideasApi } from "@/lib/api-client"
 import { revalidateAllIdeas } from "@/lib/swr-helpers"
+
+const EditorX = dynamic(
+  () => import("@/components/editor/editor-x").then((m) => ({ default: m.EditorX })),
+  {
+    loading: () => (
+      <div className="flex-1 flex flex-col gap-3 p-4">
+        <Skeleton className="h-5 w-3/4" />
+        <Skeleton className="h-5 w-1/2" />
+        <Skeleton className="h-5 w-2/3" />
+      </div>
+    ),
+  },
+)
 
 const DASHBOARD_HREF = "/dashboard"
 
