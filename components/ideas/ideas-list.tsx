@@ -20,6 +20,27 @@ import { useSearchStore } from "@/stores/search-store"
 import { useUIStore } from "@/stores/ui-store"
 import { Inbox, Archive, Trash2 } from "lucide-react"
 
+function useColumnCount() {
+  const [columnCount, setColumnCount] = useState(3)
+
+  useEffect(() => {
+    const updateColumns = () => {
+      const width = window.innerWidth
+      if (width < 640) setColumnCount(1)
+      else if (width < 768) setColumnCount(2)
+      else setColumnCount(3)
+    }
+
+    updateColumns()
+    window.addEventListener("resize", updateColumns)
+    return () => window.removeEventListener("resize", updateColumns)
+  }, [])
+
+  return columnCount
+}
+
+const SKELETON_COUNT = 3
+
 const emptyState = {
   inbox: {
     icon: Inbox,
@@ -59,7 +80,6 @@ interface IdeasListProps {
 
 export function IdeasList({ status, active = true, hideCapture = false }: IdeasListProps) {
   const [captureOpen, setCaptureOpen] = useState(false)
-  const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(null)
   const [keyboardEnabled] = useShortcutPreference("trojes-keyboard-nav")
   const [newIdeaKeyEnabled] = useShortcutPreference("trojes-shortcut-new-idea")
   const debouncedSearch = useSearchStore((s) => s.debouncedSearch)
@@ -67,9 +87,10 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
   const storeSetCaptureOpen = useUIStore((s) => s.setCaptureOpen)
   const setFocusIdeaId = useUIStore((s) => s.setFocusIdeaId)
 
+  const columnCount = useColumnCount()
+
   const {
     ideas,
-    data,
     error,
     isLoading,
     isLoadingMore,
@@ -88,14 +109,12 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
   const loadingMoreRef = useRef(false)
 
   useEffect(() => {
-    console.log(`🔍 sentinel.inView=${sentinel.inView} hasMore=${hasMore} isLoadingMore=${isLoadingMore} size=${size}`)
     if (sentinel.inView && hasMore && !isLoadingMore && !loadingMoreRef.current) {
-      console.log(`⬇️ loading page ${size + 1} (current: ${ideas.length} ideas across ${size} pages)`)
       loadingMoreRef.current = true
       setSize(size + 1)
     }
     if (!isLoadingMore) loadingMoreRef.current = false
-  }, [sentinel.inView, hasMore, isLoadingMore, setSize, size, ideas.length])
+  }, [sentinel.inView, hasMore, isLoadingMore, setSize, size])
 
   const ideasRef = useRef(ideas)
   ideasRef.current = ideas
@@ -123,7 +142,7 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
     onSelect: handleSelect,
     onNew: newIdeaKeyEnabled ? handleNew : undefined,
     enabled: active && keyboardEnabled && !captureOpen,
-    containerNode,
+    columnCount,
   })
 
   const handleCapture = async (content: string) => {
@@ -152,11 +171,37 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
     setFocusIdeaId(null)
   }, [permanentDelete, setFocusIdeaId])
 
+  const columns = useMemo(() => {
+    const cols: Array<Array<{ idea: (typeof ideas)[0]; globalIndex: number }>> = Array.from(
+      { length: columnCount },
+      () => []
+    )
+
+    ideas.forEach((idea, globalIndex) => {
+      const colIndex = globalIndex % columnCount
+      cols[colIndex].push({ idea, globalIndex })
+    })
+
+    return cols
+  }, [ideas, columnCount])
+
+  const loadingColumns = useMemo(() => {
+    const cols: number[][] = Array.from({ length: columnCount }, () => [])
+    for (let i = 0; i < SKELETON_COUNT; i++) {
+      cols[i % columnCount].push(i)
+    }
+    return cols
+  }, [columnCount])
+
   if (isLoading) {
     return (
-      <div className="columns-1 sm:columns-2 md:columns-3 gap-3 space-y-3">
-        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-          <Skeleton key={i} className="h-24 w-full break-inside-avoid" />
+      <div className="flex gap-3 items-start">
+        {loadingColumns.map((skeletons, colIdx) => (
+          <div key={`loading-col-${colIdx}`} className="flex-1 flex flex-col gap-3 min-w-0">
+            {skeletons.map((i) => (
+              <Skeleton key={i} className="h-24 w-full" />
+            ))}
+          </div>
         ))}
       </div>
     )
@@ -171,13 +216,6 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
   }
 
   const EmptyIcon = emptyState[status].icon
-
-  let cumulativeSum = 0
-  const pageStarts = data?.map((page) => {
-    const start = cumulativeSum
-    cumulativeSum += page.ideas.length
-    return start
-  }) ?? []
 
   return (
     <div className="space-y-6">
@@ -198,34 +236,35 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
         )
       ) : (
         <>
-          {data?.map((page, pageIndex) => (
-            <div
-              key={`page-${pageIndex}`}
-              ref={pageIndex === 0 ? setContainerNode : undefined}
-              className="columns-1 sm:columns-2 md:columns-3 gap-3 space-y-3"
-            >
-              {page.ideas.map((idea, cardIndex) => (
-                <IdeaCard
-                  key={idea.id}
-                  idea={idea}
-                  onStatusChange={handleStatusChange}
-                  onPinChange={handlePinChange}
-                  onColorChange={handleColorChange}
-                  onPermanentDelete={status === "deleted" ? handlePermanentDelete : undefined}
-                  isSelected={pageStarts[pageIndex] + cardIndex === selectedIndex}
-                  showTrashInfo={status === "deleted"}
-                />
-              ))}
-            </div>
-          ))}
+          <div className="flex gap-3 items-start">
+            {columns.map((colIdeas, colIdx) => (
+              <div key={`col-${colIdx}`} className="flex-1 flex flex-col gap-3 min-w-0">
+                {colIdeas.map(({ idea, globalIndex }) => (
+                  <IdeaCard
+                    key={idea.id}
+                    idea={idea}
+                    onStatusChange={handleStatusChange}
+                    onPinChange={handlePinChange}
+                    onColorChange={handleColorChange}
+                    onPermanentDelete={status === "deleted" ? handlePermanentDelete : undefined}
+                    isSelected={globalIndex === selectedIndex}
+                    showTrashInfo={status === "deleted"}
+                  />
+                ))}
+                {isLoadingMore &&
+                  Array.from({ length: SKELETON_COUNT }, (_, s) => ({
+                    globalIndex: ideas.length + s,
+                    col: (ideas.length + s) % columnCount,
+                  }))
+                    .filter(({ col }) => col === colIdx)
+                    .map(({ globalIndex }) => (
+                      <Skeleton key={`skeleton-${globalIndex}`} className="h-24 w-full" />
+                    ))}
+              </div>
+            ))}
+          </div>
+
           {hasMore && <div ref={sentinel.ref} className="h-4" />}
-          {isLoadingMore && (
-            <div className="columns-1 sm:columns-2 md:columns-3 gap-3 space-y-3">
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-24 w-full break-inside-avoid" />
-              ))}
-            </div>
-          )}
         </>
       )}
     </div>
