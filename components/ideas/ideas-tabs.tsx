@@ -9,16 +9,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { ShortcutKbd } from "@/components/shortcuts/shortcut-kbd";
 import { SHORTCUTS } from "@/lib/shortcuts";
 import type { RegisterableHotkey } from "@tanstack/react-hotkeys";
-import { useUIStore } from "@/stores/ui-store";
+import { useQueryState, parseAsStringLiteral } from "nuqs";
 import { useSwipe } from "@/hooks/use-swipe";
 
 type TabValue = "inbox" | "archived" | "deleted";
-
-const TAB_VALUES: TabValue[] = ["inbox", "archived", "deleted"];
-
-function isTabValue(v: string): v is TabValue {
-  return TAB_VALUES.includes(v as TabValue);
-}
 
 interface TabConfig {
   value: TabValue
@@ -76,13 +70,16 @@ export function IdeasTabs({
   hideCaptureInbox = false,
   children,
 }: IdeasTabsProps) {
-  const value = useUIStore((s) => s.activeTab)
-  const onValueChange = useUIStore((s) => s.setActiveTab)
+  const TAB_VALUES = ["inbox", "archived", "deleted"] as const;
+  const [tab, setTab] = useQueryState(
+    "tab",
+    parseAsStringLiteral(TAB_VALUES).withDefault("inbox"),
+  );
   const mobile = !showLabels;
 
   const handleSwipe = useCallback(
     (direction: "left" | "right") => {
-      const currentIndex = TABS.findIndex((t) => t.value === value);
+      const currentIndex = TABS.findIndex((t) => t.value === tab);
       if (currentIndex === -1) return;
 
       const targetIndex =
@@ -91,10 +88,10 @@ export function IdeasTabs({
           : Math.max(currentIndex - 1, 0);
 
       if (targetIndex !== currentIndex) {
-        onValueChange(TABS[targetIndex].value);
+        setTab(TABS[targetIndex].value);
       }
     },
-    [value, onValueChange],
+    [tab, setTab],
   );
 
   const swipeHandlers = useSwipe(handleSwipe);
@@ -140,31 +137,31 @@ export function IdeasTabs({
     </TabsList>
   );
 
-  const onValueChangeHandler = (v: string) => onValueChange(v as TabValue)
+  const onValueChangeHandler = (v: string) => setTab(v as TabValue)
 
   const tabsContent = (
     <>
       <TabsContent value="inbox">
         <IdeasList
           status="inbox"
-          active={value === "inbox"}
+          active={tab === "inbox"}
           hideCapture={hideCaptureInbox}
         />
       </TabsContent>
 
       <TabsContent value="archived">
-        <IdeasList status="archived" active={value === "archived"} />
+        <IdeasList status="archived" active={tab === "archived"} />
       </TabsContent>
 
       <TabsContent value="deleted">
-        <IdeasList status="deleted" active={value === "deleted"} />
+        <IdeasList status="deleted" active={tab === "deleted"} />
       </TabsContent>
     </>
   );
 
   return (
     <Tabs
-      value={value}
+      value={tab}
       onValueChange={onValueChangeHandler}
       className={tabsClassName}
       {...(mobile ? swipeHandlers : {})}

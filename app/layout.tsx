@@ -8,6 +8,7 @@ import { HotkeysRootProvider } from "@/components/providers/hotkeys-root-provide
 import { DevtoolsClient } from "@/components/providers/devtools-client";
 import { ThemeColorProvider } from "@/components/providers/theme-color-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -59,13 +60,15 @@ export default function RootLayout({
       >
         <SessionProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <HotkeysRootProvider>
-              <TooltipProvider>
-                <ThemeColorProvider />
-                {children}
-              </TooltipProvider>
-              <DevtoolsClient />
-            </HotkeysRootProvider>
+            <NuqsAdapter>
+              <HotkeysRootProvider>
+                <TooltipProvider>
+                  <ThemeColorProvider />
+                  {children}
+                </TooltipProvider>
+                <DevtoolsClient />
+              </HotkeysRootProvider>
+            </NuqsAdapter>
           </ThemeProvider>
         </SessionProvider>
         {process.env.NODE_ENV === "production" && <Analytics />}
