@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, useCallback, useRef, useEffect } from "react"
+import { useState, useCallback, useRef, useEffect, useMemo } from "react"
 import { IdeaCard } from "@/components/ideas/idea-card"
-import type { Idea } from "@/types/idea"
 import { QuickCapture } from "@/components/ideas/quick-capture"
 import {
   Empty,
@@ -70,6 +69,7 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
 
   const {
     ideas,
+    data,
     error,
     isLoading,
     isLoadingMore,
@@ -83,14 +83,18 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
     permanentDelete,
   } = useIdeas({ status, search: debouncedSearch, enabled: active })
 
-  const sentinel = useInView({ rootMargin: "200px" })
+  const sentinelOptions = useMemo(() => ({ rootMargin: "200px" }), [])
+  const sentinel = useInView(sentinelOptions)
+  const loadingMoreRef = useRef(false)
 
   useEffect(() => {
     console.log(`🔍 sentinel.inView=${sentinel.inView} hasMore=${hasMore} isLoadingMore=${isLoadingMore} size=${size}`)
-    if (sentinel.inView && hasMore && !isLoadingMore) {
+    if (sentinel.inView && hasMore && !isLoadingMore && !loadingMoreRef.current) {
       console.log(`⬇️ loading page ${size + 1} (current: ${ideas.length} ideas across ${size} pages)`)
+      loadingMoreRef.current = true
       setSize(size + 1)
     }
+    if (!isLoadingMore) loadingMoreRef.current = false
   }, [sentinel.inView, hasMore, isLoadingMore, setSize, size, ideas.length])
 
   const ideasRef = useRef(ideas)
@@ -168,22 +172,12 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
 
   const EmptyIcon = emptyState[status].icon
 
-  const renderIdeas = (ideaList: Idea[], startIndex: number) => (
-    <div ref={setContainerNode} className="columns-1 sm:columns-2 md:columns-3 gap-3 space-y-3">
-      {ideaList.map((idea, index) => (
-        <IdeaCard
-          key={idea.id}
-          idea={idea}
-          onStatusChange={handleStatusChange}
-          onPinChange={handlePinChange}
-          onColorChange={handleColorChange}
-          onPermanentDelete={status === "deleted" ? handlePermanentDelete : undefined}
-          isSelected={startIndex + index === selectedIndex}
-          showTrashInfo={status === "deleted"}
-        />
-      ))}
-    </div>
-  )
+  let cumulativeSum = 0
+  const pageStarts = data?.map((page) => {
+    const start = cumulativeSum
+    cumulativeSum += page.ideas.length
+    return start
+  }) ?? []
 
   return (
     <div className="space-y-6">
@@ -204,7 +198,26 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
         )
       ) : (
         <>
-          {renderIdeas(ideas, 0)}
+          {data?.map((page, pageIndex) => (
+            <div
+              key={`page-${pageIndex}`}
+              ref={pageIndex === 0 ? setContainerNode : undefined}
+              className="columns-1 sm:columns-2 md:columns-3 gap-3 space-y-3"
+            >
+              {page.ideas.map((idea, cardIndex) => (
+                <IdeaCard
+                  key={idea.id}
+                  idea={idea}
+                  onStatusChange={handleStatusChange}
+                  onPinChange={handlePinChange}
+                  onColorChange={handleColorChange}
+                  onPermanentDelete={status === "deleted" ? handlePermanentDelete : undefined}
+                  isSelected={pageStarts[pageIndex] + cardIndex === selectedIndex}
+                  showTrashInfo={status === "deleted"}
+                />
+              ))}
+            </div>
+          ))}
           {hasMore && <div ref={sentinel.ref} className="h-4" />}
           {isLoadingMore && (
             <div className="columns-1 sm:columns-2 md:columns-3 gap-3 space-y-3">

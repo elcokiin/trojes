@@ -3,7 +3,6 @@
 import { useCallback, useEffect } from "react"
 import useSWRInfinite from "swr/infinite"
 import { fetcher, ideasApi } from "@/lib/api-client"
-import { revalidateAllIdeas } from "@/lib/swr-helpers"
 import type { Idea, IdeaStatus } from "@/types/idea"
 
 interface IdeasResponse {
@@ -36,7 +35,7 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
     [status, search, enabled],
   )
 
-  const { data, error, isLoading, isValidating, size, setSize } =
+  const { data, error, isLoading, isValidating, size, setSize, mutate: boundMutate } =
     useSWRInfinite<IdeasResponse>(getKey, fetcher, {
       refreshInterval: 30_000,
       revalidateOnFocus: true,
@@ -57,18 +56,18 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
   const mutateThenRevalidate = useCallback(
     async (apiCall: () => Promise<Response>) => {
       const res = await apiCall()
-      if (res.ok) revalidateAllIdeas()
+      if (res.ok) boundMutate()
       return { ok: res.ok }
     },
-    [],
+    [boundMutate],
   )
 
   const create = useCallback(async (content: string) => {
     const res = await ideasApi.create(content)
     if (!res.ok) return { ok: false }
-    revalidateAllIdeas()
+    boundMutate()
     return { ok: true }
-  }, [])
+  }, [boundMutate])
 
   const updateStatus = useCallback(
     (id: string, newStatus: IdeaStatus) =>
@@ -104,6 +103,7 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
 
   return {
     ideas,
+    data,
     error,
     isLoading,
     isLoadingMore,
