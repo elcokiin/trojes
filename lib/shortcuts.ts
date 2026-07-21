@@ -27,7 +27,6 @@ export type ShortcutId =
   | "closeDialog"
   | "saveCapture"
   | "cancelCapture"
-  | "toggleSidebar"
   | "copyIdea"
   | "togglePin"
   | "togglePinnedTray"
@@ -183,13 +182,7 @@ export const SHORTCUTS = {
     hotkeys: ["Escape"],
     category: "Editing",
   },
-  toggleSidebar: {
-    id: "toggleSidebar",
-    label: "Toggle sidebar",
-    hotkeys: ["Mod+B"],
-    category: "System",
-  },
-} satisfies Record<string, ShortcutDefinition>
+  } satisfies Record<string, ShortcutDefinition>
 
 export const SHORTCUT_GROUPS = ["Capture", "Navigation", "Views", "System", "Editing"] as const
 

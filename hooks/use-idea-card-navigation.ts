@@ -48,12 +48,14 @@ export function useIdeaCardNavigation({
 
     register(SHORTCUTS.navDown, () => {
       if (!hasItems) return
-      onSelect(navigateDown(selectedIndex, columnCount, itemCount))
+      const next = navigateDown(selectedIndex, columnCount, itemCount)
+      if (next !== null) onSelect(next)
     })
 
     register(SHORTCUTS.navUp, () => {
       if (!hasItems) return
-      onSelect(navigateUp(selectedIndex, columnCount, itemCount))
+      const next = navigateUp(selectedIndex, columnCount, itemCount)
+      if (next !== null) onSelect(next)
     })
 
     register(SHORTCUTS.navLeft, () => {

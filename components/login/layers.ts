@@ -7,4 +7,4 @@ export const Z = {
   TOGGLE: "z-30",
 } as const
 
-export type ZIndex = (typeof Z)[keyof typeof Z]
+

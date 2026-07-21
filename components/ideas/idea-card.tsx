@@ -257,4 +257,18 @@ export const IdeaCard = memo(function IdeaCard({
       </DropdownMenu>
     </Card>
   )
+}, (prev, next) => {
+  return (
+    prev.idea.id === next.idea.id &&
+    prev.idea.content === next.idea.content &&
+    prev.idea.status === next.idea.status &&
+    prev.idea.pinned === next.idea.pinned &&
+    prev.idea.background_color === next.idea.background_color &&
+    prev.idea.deleted_at === next.idea.deleted_at &&
+    prev.idea.source === next.idea.source &&
+    prev.idea.updated_at === next.idea.updated_at &&
+    prev.idea.tags?.join(",") === next.idea.tags?.join(",") &&
+    prev.isSelected === next.isSelected &&
+    prev.showTrashInfo === next.showTrashInfo
+  )
 })

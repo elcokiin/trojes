@@ -50,13 +50,6 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
   const hasMore = data ? data[data.length - 1]?.nextCursor != null : false
   const isLoadingMore = size > 0 && isValidating && hasMore
 
-  useEffect(() => {
-    if (data) {
-      const perPage = data.map((p, i) => `page ${i}: ${p.ideas.length} ideas`)
-      console.log(`📊 total ideas: ${ideas.length} | pages: ${size} | hasMore: ${hasMore}`, perPage)
-    }
-  }, [data, ideas.length, size, hasMore])
-
   const mutateThenRevalidate = useCallback(
     async (apiCall: () => Promise<Response>) => {
       const res = await apiCall()
@@ -97,12 +90,6 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
     [mutateThenRevalidate],
   )
 
-  const updateContent = useCallback(
-    (id: string, content: string) =>
-      mutateThenRevalidate(() => ideasApi.update(id, { content })),
-    [mutateThenRevalidate],
-  )
-
   const permanentDelete = useCallback(
     (id: string) =>
       mutateThenRevalidate(() => ideasApi.remove(id)),
@@ -122,7 +109,6 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
     updateStatus,
     updatePin,
     updateColor,
-    updateContent,
     permanentDelete,
   }
 }

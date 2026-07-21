@@ -11,18 +11,15 @@ export function navigateDown(
   index: number,
   columnCount: number,
   itemCount: number,
-): number {
-  if (itemCount === 0) return -1
-  if (itemCount === 1) return 0
-
-  if (index < 0 || index >= itemCount) {
-    return 0
-  }
+): number | null {
+  if (itemCount === 0) return null
+  if (index < 0) return 0
 
   const c = col(index, columnCount)
   const r = row(index, columnCount)
   const rowsInCol = Math.ceil((itemCount - c) / columnCount)
-  const nextRow = (r + 1) % rowsInCol
+  const nextRow = r + 1
+  if (nextRow >= rowsInCol) return null
   return nextRow * columnCount + c
 }
 
@@ -30,18 +27,14 @@ export function navigateUp(
   index: number,
   columnCount: number,
   itemCount: number,
-): number {
-  if (itemCount === 0) return -1
-  if (itemCount === 1) return 0
-
-  if (index < 0 || index >= itemCount) {
-    return itemCount - 1
-  }
+): number | null {
+  if (itemCount === 0) return null
+  if (index < 0) return 0
 
   const c = col(index, columnCount)
   const r = row(index, columnCount)
-  const rowsInCol = Math.ceil((itemCount - c) / columnCount)
-  const prevRow = (r - 1 + rowsInCol) % rowsInCol
+  const prevRow = r - 1
+  if (prevRow < 0) return null
   return prevRow * columnCount + c
 }
 
@@ -51,7 +44,8 @@ export function navigateLeft(
   itemCount: number,
 ): number | null {
   if (columnCount <= 1) return null
-  if (index < 0 || index >= itemCount) return null
+  if (index < 0) return 0
+  if (index >= itemCount) return null
 
   const c = col(index, columnCount)
   if (c <= 0) return null
@@ -68,7 +62,8 @@ export function navigateRight(
   itemCount: number,
 ): number | null {
   if (columnCount <= 1) return null
-  if (index < 0 || index >= itemCount) return null
+  if (index < 0) return 0
+  if (index >= itemCount) return null
 
   const c = col(index, columnCount)
   if (c >= columnCount - 1) return null

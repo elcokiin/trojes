@@ -1,4 +1,4 @@
-export interface ColorOption {
+interface ColorOption {
   id: string | null;
   name: string;
 }
