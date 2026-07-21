@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike } from "drizzle-orm"
+import { and, desc, eq, ilike, lt } from "drizzle-orm"
 import { getDb } from "@/db/client"
 import { ideas, type Idea, type NewIdea } from "@/db/schema"
 
@@ -7,11 +7,15 @@ export async function findIdeas({
   status,
   search,
   pinned,
+  cursor,
+  limit = 50,
 }: {
   userId: string
   status: NonNullable<Idea["status"]>
   search?: string | null
   pinned?: boolean
+  cursor?: string | null
+  limit?: number
 }) {
   const db = getDb()
   const filters = [
@@ -23,6 +27,10 @@ export async function findIdeas({
     filters.push(eq(ideas.pinned, true))
   }
 
+  if (cursor) {
+    filters.push(lt(ideas.created_at, cursor))
+  }
+
   if (search) {
     filters.push(ilike(ideas.content, `%${search}%`))
   }
@@ -31,7 +39,8 @@ export async function findIdeas({
     .select()
     .from(ideas)
     .where(and(...filters))
-    .orderBy(desc(ideas.created_at))
+    .orderBy(desc(ideas.created_at), desc(ideas.id))
+    .limit(limit + 1)
 }
 
 export async function findPinnedIdeas({

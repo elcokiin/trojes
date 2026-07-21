@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { IdeaCard } from "@/components/ideas/idea-card"
 import type { Idea } from "@/types/idea"
 import { QuickCapture } from "@/components/ideas/quick-capture"
@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useIdeaCardNavigation } from "@/hooks/use-idea-card-navigation"
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
 import { useIdeas } from "@/hooks/use-ideas"
+import { useInView } from "@/hooks/use-in-view"
 import { useSearchStore } from "@/stores/search-store"
 import { useUIStore } from "@/stores/ui-store"
 import { Inbox, Archive, Trash2 } from "lucide-react"
@@ -71,12 +72,25 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
     ideas,
     error,
     isLoading,
+    isLoadingMore,
+    hasMore,
+    setSize,
+    size,
     create,
     updateStatus,
     updatePin,
     updateColor,
     permanentDelete,
   } = useIdeas({ status, search: debouncedSearch, enabled: active })
+
+  const sentinel = useInView({ rootMargin: "200px" })
+
+  useEffect(() => {
+    if (sentinel.inView && hasMore && !isLoadingMore) {
+      console.log(`⬇️ loading page ${size + 1} (current: ${ideas.length} ideas across ${size} pages)`)
+      setSize(size + 1)
+    }
+  }, [sentinel.inView, hasMore, isLoadingMore, setSize, size])
 
   const ideasRef = useRef(ideas)
   ideasRef.current = ideas
@@ -188,7 +202,17 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
           EmptyIcon
         )
       ) : (
-        renderIdeas(ideas, 0)
+        <>
+          {renderIdeas(ideas, 0)}
+          {hasMore && <div ref={sentinel.ref} className="h-4" />}
+          {isLoadingMore && (
+            <div className="columns-1 sm:columns-2 md:columns-3 gap-3 space-y-3">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-24 w-full break-inside-avoid" />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   )

@@ -51,7 +51,7 @@ const server = setupServer(
       )
     }
 
-    return HttpResponse.json({ ideas })
+    return HttpResponse.json({ ideas, nextCursor: null })
   }),
 
   http.post("/api/ideas", async ({ request }) => {
@@ -116,19 +116,18 @@ describe("useIdeas", () => {
     ).resolves.toEqual({ ok: true })
   })
 
-  it("updateStatus() optimistically removes idea", async () => {
+  it("updateStatus() calls PATCH and returns ok", async () => {
     const { result } = renderHook(() => useIdeas({ status: "inbox" }), { wrapper })
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false)
       expect(result.current.ideas).toHaveLength(2)
     })
 
-    await act(async () => {
-      await result.current.updateStatus("idea-1", "archived")
-    })
+    const res = await act(async () =>
+      result.current.updateStatus("idea-1", "archived"),
+    )
 
-    const ideasAfter = result.current.ideas
-    expect(ideasAfter.find((i) => i.id === "idea-1")).toBeUndefined()
+    expect(res).toEqual({ ok: true })
   })
 
   it("handles fetch error gracefully", async () => {

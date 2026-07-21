@@ -29,19 +29,29 @@ export async function GET(request: NextRequest) {
     const status = parseIdeaStatus(searchParams.get("status"))
     const search = searchParams.get("search")
     const pinned = searchParams.get("pinned") === "true"
+    const cursor = searchParams.get("cursor")
+    const limit = Math.min(Number(searchParams.get("limit")) || 50, 100)
 
     let ideas
+    let nextCursor: string | null = null
+
     if (pinned) {
       ideas = await findPinnedIdeas({ userId })
     } else {
-      ideas = await findIdeas({
+      const results = await findIdeas({
         userId,
         status,
         search,
+        cursor,
+        limit,
       })
+      const hasMore = results.length > limit
+      if (hasMore) results.pop()
+      nextCursor = hasMore ? results[results.length - 1].created_at : null
+      ideas = results
     }
     
-    return NextResponse.json({ ideas })
+    return NextResponse.json({ ideas, nextCursor })
   } catch (error) {
     console.error("Failed to fetch ideas:", error)
     return NextResponse.json(
