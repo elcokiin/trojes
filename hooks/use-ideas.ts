@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef } from "react"
 import useSWRInfinite from "swr/infinite"
 import { fetcher, ideasApi } from "@/lib/api-client"
-import { revalidateAllIdeas } from "@/lib/swr-helpers"
+import { addIdeaToCache, revalidateAllIdeas } from "@/lib/swr-helpers"
 import type { Idea, IdeaStatus } from "@/types/idea"
 
 interface IdeasResponse {
@@ -65,6 +65,8 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
   const create = useCallback(async (content: string) => {
     const res = await ideasApi.create(content)
     if (!res.ok) return { ok: false }
+    const { idea } = await res.json()
+    addIdeaToCache(idea)
     mutateRef.current()
     revalidateAllIdeas()
     return { ok: true }

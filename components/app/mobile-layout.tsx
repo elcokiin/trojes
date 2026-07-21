@@ -9,7 +9,7 @@ import { MobileEditor } from "@/components/editor/mobile-editor";
 import { BottomNav } from "@/components/app/bottom-nav";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
-import { revalidateAllIdeas } from "@/lib/swr-helpers";
+import { addIdeaToCache, revalidateAllIdeas } from "@/lib/swr-helpers";
 import { ideasApi } from "@/lib/api-client";
 
 function isBeforeInstallPromptEvent(e: Event): e is BeforeInstallPromptEvent {
@@ -98,7 +98,10 @@ export function MobileLayout() {
 
   const handleCapture = useCallback(async (content: string) => {
     const response = await ideasApi.create(content);
-    if (response.ok) revalidateAllIdeas()
+    if (!response.ok) return
+    const { idea } = await response.json()
+    addIdeaToCache(idea)
+    revalidateAllIdeas()
   }, []);
 
   const handleOpenCapture = useCallback(() => {

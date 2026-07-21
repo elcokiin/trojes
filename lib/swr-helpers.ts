@@ -1,5 +1,18 @@
 import { mutate } from "swr"
-import type { IdeaStatus } from "@/types/idea"
+import type { Idea, IdeaStatus } from "@/types/idea"
+
+export function addIdeaToCache(idea: Idea) {
+  mutate(
+    (key) =>
+      typeof key === "string" && key.startsWith("$inf$/api/ideas?status=inbox"),
+    (pages: { ideas: Idea[]; nextCursor: string | null }[] | undefined) => {
+      if (!pages || pages.length === 0) return pages
+      const [first, ...rest] = pages
+      return [{ ...first, ideas: [idea, ...first.ideas] }, ...rest]
+    },
+    { revalidate: false },
+  )
+}
 
 export function revalidateAllIdeas() {
   const statuses: IdeaStatus[] = ["inbox", "archived", "deleted"]
