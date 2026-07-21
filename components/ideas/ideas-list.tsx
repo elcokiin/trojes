@@ -86,11 +86,12 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
   const sentinel = useInView({ rootMargin: "200px" })
 
   useEffect(() => {
+    console.log(`🔍 sentinel.inView=${sentinel.inView} hasMore=${hasMore} isLoadingMore=${isLoadingMore} size=${size}`)
     if (sentinel.inView && hasMore && !isLoadingMore) {
       console.log(`⬇️ loading page ${size + 1} (current: ${ideas.length} ideas across ${size} pages)`)
       setSize(size + 1)
     }
-  }, [sentinel.inView, hasMore, isLoadingMore, setSize, size])
+  }, [sentinel.inView, hasMore, isLoadingMore, setSize, size, ideas.length])
 
   const ideasRef = useRef(ideas)
   ideasRef.current = ideas

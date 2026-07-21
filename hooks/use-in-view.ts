@@ -1,20 +1,24 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useRef, useCallback } from "react"
 
 export function useInView(options?: IntersectionObserverInit) {
-  const ref = useRef<HTMLDivElement>(null)
   const [inView, setInView] = useState(false)
+  const observerRef = useRef<IntersectionObserver | null>(null)
 
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const observer = new IntersectionObserver(
-      ([entry]) => setInView(entry.isIntersecting),
-      options,
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
+  const ref = useCallback((node: HTMLDivElement | null) => {
+    if (observerRef.current) {
+      observerRef.current.disconnect()
+      observerRef.current = null
+    }
+
+    if (node) {
+      observerRef.current = new IntersectionObserver(
+        ([entry]) => setInView(entry.isIntersecting),
+        options,
+      )
+      observerRef.current.observe(node)
+    }
   }, [])
 
   return { ref, inView }

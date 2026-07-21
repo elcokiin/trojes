@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback } from "react"
+import { useCallback, useEffect } from "react"
 import useSWRInfinite from "swr/infinite"
 import { fetcher, ideasApi } from "@/lib/api-client"
 import { revalidateAllIdeas } from "@/lib/swr-helpers"
@@ -47,10 +47,12 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
   const hasMore = data ? data[data.length - 1]?.nextCursor != null : false
   const isLoadingMore = size > 0 && isValidating && hasMore
 
-  if (data) {
-    const perPage = data.map((p, i) => `page ${i}: ${p.ideas.length} ideas`)
-    console.log(`📊 total ideas: ${ideas.length} | pages: ${size} | hasMore: ${hasMore}`, perPage)
-  }
+  useEffect(() => {
+    if (data) {
+      const perPage = data.map((p, i) => `page ${i}: ${p.ideas.length} ideas`)
+      console.log(`📊 total ideas: ${ideas.length} | pages: ${size} | hasMore: ${hasMore}`, perPage)
+    }
+  }, [data, ideas.length, size, hasMore])
 
   const mutateThenRevalidate = useCallback(
     async (apiCall: () => Promise<Response>) => {
