@@ -18,7 +18,7 @@ test.describe("Search", () => {
     const searchInput = page.getByPlaceholder(/search/i)
     await searchInput.fill("test")
     await page.waitForTimeout(400)
-    const searchParam = new URL(page.url()).searchParams.get("search")
+    const searchParam = new URL(page.url()).searchParams.get("q")
     expect(searchParam).toBe("test")
   })
 
@@ -28,7 +28,7 @@ test.describe("Search", () => {
     await searchInput.fill("test")
     await page.waitForTimeout(400)
     await page.getByLabel(/clear/i).click()
-    const searchParam = new URL(page.url()).searchParams.get("search")
+    const searchParam = new URL(page.url()).searchParams.get("q")
     expect(searchParam).toBeNull()
   })
 })
