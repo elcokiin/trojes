@@ -1,14 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, waitFor } from "@testing-library/react"
+import { withNuqsTestingAdapter } from "nuqs/adapters/testing"
 import { SettingsDialog } from "@/components/settings/settings-dialog"
-
-const mockSetSection = vi.fn()
-let mockSection: string | null = "api"
-
-vi.mock("nuqs", () => ({
-  useQueryState: () => [mockSection, mockSetSection],
-  parseAsStringLiteral: () => ({}),
-}))
 
 vi.mock("next-auth/react", () => ({
   signOut: vi.fn(),
@@ -86,24 +79,27 @@ function mockMatchMedia(overrides: Record<string, boolean>) {
 describe("SettingsDialog", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockSection = "api"
     mockMatchMedia({})
   })
 
   it("shows API Keys section when ?settings=api is in the URL", () => {
-    mockSection = "api"
-    render(<SettingsDialog user={user} />)
+    render(
+      <SettingsDialog open={true} onOpenChange={vi.fn()} user={user} />,
+      { wrapper: withNuqsTestingAdapter({ searchParams: "?settings=api" }) },
+    )
     expect(screen.getByTestId("api-keys-manager")).toBeTruthy()
   })
 
   it("shows Install section on mobile when app is not installed", async () => {
-    mockSection = "install"
     mockMatchMedia({
       "(max-width: 767px)": true,
       "(display-mode: standalone)": false,
     })
 
-    render(<SettingsDialog user={user} />)
+    render(
+      <SettingsDialog open={true} onOpenChange={vi.fn()} user={user} />,
+      { wrapper: withNuqsTestingAdapter({ searchParams: "?settings=install" }) },
+    )
 
     await waitFor(() => {
       expect(screen.getByTestId("pwa-install-manager")).toBeTruthy()
@@ -111,13 +107,15 @@ describe("SettingsDialog", () => {
   })
 
   it("shows API Keys on mobile when app is installed", async () => {
-    mockSection = "api"
     mockMatchMedia({
       "(max-width: 767px)": true,
       "(display-mode: standalone)": true,
     })
 
-    render(<SettingsDialog user={user} />)
+    render(
+      <SettingsDialog open={true} onOpenChange={vi.fn()} user={user} />,
+      { wrapper: withNuqsTestingAdapter({ searchParams: "?settings=api" }) },
+    )
 
     await waitFor(() => {
       expect(screen.getByTestId("api-keys-manager")).toBeTruthy()
@@ -126,21 +124,25 @@ describe("SettingsDialog", () => {
   })
 
   it("respects ?settings=appearance URL param", () => {
-    mockSection = "appearance"
-    render(<SettingsDialog user={user} />)
+    render(
+      <SettingsDialog open={true} onOpenChange={vi.fn()} user={user} />,
+      { wrapper: withNuqsTestingAdapter({ searchParams: "?settings=appearance" }) },
+    )
     const themeElements = screen.getAllByText("Theme")
     expect(themeElements.length).toBeGreaterThanOrEqual(1)
     expect(screen.queryByTestId("api-keys-manager")).toBeNull()
   })
 
   it("respects ?settings=install URL param on mobile", async () => {
-    mockSection = "install"
     mockMatchMedia({
       "(max-width: 767px)": true,
       "(display-mode: standalone)": false,
     })
 
-    render(<SettingsDialog user={user} />)
+    render(
+      <SettingsDialog open={true} onOpenChange={vi.fn()} user={user} />,
+      { wrapper: withNuqsTestingAdapter({ searchParams: "?settings=install" }) },
+    )
 
     await waitFor(() => {
       expect(screen.getByTestId("pwa-install-manager")).toBeTruthy()
@@ -148,8 +150,10 @@ describe("SettingsDialog", () => {
   })
 
   it("dialog is closed when no ?settings param is present", () => {
-    mockSection = null
-    const { container } = render(<SettingsDialog user={user} />)
+    const { container } = render(
+      <SettingsDialog open={false} onOpenChange={vi.fn()} user={user} />,
+      { wrapper: withNuqsTestingAdapter() },
+    )
     expect(container.textContent).toBe("")
   })
 })
