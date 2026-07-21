@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { useHotkeys } from "@tanstack/react-hotkeys"
 import { useUIStore } from "@/stores/ui-store"
 import type { UIStore } from "@/stores/ui-store"
+import { useQueryState, parseAsStringLiteral } from "nuqs"
 import { useThemeToggle } from "@/hooks/use-theme-toggle"
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
 import { SHORTCUTS } from "@/lib/shortcuts"
@@ -32,7 +33,11 @@ export function useSuppressGlobalHotkeys(isOpen?: boolean, level: "overlay" | "d
 export function useGlobalHotkeys() {
   const noOverlays = useUIStore(selectNoOverlays)
   const noDropdowns = useUIStore(selectNoDropdowns)
-  const setActiveTab = useUIStore((s) => s.setActiveTab)
+  const TAB_VALUES = ["inbox", "archived", "deleted"] as const
+  const [, setTab] = useQueryState(
+    "tab",
+    parseAsStringLiteral(TAB_VALUES).withDefault("inbox"),
+  )
   const setSettingsOpen = useUIStore((s) => s.setSettingsOpen)
   const settingsOpen = useUIStore((s) => s.settingsOpen)
   const togglePinnedTray = useUIStore((s) => s.togglePinnedTray)
@@ -44,17 +49,17 @@ export function useGlobalHotkeys() {
   useHotkeys([
     {
       hotkey: SHORTCUTS.inbox.hotkeys[0],
-      callback: () => setActiveTab("inbox"),
+      callback: () => setTab("inbox"),
       options: { enabled: keyboardEnabled && noOverlays },
     },
     {
       hotkey: SHORTCUTS.archived.hotkeys[0],
-      callback: () => setActiveTab("archived"),
+      callback: () => setTab("archived"),
       options: { enabled: keyboardEnabled && noOverlays },
     },
     {
       hotkey: SHORTCUTS.trash.hotkeys[0],
-      callback: () => setActiveTab("deleted"),
+      callback: () => setTab("deleted"),
       options: { enabled: keyboardEnabled && noOverlays },
     },
     {

@@ -1,16 +1,12 @@
 import { create } from "zustand"
 
-export type TabValue = "inbox" | "archived" | "deleted"
-
 export interface UIStore {
-  activeTab: TabValue
   settingsOpen: boolean
   pinnedTrayOpen: boolean
   captureOpen: boolean
   focusIdeaId: string | null
   overlaysOpen: number
   dropdownOpen: number
-  setActiveTab: (tab: TabValue) => void
   setSettingsOpen: (open: boolean) => void
   setPinnedTrayOpen: (open: boolean) => void
   togglePinnedTray: () => void
@@ -23,14 +19,12 @@ export interface UIStore {
 }
 
 export const useUIStore = create<UIStore>((set) => ({
-  activeTab: "inbox",
   settingsOpen: false,
   pinnedTrayOpen: false,
   captureOpen: false,
   focusIdeaId: null,
   overlaysOpen: 0,
   dropdownOpen: 0,
-  setActiveTab: (activeTab) => set({ activeTab }),
   setSettingsOpen: (settingsOpen) => set({ settingsOpen }),
   setPinnedTrayOpen: (pinnedTrayOpen) => set({ pinnedTrayOpen }),
   togglePinnedTray: () => set((state) => ({ pinnedTrayOpen: !state.pinnedTrayOpen })),

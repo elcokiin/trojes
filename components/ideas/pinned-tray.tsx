@@ -13,6 +13,7 @@ import { usePinnedIdeas } from "@/hooks/use-pinned-ideas";
 import { useIdeas } from "@/hooks/use-ideas";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useUIStore } from "@/stores/ui-store";
+import { useQueryState, parseAsStringLiteral } from "nuqs";
 import { cn } from "@/lib/utils";
 
 function PinnedCard({
@@ -75,9 +76,13 @@ export function PinnedTray() {
   const { ideas, isLoading } = usePinnedIdeas();
   const { updatePin } = useIdeas({ status: "inbox" });
   const isMobile = useIsMobile();
+  const TAB_VALUES = ["inbox", "archived", "deleted"] as const;
+  const [, setTab] = useQueryState(
+    "tab",
+    parseAsStringLiteral(TAB_VALUES).withDefault("inbox"),
+  );
   const isOpen = useUIStore((s) => s.pinnedTrayOpen);
   const setPinnedTrayOpen = useUIStore((s) => s.setPinnedTrayOpen);
-  const setActiveTab = useUIStore((s) => s.setActiveTab);
   const setFocusIdeaId = useUIStore((s) => s.setFocusIdeaId);
   const hasPins = ideas.length > 0;
   const extraCount = ideas.length - 1;
@@ -87,9 +92,9 @@ export function PinnedTray() {
   const handleFocusIdea = useCallback(
     (id: string) => {
       setFocusIdeaId(id);
-      setActiveTab("inbox");
+      setTab("inbox");
     },
-    [setFocusIdeaId, setActiveTab],
+    [setFocusIdeaId, setTab],
   );
 
   useEffect(() => {
