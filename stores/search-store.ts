@@ -6,6 +6,7 @@ interface SearchStore {
   debouncedSearch: string
   setSearchMode: (mode: boolean) => void
   setSearchQuery: (query: string) => void
+  seedSearch: (query: string) => void
   handleClearSearch: () => void
 }
 
@@ -22,6 +23,10 @@ export const useSearchStore = create<SearchStore>((set) => ({
     debounceTimer = setTimeout(() => {
       set((state) => ({ debouncedSearch: state.searchQuery }))
     }, 300)
+  },
+  seedSearch: (query: string) => {
+    clearTimeout(debounceTimer)
+    set({ searchQuery: query, debouncedSearch: query })
   },
   handleClearSearch: () => {
     clearTimeout(debounceTimer)

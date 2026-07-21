@@ -1,33 +1,51 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { Pin, Search, Settings, X } from "lucide-react";
 import { Kbd } from "@/components/ui/kbd";
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSearchStore } from "@/stores/search-store";
 import { useUIStore } from "@/stores/ui-store";
+import { useQueryState } from "nuqs";
 
 export function BottomNav() {
   const isMobile = useIsMobile();
   const [showShortcutHints] = useShortcutPreference("trojes-shortcut-hints");
   const searchQuery = useSearchStore((s) => s.searchQuery);
+  const debouncedSearch = useSearchStore((s) => s.debouncedSearch);
   const setSearchQuery = useSearchStore((s) => s.setSearchQuery);
+  const seedSearch = useSearchStore((s) => s.seedSearch);
   const handleClearSearch = useSearchStore((s) => s.handleClearSearch);
   const searchMode = useSearchStore((s) => s.searchMode);
   const setSearchMode = useSearchStore((s) => s.setSearchMode);
   const togglePinnedTray = useUIStore((s) => s.togglePinnedTray);
   const setPinnedTrayOpen = useUIStore((s) => s.setPinnedTrayOpen);
   const setSettingsOpen = useUIStore((s) => s.setSettingsOpen);
-  const [inputValue, setInputValue] = useState(searchQuery);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchModeRef = useRef(searchMode);
   searchModeRef.current = searchMode;
 
+  const [urlQuery, setUrlQuery] = useQueryState("q", { defaultValue: "" });
+  const urlSeedDone = useRef(false);
+  const firstUrlSync = useRef(true);
+
   useEffect(() => {
-    const timer = setTimeout(() => setSearchQuery(inputValue), 150);
-    return () => clearTimeout(timer);
-  }, [inputValue, setSearchQuery]);
+    if (urlQuery && !urlSeedDone.current) {
+      urlSeedDone.current = true;
+      setSearchMode(true);
+      setPinnedTrayOpen(false);
+      seedSearch(urlQuery);
+    }
+  }, [urlQuery, setSearchMode, setPinnedTrayOpen, seedSearch]);
+
+  useEffect(() => {
+    if (firstUrlSync.current) {
+      firstUrlSync.current = false;
+      return;
+    }
+    setUrlQuery(debouncedSearch || null);
+  }, [debouncedSearch, setUrlQuery]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -57,23 +75,21 @@ export function BottomNav() {
   }, [searchMode])
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value)
-  }, [])
+    setSearchQuery(e.target.value)
+  }, [setSearchQuery])
 
   const handleCloseSearch = useCallback(() => {
     setSearchMode(false)
-    setInputValue("")
     handleClearSearch()
   }, [handleClearSearch, setSearchMode])
 
   const handleXClick = useCallback(() => {
-    if (inputValue) {
-      setInputValue("")
-      setSearchQuery("")
+    if (searchQuery) {
+      handleClearSearch()
     } else {
       handleCloseSearch()
     }
-  }, [inputValue, setSearchQuery, handleCloseSearch])
+  }, [searchQuery, handleClearSearch, handleCloseSearch])
 
   const handleOpenSearch = useCallback(() => {
     setSearchMode(true)
@@ -89,7 +105,7 @@ export function BottomNav() {
             ref={searchInputRef}
             type="search"
             inputMode="search"
-            value={inputValue}
+            value={searchQuery}
             onChange={handleInputChange}
             placeholder="Find your ideas..."
             aria-label="Search ideas"
@@ -106,7 +122,7 @@ export function BottomNav() {
             type="button"
             onClick={handleXClick}
             className="text-muted-foreground hover:text-foreground transition-colors"
-            aria-label={inputValue ? "Clear search" : "Close search"}
+            aria-label={searchQuery ? "Clear search" : "Close search"}
           >
             <X className="size-4" />
           </button>
