@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import useSWRInfinite from "swr/infinite"
 import { fetcher, ideasApi } from "@/lib/api-client"
 import type { Idea, IdeaStatus } from "@/types/idea"
@@ -42,6 +42,9 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
       focusThrottleInterval: 10_000,
     })
 
+  const mutateRef = useRef(boundMutate)
+  useEffect(() => { mutateRef.current = boundMutate }, [boundMutate])
+
   const ideas = data?.flatMap((page) => page.ideas) ?? []
   const hasMore = data ? data[data.length - 1]?.nextCursor != null : false
   const isLoadingMore = size > 0 && isValidating && hasMore
@@ -56,18 +59,18 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
   const mutateThenRevalidate = useCallback(
     async (apiCall: () => Promise<Response>) => {
       const res = await apiCall()
-      if (res.ok) boundMutate()
+      if (res.ok) mutateRef.current()
       return { ok: res.ok }
     },
-    [boundMutate],
+    [],
   )
 
   const create = useCallback(async (content: string) => {
     const res = await ideasApi.create(content)
     if (!res.ok) return { ok: false }
-    boundMutate()
+    mutateRef.current()
     return { ok: true }
-  }, [boundMutate])
+  }, [])
 
   const updateStatus = useCallback(
     (id: string, newStatus: IdeaStatus) =>
