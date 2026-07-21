@@ -1,5 +1,5 @@
 import { getToken } from "next-auth/jwt"
-import { NextResponse } from "next/server"
+import { NextResponse, userAgent } from "next/server"
 import type { NextRequest } from "next/server"
 
 export async function proxy(req: NextRequest) {
@@ -13,6 +13,12 @@ export async function proxy(req: NextRequest) {
 
   if (isAuthRoute || isApiRoute || isApiKeysRoute || isHealthRoute) {
     return NextResponse.next()
+  }
+
+  if (req.nextUrl.pathname === "/" && isLoggedIn) {
+    const { device } = userAgent(req)
+    const target = device.type === "mobile" ? "/mobile" : "/dashboard"
+    return NextResponse.redirect(new URL(target, req.url))
   }
 
   if (isLoginPage && isLoggedIn) {
