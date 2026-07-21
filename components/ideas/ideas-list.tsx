@@ -117,7 +117,10 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
   }, [sentinel.inView, hasMore, isLoadingMore, setSize, size])
 
   const ideasRef = useRef(ideas)
-  ideasRef.current = ideas
+
+  useEffect(() => {
+    ideasRef.current = ideas
+  }, [ideas])
 
   const selectedIndex = focusIdeaId
     ? ideas.findIndex((idea) => idea.id === focusIdeaId)

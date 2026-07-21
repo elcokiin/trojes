@@ -51,64 +51,67 @@ function SpeechToTextPluginImpl() {
   const [editor] = useLexicalComposerContext();
   const [isEnabled, setIsEnabled] = useState<boolean>(false);
   const [isSpeechToText, setIsSpeechToText] = useState(false);
-  const SpeechRecognition =
-    // @ts-expect-error missing type
-    window.SpeechRecognition || window.webkitSpeechRecognition;
-  const recognition = useRef<typeof SpeechRecognition | null>(null);
+  const [SpeechRecognitionAPI, setSpeechRecognitionAPI] = useState<any>(null);
+  const recognition = useRef<any>(null);
   const report = useReport();
 
   useEffect(() => {
-    if (isEnabled && recognition.current === null) {
-      recognition.current = new SpeechRecognition();
-      recognition.current.continuous = true;
-      recognition.current.interimResults = true;
-      recognition.current.addEventListener(
-        "result",
-        (event: typeof SpeechRecognition) => {
-          const resultItem = event.results.item(event.resultIndex);
-          const { transcript } = resultItem.item(0);
-          report(transcript);
-
-          if (!resultItem.isFinal) {
-            return;
-          }
-
-          editor.update(() => {
-            const selection = $getSelection();
-
-            if ($isRangeSelection(selection)) {
-              const command = VOICE_COMMANDS[transcript.toLowerCase().trim()];
-
-              if (command) {
-                command({
-                  editor,
-                  selection,
-                });
-              } else if (transcript.match(/\s*\n\s*/)) {
-                selection.insertParagraph();
-              } else {
-                selection.insertText(transcript);
-              }
-            }
-          });
-        },
+    if (CAN_USE_DOM) {
+      setSpeechRecognitionAPI(
+        // @ts-expect-error missing type
+        window.SpeechRecognition || window.webkitSpeechRecognition,
       );
     }
+  }, []);
 
-    if (recognition.current) {
-      if (isEnabled) {
-        recognition.current.start();
-      } else {
-        recognition.current.stop();
-      }
+  useEffect(() => {
+    if (!SpeechRecognitionAPI || !isEnabled) return;
+
+    if (recognition.current === null) {
+      recognition.current = new SpeechRecognitionAPI();
+      recognition.current.continuous = true;
+      recognition.current.interimResults = true;
     }
 
-    return () => {
-      if (recognition.current !== null) {
-        recognition.current.stop();
+    const recognitionInstance = recognition.current;
+
+    const handleResult = (event: any) => {
+      const resultItem = event.results.item(event.resultIndex);
+      const { transcript } = resultItem.item(0);
+      report(transcript);
+
+      if (!resultItem.isFinal) {
+        return;
       }
+
+      editor.update(() => {
+        const selection = $getSelection();
+
+        if ($isRangeSelection(selection)) {
+          const command = VOICE_COMMANDS[transcript.toLowerCase().trim()];
+
+          if (command) {
+            command({
+              editor,
+              selection,
+            });
+          } else if (transcript.match(/\s*\n\s*/)) {
+            selection.insertParagraph();
+          } else {
+            selection.insertText(transcript);
+          }
+        }
+      });
     };
-  }, [SpeechRecognition, editor, isEnabled, report]);
+
+    recognitionInstance.addEventListener("result", handleResult);
+    recognitionInstance.start();
+
+    return () => {
+      recognitionInstance.removeEventListener("result", handleResult);
+      recognitionInstance.stop();
+    };
+  }, [SpeechRecognitionAPI, editor, isEnabled, report]);
   useEffect(() => {
     return editor.registerCommand(
       SPEECH_TO_TEXT_COMMAND,
