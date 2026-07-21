@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useQueryState, parseAsStringLiteral } from "nuqs";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import {
   useSuppressGlobalHotkeys,
@@ -25,12 +25,7 @@ import { ApiKeysManager } from "@/components/settings/api-keys-manager";
 import { PwaInstallManager } from "@/components/settings/pwa-install-manager";
 import { SettingsKeyboard } from "@/components/settings/settings-keyboard";
 
-type SettingsSection =
-  | "appearance"
-  | "keyboard"
-  | "api"
-  | "install"
-  | "account";
+const SECTIONS = ["appearance", "keyboard", "api", "install", "account"] as const;
 
 interface SettingsDialogProps {
   open?: boolean;
@@ -43,24 +38,14 @@ interface SettingsDialogProps {
 }
 
 export function SettingsDialog({
-  open,
+  open: externalOpen,
   onOpenChange,
   user,
 }: SettingsDialogProps) {
-  const router = useRouter();
-  const params = useSearchParams();
+  const [section, setSection] = useQueryState("settings", parseAsStringLiteral(SECTIONS));
 
-  const validSections: readonly string[] = [
-    "appearance",
-    "keyboard",
-    "api",
-    "install",
-    "account",
-  ];
-  const initialSection = validSections.includes(params.get("settings") || "")
-    ? (params.get("settings") as SettingsSection)
-    : "api";
-  const [section, setSection] = useState<SettingsSection>(initialSection);
+  const open = section !== null;
+  const activeSection = section ?? "api";
   const [isExpanded, setIsExpanded] = useState(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("trojes-settings-expanded") === "true";
@@ -78,21 +63,25 @@ export function SettingsDialog({
     localStorage.setItem("trojes-settings-expanded", String(isExpanded));
   }, [isExpanded]);
 
+  const prevExternalOpen = useRef(externalOpen);
   useEffect(() => {
-    if (params.has("settings")) {
-      onOpenChange?.(true);
+    if (prevExternalOpen.current !== externalOpen) {
+      prevExternalOpen.current = externalOpen;
+      if (externalOpen && section === null) {
+        setSection("api", { scroll: false });
+      } else if (!externalOpen && section !== null) {
+        setSection(null, { scroll: false });
+      }
     }
-  }, []);
+  }, [externalOpen, section, setSection]);
 
+  const prevOpen = useRef(open);
   useEffect(() => {
-    const url = new URL(window.location.href);
-    if (open) {
-      url.searchParams.set("settings", section);
-    } else {
-      url.searchParams.delete("settings");
+    if (prevOpen.current !== open) {
+      prevOpen.current = open;
+      onOpenChange?.(open);
     }
-    router.replace(url.pathname + url.search, { scroll: false });
-  }, [open, section]);
+  }, [open, onOpenChange]);
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 767px)");
@@ -107,7 +96,7 @@ export function SettingsDialog({
     media.addEventListener("change", onMediaChange);
 
     return () => media.removeEventListener("change", onMediaChange);
-  }, []);
+  }, [setSection]);
 
   useEffect(() => {
     const media = window.matchMedia("(display-mode: standalone)");
@@ -117,12 +106,11 @@ export function SettingsDialog({
   }, []);
 
   useEffect(() => {
-    if (!params.has("settings") && !isInstalled && isMobile) {
-      setSection("install");
+    if (section === null && !isInstalled && isMobile) {
+      setSection("install", { scroll: false });
     }
-  }, [isInstalled, isMobile]);
+  }, [section, isInstalled, isMobile, setSection]);
 
-  // ── Hotkeys: suppress global shortcuts while dialog is open ──
   const [settingsKeyEnabled] = useShortcutPreference("trojes-shortcut-settings");
   const noDropdowns = useUIStore(selectNoDropdowns);
   useSuppressGlobalHotkeys(open);
@@ -137,8 +125,17 @@ export function SettingsDialog({
   });
   useDialogCloseHotkey(open, () => onOpenChange?.(false));
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      setSection("api", { scroll: false });
+    } else {
+      setSection(null, { scroll: false });
+    }
+    onOpenChange?.(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         showCloseButton={!isMobile}
         className={cn(
@@ -154,11 +151,11 @@ export function SettingsDialog({
           isExpanded={isExpanded}
           setIsExpanded={setIsExpanded}
           isMobile={isMobile}
-          onClose={() => onOpenChange?.(false)}
+          onClose={() => handleOpenChange(false)}
         />
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
           <SettingsSidebar
-            section={section}
+            section={activeSection}
             onSectionChange={setSection}
             isMobile={isMobile}
             isInstalled={isInstalled}
@@ -166,13 +163,13 @@ export function SettingsDialog({
           <div className="min-h-0 flex-1 bg-background">
             <ScrollArea className="h-full">
               <section className="flex flex-col gap-6 p-6">
-                {section === "appearance" && <SettingsAppearance />}
-                {!isMobile && section === "keyboard" && <SettingsKeyboard />}
-                {section === "api" && <ApiKeysManager />}
-                {isMobile && section === "install" && !isInstalled && (
+                {activeSection === "appearance" && <SettingsAppearance />}
+                {!isMobile && activeSection === "keyboard" && <SettingsKeyboard />}
+                {activeSection === "api" && <ApiKeysManager />}
+                {isMobile && activeSection === "install" && !isInstalled && (
                   <PwaInstallManager />
                 )}
-                {section === "account" && <SettingsAccount user={user} />}
+                {activeSection === "account" && <SettingsAccount user={user} />}
               </section>
             </ScrollArea>
           </div>
