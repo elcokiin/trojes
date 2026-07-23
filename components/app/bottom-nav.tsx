@@ -24,10 +24,7 @@ export function BottomNav() {
   const setSettingsOpen = useUIStore((s) => s.setSettingsOpen);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchModeRef = useRef(searchMode);
-
-  useEffect(() => {
-    searchModeRef.current = searchMode;
-  }, [searchMode]);
+  searchModeRef.current = searchMode;
 
   const [urlQuery, setUrlQuery] = useQueryState("q", { defaultValue: "" });
   const urlSeedDone = useRef(false);
@@ -106,7 +103,7 @@ export function BottomNav() {
           <Search className="size-4 text-muted-foreground shrink-0" />
           <input
             ref={searchInputRef}
-            type="search"
+            type="text"
             inputMode="search"
             value={searchQuery}
             onChange={handleInputChange}

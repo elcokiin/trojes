@@ -87,10 +87,7 @@ function EditorContentPlugin({
   const [editor] = useLexicalComposerContext()
   const initialized = useRef(false)
   const onChangeRef = useRef(onMarkdownChange)
-
-  useEffect(() => {
-    onChangeRef.current = onMarkdownChange
-  }, [onMarkdownChange])
+  onChangeRef.current = onMarkdownChange
 
   useEffect(() => {
     if (initialized.current) return

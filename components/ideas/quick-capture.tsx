@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useLayoutEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { ShortcutKbd } from "@/components/shortcuts/shortcut-kbd"
@@ -57,13 +57,10 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
     handleSubmit()
   }, [handleSubmit])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isExpanded) {
-      const id = setTimeout(() => {
-        const el = document.querySelector("[contenteditable]") as HTMLElement | null
-        el?.focus()
-      }, 0)
-      return () => clearTimeout(id)
+      const el = document.querySelector("[contenteditable]") as HTMLElement | null
+      el?.focus()
     }
   }, [isExpanded])
 
