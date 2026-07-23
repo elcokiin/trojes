@@ -3,10 +3,9 @@
 import { useState, useCallback, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
-import { mutate } from "swr"
 import { Keyboard, Mic, ChevronUp } from "lucide-react"
-import Image from "next/image"
 import { Skeleton } from "@/components/ui/skeleton"
+import { MobileHeader } from "@/components/app/mobile-header"
 import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -45,27 +44,6 @@ export function MobileCaptureEntry() {
     const timer = setTimeout(() => setShowCreatedToast(false), 2000)
     return () => clearTimeout(timer)
   }, [showCreatedToast])
-
-  // Precarga los datos del dashboard (sin montar la UI) para que el swipe
-  // hacia /dashboard sea instantáneo. Se difiere al idle para no penalizar
-  // el primer pintado de la pantalla de captura.
-  useEffect(() => {
-    const warm = () => {
-      for (const status of ["inbox", "archived", "deleted"] as const) {
-        mutate(`/api/ideas?status=${status}`, undefined, { revalidate: true })
-      }
-    }
-    const w = window as Window & {
-      requestIdleCallback?: (cb: () => void) => number
-      cancelIdleCallback?: (id: number) => void
-    }
-    if (typeof w.requestIdleCallback === "function") {
-      const id = w.requestIdleCallback(warm)
-      return () => w.cancelIdleCallback?.(id)
-    }
-    const t = setTimeout(warm, 300)
-    return () => clearTimeout(t)
-  }, [])
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY
@@ -127,14 +105,7 @@ export function MobileCaptureEntry() {
 
   return (
     <div className="flex flex-col h-dvh bg-background" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
-      <header className="px-4 h-14 border-b bg-background flex items-center justify-center">
-        <div className="flex-1 border-t border-foreground/10" />
-        <div className="flex items-center gap-1.5 px-3">
-          <Image src="/icon.svg" alt="Trojes" width={28} height={28} className="size-7" />
-          <span className="text-2xl font-bold">Trojes</span>
-        </div>
-        <div className="flex-1 border-t border-foreground/10" />
-      </header>
+      <MobileHeader />
 
       {showEditor ? (
         <>

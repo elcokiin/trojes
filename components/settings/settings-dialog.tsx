@@ -105,12 +105,6 @@ export function SettingsDialog({
     return () => media.removeEventListener("change", onChange);
   }, []);
 
-  useEffect(() => {
-    if (section === null && !isInstalled && isMobile) {
-      setSection("install", { scroll: false });
-    }
-  }, [section, isInstalled, isMobile, setSection]);
-
   const [settingsKeyEnabled] = useShortcutPreference("trojes-shortcut-settings");
   const noDropdowns = useUIStore(selectNoDropdowns);
   useSuppressGlobalHotkeys(open);

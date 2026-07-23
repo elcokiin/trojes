@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import Image from "next/image";
 import { X } from "lucide-react";
 import { IdeasTabs } from "@/components/ideas/ideas-tabs";
 import { QuickCapture } from "@/components/ideas/quick-capture";
 import { MobileEditor } from "@/components/editor/mobile-editor";
+import { MobileHeader } from "@/components/app/mobile-header";
 import { BottomNav } from "@/components/app/bottom-nav";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
@@ -116,14 +116,7 @@ export function MobileLayout() {
   return (
     <div className="flex flex-col h-dvh">
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
-        <header className="px-4 h-14 border-b bg-background flex items-center justify-center">
-          <div className="flex-1 border-t border-foreground/10" />
-          <div className="flex items-center gap-1.5 px-3">
-            <Image src="/icon.svg" alt="Trojes" width={28} height={28} className="size-7" />
-            <span className="text-2xl font-bold">Trojes</span>
-          </div>
-          <div className="flex-1 border-t border-foreground/10" />
-        </header>
+        <MobileHeader />
 
         {showBanner && (
           <div className="relative w-full h-10 bg-primary/5 overflow-hidden">
