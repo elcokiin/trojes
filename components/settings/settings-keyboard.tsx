@@ -123,6 +123,8 @@ export function SettingsKeyboard() {
             SHORTCUTS.deselect,
             SHORTCUTS.saveCapture,
             SHORTCUTS.cancelCapture,
+            { id: "settingsNavDown", label: "Next settings section", hotkeys: SHORTCUTS.navDown.hotkeys, category: "System" as const },
+            { id: "settingsNavUp", label: "Previous settings section", hotkeys: SHORTCUTS.navUp.hotkeys, category: "System" as const },
           ].map((shortcut) => (
             <div key={shortcut.id} className="flex items-center justify-between gap-3">
               <span className="text-muted-foreground">{shortcut.label}</span>

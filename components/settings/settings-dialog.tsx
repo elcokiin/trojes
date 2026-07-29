@@ -10,6 +10,7 @@ import {
 import { useUIStore } from "@/stores/ui-store";
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences";
 import { useDialogCloseHotkey } from "@/hooks/use-dialog-close-hotkey";
+import { useSettingsNavHotkey } from "@/hooks/use-settings-nav-hotkey";
 import { SHORTCUTS } from "@/lib/shortcuts";
 import {
   Dialog,
@@ -109,15 +110,15 @@ export function SettingsDialog({
   const noDropdowns = useUIStore(selectNoDropdowns);
   useSuppressGlobalHotkeys(open);
   useHotkey(SHORTCUTS.expandSettings.hotkeys[0], () => {
-    onOpenChange?.(true);
     setIsExpanded((prev) => !prev);
   }, {
-    enabled: settingsKeyEnabled && noDropdowns,
+    enabled: open && settingsKeyEnabled && noDropdowns,
     ignoreInputs: true,
     preventDefault: true,
     stopPropagation: true,
   });
   useDialogCloseHotkey(open, () => onOpenChange?.(false));
+  useSettingsNavHotkey(open, activeSection, setSection, isMobile, isInstalled);
 
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
@@ -137,7 +138,7 @@ export function SettingsDialog({
           isMobile
             ? "!fixed !inset-0 !z-50 !h-dvh !w-dvw !max-w-none !max-h-none !translate-x-0 !translate-y-0 !rounded-none !border-0 !shadow-none"
             : isExpanded
-              ? "!h-[calc(100vh-2rem)] !max-h-[calc(100vh-2rem)] !w-[calc(100vw-2rem)] !max-w-[calc(100vw-2rem)] sm:!max-w-[calc(100vw-2rem)]"
+              ? "!fixed !inset-0 !z-50 !h-dvh !w-dvw !max-w-none !max-h-none !translate-x-0 !translate-y-0 !rounded-none !border-0 !shadow-none"
               : "h-[min(720px,calc(100vh-2rem))] sm:max-w-4xl",
         )}
       >
@@ -147,15 +148,20 @@ export function SettingsDialog({
           isMobile={isMobile}
           onClose={() => handleOpenChange(false)}
         />
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
+        <div
+          className={cn(
+            "flex min-h-0 flex-1 flex-col md:flex-row",
+            isExpanded ? "overflow-visible" : "overflow-hidden",
+          )}
+        >
           <SettingsSidebar
             section={activeSection}
             onSectionChange={setSection}
             isMobile={isMobile}
             isInstalled={isInstalled}
           />
-          <div className="min-h-0 flex-1 bg-background">
-            <ScrollArea className="h-full">
+          <div className={cn("min-h-0 flex-1 bg-background", isExpanded && "min-h-dvh")}>
+            {isExpanded ? (
               <section className="flex flex-col gap-6 p-6">
                 {activeSection === "appearance" && <SettingsAppearance />}
                 {!isMobile && activeSection === "keyboard" && <SettingsKeyboard />}
@@ -165,7 +171,19 @@ export function SettingsDialog({
                 )}
                 {activeSection === "account" && <SettingsAccount user={user} />}
               </section>
-            </ScrollArea>
+            ) : (
+              <ScrollArea className="h-full">
+                <section className="flex flex-col gap-6 p-6">
+                  {activeSection === "appearance" && <SettingsAppearance />}
+                  {!isMobile && activeSection === "keyboard" && <SettingsKeyboard />}
+                  {activeSection === "api" && <ApiKeysManager />}
+                  {isMobile && activeSection === "install" && !isInstalled && (
+                    <PwaInstallManager />
+                  )}
+                  {activeSection === "account" && <SettingsAccount user={user} />}
+                </section>
+              </ScrollArea>
+            )}
           </div>
         </div>
       </DialogContent>
