@@ -11,6 +11,7 @@ import { useUIStore } from "@/stores/ui-store";
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences";
 import { useDialogCloseHotkey } from "@/hooks/use-dialog-close-hotkey";
 import { useSettingsNavHotkey } from "@/hooks/use-settings-nav-hotkey";
+import { useScrollLock } from "@/hooks/use-scroll-lock";
 import { SHORTCUTS } from "@/lib/shortcuts";
 import {
   Dialog,
@@ -106,6 +107,9 @@ export function SettingsDialog({
     return () => media.removeEventListener("change", onChange);
   }, []);
 
+  // Lock body scroll when dialog is open to hide the global scrollbar
+  useScrollLock(open);
+
   const [settingsKeyEnabled] = useShortcutPreference("trojes-shortcut-settings");
   const noDropdowns = useUIStore(selectNoDropdowns);
   useSuppressGlobalHotkeys(open);
@@ -136,9 +140,9 @@ export function SettingsDialog({
         className={cn(
           "flex flex-col gap-0 overflow-hidden p-0",
           isMobile
-            ? "!fixed !inset-0 !z-50 !h-dvh !w-dvw !max-w-none !max-h-none !translate-x-0 !translate-y-0 !rounded-none !border-0 !shadow-none"
+            ? "fixed! inset-0! z-50! h-dvh! w-dvw! max-w-none! max-h-none! translate-x-0! translate-y-0! rounded-none! border-0! shadow-none"
             : isExpanded
-              ? "!fixed !inset-0 !z-50 !h-dvh !w-dvw !max-w-none !max-h-none !translate-x-0 !translate-y-0 !rounded-none !border-0 !shadow-none"
+              ? "fixed! inset-0! z-50! h-dvh! w-dvw! max-w-none! max-h-none! translate-x-0! translate-y-0! rounded-none! border-0! shadow-none"
               : "h-[min(720px,calc(100vh-2rem))] sm:max-w-4xl",
         )}
       >
@@ -161,7 +165,7 @@ export function SettingsDialog({
             isInstalled={isInstalled}
           />
           <div className={cn("min-h-0 flex-1 bg-background", isExpanded && "min-h-dvh")}>
-            {isExpanded ? (
+            <ScrollArea className={cn("h-full", isExpanded && "h-dvh")}>
               <section className="flex flex-col gap-6 p-6">
                 {activeSection === "appearance" && <SettingsAppearance />}
                 {!isMobile && activeSection === "keyboard" && <SettingsKeyboard />}
@@ -171,19 +175,7 @@ export function SettingsDialog({
                 )}
                 {activeSection === "account" && <SettingsAccount user={user} />}
               </section>
-            ) : (
-              <ScrollArea className="h-full">
-                <section className="flex flex-col gap-6 p-6">
-                  {activeSection === "appearance" && <SettingsAppearance />}
-                  {!isMobile && activeSection === "keyboard" && <SettingsKeyboard />}
-                  {activeSection === "api" && <ApiKeysManager />}
-                  {isMobile && activeSection === "install" && !isInstalled && (
-                    <PwaInstallManager />
-                  )}
-                  {activeSection === "account" && <SettingsAccount user={user} />}
-                </section>
-              </ScrollArea>
-            )}
+            </ScrollArea>
           </div>
         </div>
       </DialogContent>
