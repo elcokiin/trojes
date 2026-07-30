@@ -30,6 +30,8 @@ export type ShortcutId =
   | "copyIdea"
   | "togglePin"
   | "togglePinnedTray"
+  | "goToFirst"
+  | "goToLast"
 
 export interface ShortcutDefinition {
   id: ShortcutId
@@ -181,6 +183,20 @@ export const SHORTCUTS = {
     label: "Cancel capture",
     hotkeys: ["Escape"],
     category: "Editing",
+  },
+  goToFirst: {
+    id: "goToFirst",
+    label: "Go to first idea",
+    hotkeys: ["G", "G"],
+    category: "Navigation",
+    preferenceKey: "trojes-keyboard-nav",
+  },
+  goToLast: {
+    id: "goToLast",
+    label: "Go to last idea",
+    hotkeys: [{ key: "G", shift: true }],
+    category: "Navigation",
+    preferenceKey: "trojes-keyboard-nav",
   },
   } satisfies Record<string, ShortcutDefinition>
 

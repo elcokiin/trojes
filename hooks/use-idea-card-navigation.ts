@@ -1,7 +1,12 @@
 "use client"
 
-import { useMemo, useCallback } from "react"
-import { useHotkeys, type UseHotkeyDefinition } from "@tanstack/react-hotkeys"
+import { useMemo } from "react"
+import {
+  useHotkeys,
+  useHotkeySequences,
+  type UseHotkeyDefinition,
+  type UseHotkeySequenceDefinition,
+} from "@tanstack/react-hotkeys"
 import { SHORTCUTS } from "@/lib/shortcuts"
 import { useUIStore } from "@/stores/ui-store"
 import { selectNoOverlays } from "@/hooks/use-hotkey-scope"
@@ -76,6 +81,11 @@ export function useIdeaCardNavigation({
       register(SHORTCUTS.newIdea, () => onNew())
     }
 
+    register(SHORTCUTS.goToLast, () => {
+      if (!hasItems) return
+      onSelect(itemCount - 1)
+    })
+
     if (onAction) {
       register(SHORTCUTS.openActions, () => {
         if (selectedIndex >= 0) onAction(selectedIndex)
@@ -85,6 +95,17 @@ export function useIdeaCardNavigation({
     return registrations
   }, [itemCount, onAction, onNew, onSelect, selectedIndex, columnCount])
 
+  const sequences = useMemo<Array<UseHotkeySequenceDefinition>>(() => {
+    if (itemCount === 0) return []
+
+    return [
+      {
+        sequence: ["G", "G"],
+        callback: () => onSelect(0),
+      },
+    ]
+  }, [itemCount, onSelect])
+
   const noOverlays = useUIStore(selectNoOverlays)
 
   useHotkeys(hotkeys, {
@@ -92,6 +113,12 @@ export function useIdeaCardNavigation({
     ignoreInputs: true,
     preventDefault: true,
     stopPropagation: true,
+  })
+
+  useHotkeySequences(sequences, {
+    enabled: enabled && noOverlays,
+    ignoreInputs: true,
+    preventDefault: true,
   })
 
   return { selectedIndex }
