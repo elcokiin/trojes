@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import type { RegisterableHotkey } from "@tanstack/react-hotkeys"
+import type { RegisterableHotkey } from "@tanstack/react-hotkeys";
 
 export type ShortcutPreferenceKey =
   | "trojes-keyboard-nav"
   | "trojes-shortcut-new-idea"
   | "trojes-shortcut-theme-toggle"
   | "trojes-shortcut-settings"
-  | "trojes-shortcut-hints"
+  | "trojes-shortcut-hints";
 
 export type ShortcutId =
   | "newIdea"
@@ -31,14 +31,14 @@ export type ShortcutId =
   | "togglePin"
   | "togglePinnedTray"
   | "goToFirst"
-  | "goToLast"
+  | "goToLast";
 
 export interface ShortcutDefinition {
-  id: ShortcutId
-  label: string
-  hotkeys: RegisterableHotkey[]
-  category: "Capture" | "Navigation" | "Views" | "System" | "Editing"
-  preferenceKey?: ShortcutPreferenceKey
+  id: ShortcutId;
+  label: string;
+  hotkeys: RegisterableHotkey[];
+  category: "Capture" | "Navigation" | "Views" | "System" | "Editing";
+  preferenceKey?: ShortcutPreferenceKey;
 }
 
 export const SHORTCUT_DEFAULTS: Record<ShortcutPreferenceKey, boolean> = {
@@ -47,7 +47,7 @@ export const SHORTCUT_DEFAULTS: Record<ShortcutPreferenceKey, boolean> = {
   "trojes-shortcut-theme-toggle": true,
   "trojes-shortcut-settings": true,
   "trojes-shortcut-hints": true,
-}
+};
 
 export const SHORTCUTS = {
   newIdea: {
@@ -136,7 +136,7 @@ export const SHORTCUTS = {
   openActions: {
     id: "openActions",
     label: "Open actions",
-    hotkeys: ["Enter"],
+    hotkeys: ["Enter", "Space"],
     category: "Navigation",
     preferenceKey: "trojes-keyboard-nav",
   },
@@ -198,20 +198,29 @@ export const SHORTCUTS = {
     category: "Navigation",
     preferenceKey: "trojes-keyboard-nav",
   },
-  } satisfies Record<string, ShortcutDefinition>
+} satisfies Record<string, ShortcutDefinition>;
 
-export const SHORTCUT_GROUPS = ["Capture", "Navigation", "Views", "System", "Editing"] as const
+export const SHORTCUT_GROUPS = [
+  "Capture",
+  "Navigation",
+  "Views",
+  "System",
+  "Editing",
+] as const;
 
 export function readShortcutPreference(key: ShortcutPreferenceKey) {
-  if (typeof window === "undefined") return SHORTCUT_DEFAULTS[key]
+  if (typeof window === "undefined") return SHORTCUT_DEFAULTS[key];
 
-  const stored = window.localStorage.getItem(key)
-  if (stored !== null) return stored === "true"
+  const stored = window.localStorage.getItem(key);
+  if (stored !== null) return stored === "true";
 
-  return SHORTCUT_DEFAULTS[key]
+  return SHORTCUT_DEFAULTS[key];
 }
 
-export function writeShortcutPreference(key: ShortcutPreferenceKey, enabled: boolean) {
-  window.localStorage.setItem(key, String(enabled))
-  window.dispatchEvent(new CustomEvent(key, { detail: enabled }))
+export function writeShortcutPreference(
+  key: ShortcutPreferenceKey,
+  enabled: boolean,
+) {
+  window.localStorage.setItem(key, String(enabled));
+  window.dispatchEvent(new CustomEvent(key, { detail: enabled }));
 }

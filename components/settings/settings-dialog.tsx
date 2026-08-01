@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useQueryState, parseAsStringLiteral } from "nuqs";
-import { useHotkey } from "@tanstack/react-hotkeys";
+import { useHotkeys } from "@tanstack/react-hotkeys";
 import {
   useSuppressGlobalHotkeys,
   selectNoDropdowns,
@@ -115,14 +115,20 @@ export function SettingsDialog({
   const [settingsKeyEnabled] = useShortcutPreference("trojes-shortcut-settings");
   const noDropdowns = useUIStore(selectNoDropdowns);
   useSuppressGlobalHotkeys(open);
-  useHotkey(SHORTCUTS.expandSettings.hotkeys[0], () => {
-    setIsExpanded((prev) => !prev);
-  }, {
-    enabled: open && settingsKeyEnabled && noDropdowns,
-    ignoreInputs: true,
-    preventDefault: true,
-    stopPropagation: true,
-  });
+  useHotkeys(
+    SHORTCUTS.expandSettings.hotkeys.map((hotkey) => ({
+      hotkey,
+      callback: () => {
+        setIsExpanded((prev) => !prev);
+      },
+      options: { enabled: open && settingsKeyEnabled && noDropdowns },
+    })),
+    {
+      ignoreInputs: true,
+      preventDefault: true,
+      stopPropagation: true,
+    },
+  );
   useDialogCloseHotkey(open, () => onOpenChange?.(false));
   useSettingsNavHotkey(open, activeSection, setSection, isMobile, isInstalled);
 

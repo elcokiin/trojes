@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback, memo } from "react"
-import { useHotkey } from "@tanstack/react-hotkeys"
+import { useHotkeys } from "@tanstack/react-hotkeys"
 import { useSuppressGlobalHotkeys, selectNoOverlays } from "@/hooks/use-hotkey-scope"
 import { useUIStore } from "@/stores/ui-store"
 import { Card, CardContent } from "@/components/ui/card"
@@ -106,32 +106,36 @@ export const IdeaCard = memo(function IdeaCard({
     }
   }, [isSelected])
 
-  useHotkey(SHORTCUTS.openActions.hotkeys[0], () => setMenuOpen(true), {
-    enabled: isSelected && !menuOpen && noOverlays,
-    ignoreInputs: true,
-    preventDefault: true,
-    conflictBehavior: "allow",
-  })
-
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(idea.content)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }, [idea.content])
 
-  useHotkey(SHORTCUTS.copyIdea.hotkeys[0], handleCopy, {
-    enabled: isSelected && noOverlays,
-    ignoreInputs: true,
-    preventDefault: true,
-    conflictBehavior: "allow",
-  })
-
-  useHotkey(SHORTCUTS.togglePin.hotkeys[0], () => handlePinToggle(), {
-    enabled: isSelected && showPin && noOverlays,
-    ignoreInputs: true,
-    preventDefault: true,
-    conflictBehavior: "allow",
-  })
+  useHotkeys(
+    [
+      ...SHORTCUTS.openActions.hotkeys.map((hotkey) => ({
+        hotkey,
+        callback: () => setMenuOpen(true),
+        options: { enabled: isSelected && !menuOpen && noOverlays },
+      })),
+      ...SHORTCUTS.copyIdea.hotkeys.map((hotkey) => ({
+        hotkey,
+        callback: handleCopy,
+        options: { enabled: isSelected && noOverlays },
+      })),
+      ...SHORTCUTS.togglePin.hotkeys.map((hotkey) => ({
+        hotkey,
+        callback: () => handlePinToggle(),
+        options: { enabled: isSelected && showPin && noOverlays },
+      })),
+    ],
+    {
+      ignoreInputs: true,
+      preventDefault: true,
+      conflictBehavior: "allow",
+    },
+  )
 
   const cardStyle = idea.background_color
     ? { backgroundColor: `var(--card-color-${idea.background_color})` }

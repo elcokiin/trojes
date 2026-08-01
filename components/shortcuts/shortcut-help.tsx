@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useHeldKeys, useHotkey, useKeyHold } from "@tanstack/react-hotkeys"
+import { useHeldKeys, useHotkeys, useKeyHold } from "@tanstack/react-hotkeys"
 import { useSuppressGlobalHotkeys, selectNoOverlays } from "@/hooks/use-hotkey-scope"
 import { useUIStore } from "@/stores/ui-store"
 import {
@@ -25,11 +25,17 @@ export function ShortcutHelp() {
   // ── Hotkeys: suppress global shortcuts while dialog is open ──
   const noOverlays = useUIStore(selectNoOverlays)
   useSuppressGlobalHotkeys(open)
-  useHotkey(SHORTCUTS.help.hotkeys[0], () => setOpen(true), {
-    enabled: noOverlays,
-    ignoreInputs: true,
-    preventDefault: true,
-  })
+  useHotkeys(
+    SHORTCUTS.help.hotkeys.map((hotkey) => ({
+      hotkey,
+      callback: () => setOpen(true),
+      options: { enabled: noOverlays },
+    })),
+    {
+      ignoreInputs: true,
+      preventDefault: true,
+    },
+  )
   useDialogCloseHotkey(open, () => setOpen(false))
 
   return (

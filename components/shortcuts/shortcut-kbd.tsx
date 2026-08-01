@@ -39,8 +39,8 @@ export function ShortcutKbdGroup({
 
   return (
     <KbdGroup className={`max-md:hidden ${className ?? ""}`}>
-      {hotkeys.map((hotkey) => (
-        <Kbd key={shortcutHotkeyKey(hotkey)}>{formatForDisplay(hotkey)}</Kbd>
+      {hotkeys.map((hotkey, index) => (
+        <Kbd key={`${shortcutHotkeyKey(hotkey)}-${index}`}>{formatForDisplay(hotkey)}</Kbd>
       ))}
     </KbdGroup>
   )

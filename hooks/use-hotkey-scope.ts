@@ -47,41 +47,36 @@ export function useGlobalHotkeys() {
   const [themeToggleKeyEnabled] = useShortcutPreference("trojes-shortcut-theme-toggle")
 
   useHotkeys([
-    {
-      hotkey: SHORTCUTS.inbox.hotkeys[0],
+    ...SHORTCUTS.inbox.hotkeys.map((hotkey) => ({
+      hotkey,
       callback: () => setTab("inbox"),
       options: { enabled: keyboardEnabled && noOverlays },
-    },
-    {
-      hotkey: SHORTCUTS.archived.hotkeys[0],
+    })),
+    ...SHORTCUTS.archived.hotkeys.map((hotkey) => ({
+      hotkey,
       callback: () => setTab("archived"),
       options: { enabled: keyboardEnabled && noOverlays },
-    },
-    {
-      hotkey: SHORTCUTS.trash.hotkeys[0],
+    })),
+    ...SHORTCUTS.trash.hotkeys.map((hotkey) => ({
+      hotkey,
       callback: () => setTab("deleted"),
       options: { enabled: keyboardEnabled && noOverlays },
-    },
-    {
-      hotkey: SHORTCUTS.settings.hotkeys[0],
+    })),
+    ...SHORTCUTS.settings.hotkeys.map((hotkey) => ({
+      hotkey,
       callback: () => setSettingsOpen(!settingsOpen),
       options: { enabled: keyboardEnabled && noOverlays && settingsKeyEnabled },
-    },
-    {
-      hotkey: SHORTCUTS.settings.hotkeys[1],
-      callback: () => setSettingsOpen(!settingsOpen),
-      options: { enabled: keyboardEnabled && noOverlays && settingsKeyEnabled },
-    },
-    {
-      hotkey: SHORTCUTS.toggleTheme.hotkeys[0],
+    })),
+    ...SHORTCUTS.toggleTheme.hotkeys.map((hotkey) => ({
+      hotkey,
       callback: () => { if (resolvedTheme) toggleTheme() },
       options: { enabled: themeToggleKeyEnabled && noDropdowns },
-    },
-    {
-      hotkey: SHORTCUTS.togglePinnedTray.hotkeys[0],
+    })),
+    ...SHORTCUTS.togglePinnedTray.hotkeys.map((hotkey) => ({
+      hotkey,
       callback: () => togglePinnedTray(),
       options: { enabled: noOverlays },
-    },
+    })),
   ], {
     ignoreInputs: true,
     preventDefault: true,
