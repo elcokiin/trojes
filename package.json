@@ -20,6 +20,7 @@
     "test:e2e:setup": "playwright test --project=setup --headed"
   },
   "dependencies": {
+    "@formkit/auto-animate": "^0.10.0",
     "@lexical/code": "^0.45.0",
     "@lexical/extension": "^0.45.0",
     "@lexical/link": "^0.45.0",

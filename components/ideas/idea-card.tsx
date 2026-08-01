@@ -139,6 +139,7 @@ export const IdeaCard = memo(function IdeaCard({
 
   return (
     <Card
+      id={`idea-card-${idea.id}`}
       ref={cardRef}
       style={cardStyle}
       className={cn(

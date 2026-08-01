@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react"
+import { useAutoAnimate } from "@formkit/auto-animate/react"
 import { IdeaCard } from "@/components/ideas/idea-card"
 import { QuickCapture } from "@/components/ideas/quick-capture"
 import {
@@ -18,6 +19,7 @@ import { useIdeas } from "@/hooks/use-ideas"
 import { useInView } from "@/hooks/use-in-view"
 import { useSearchStore } from "@/stores/search-store"
 import { useUIStore } from "@/stores/ui-store"
+import { col } from "@/lib/column-layout"
 import { Inbox, Archive, Trash2 } from "lucide-react"
 
 function useColumnCount() {
@@ -40,6 +42,14 @@ function useColumnCount() {
 }
 
 const SKELETON_COUNT = 3
+
+function skeletonIndices(count: number, base: number, columnCount: number): number[][] {
+  const cols: number[][] = Array.from({ length: columnCount }, () => [])
+  for (let i = 0; i < count; i++) {
+    cols[col(base + i, columnCount)].push(base + i)
+  }
+  return cols
+}
 
 const emptyState = {
   inbox: {
@@ -88,6 +98,10 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
   const setFocusIdeaId = useUIStore((s) => s.setFocusIdeaId)
 
   const columnCount = useColumnCount()
+  const [colRef1] = useAutoAnimate<HTMLDivElement>()
+  const [colRef2] = useAutoAnimate<HTMLDivElement>()
+  const [colRef3] = useAutoAnimate<HTMLDivElement>()
+  const colRefs = [colRef1, colRef2, colRef3]
 
   const {
     ideas,
@@ -115,6 +129,18 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
     }
     if (!isLoadingMore) loadingMoreRef.current = false
   }, [sentinel.inView, hasMore, isLoadingMore, setSize, size])
+
+  const prevColumnCount = useRef(columnCount)
+
+  useEffect(() => {
+    const didChange = prevColumnCount.current !== columnCount
+    prevColumnCount.current = columnCount
+    if (didChange && focusIdeaId) {
+      document
+        .getElementById(`idea-card-${focusIdeaId}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "nearest" })
+    }
+  }, [columnCount, focusIdeaId])
 
   const ideasRef = useRef(ideas)
   ideasRef.current = ideas
@@ -178,25 +204,17 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
     )
 
     ideas.forEach((idea, globalIndex) => {
-      const colIndex = globalIndex % columnCount
+      const colIndex = col(globalIndex, columnCount)
       cols[colIndex].push({ idea, globalIndex })
     })
 
     return cols
   }, [ideas, columnCount])
 
-  const loadingColumns = useMemo(() => {
-    const cols: number[][] = Array.from({ length: columnCount }, () => [])
-    for (let i = 0; i < SKELETON_COUNT; i++) {
-      cols[i % columnCount].push(i)
-    }
-    return cols
-  }, [columnCount])
-
   if (isLoading) {
     return (
       <div className="flex gap-3 items-start">
-        {loadingColumns.map((skeletons, colIdx) => (
+        {skeletonIndices(SKELETON_COUNT, 0, columnCount).map((skeletons, colIdx) => (
           <div key={`loading-col-${colIdx}`} className="flex-1 flex flex-col gap-3 min-w-0">
             {skeletons.map((i) => (
               <Skeleton key={i} className="h-24 w-full" />
@@ -238,7 +256,7 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
         <>
           <div className="flex gap-3 items-start">
             {columns.map((colIdeas, colIdx) => (
-              <div key={`col-${colIdx}`} className="flex-1 flex flex-col gap-3 min-w-0">
+              <div key={`col-${colIdx}`} ref={colRefs[colIdx]} className="flex-1 flex flex-col gap-3 min-w-0">
                 {colIdeas.map(({ idea, globalIndex }) => (
                   <IdeaCard
                     key={idea.id}
@@ -252,14 +270,9 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
                   />
                 ))}
                 {isLoadingMore &&
-                  Array.from({ length: SKELETON_COUNT }, (_, s) => ({
-                    globalIndex: ideas.length + s,
-                    col: (ideas.length + s) % columnCount,
-                  }))
-                    .filter(({ col }) => col === colIdx)
-                    .map(({ globalIndex }) => (
-                      <Skeleton key={`skeleton-${globalIndex}`} className="h-24 w-full" />
-                    ))}
+                  skeletonIndices(SKELETON_COUNT, ideas.length, columnCount)[colIdx].map((globalIndex) => (
+                    <Skeleton key={`skeleton-${globalIndex}`} className="h-24 w-full" />
+                  ))}
               </div>
             ))}
           </div>
