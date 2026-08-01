@@ -222,11 +222,24 @@ export const IdeaCard = memo(function IdeaCard({
             </ReactMarkdown>
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
-                {idea.source === "telegram" ? (
-                  <MessageSquare className="size-3" />
-                ) : (
-                  <Globe className="size-3" />
-                )}
+                <IconTooltip
+                  icon={
+                    idea.source === "telegram" ? (
+                      <MessageSquare className="size-3" />
+                    ) : (
+                      <Globe className="size-3" />
+                    )
+                  }
+                  label={
+                    idea.source === "telegram"
+                      ? "Captured from Telegram"
+                      : idea.source === "api"
+                        ? "Captured via API"
+                        : "Captured from the web"
+                  }
+                  side="top"
+                  asChild
+                />
                 {showTrashInfo && idea.deleted_at ? (
                   <span className="text-destructive/70 flex items-center gap-1">
                     <Trash2 className="size-3" />
