@@ -3,13 +3,8 @@
 import { useCallback, useEffect, useRef } from "react"
 import useSWRInfinite from "swr/infinite"
 import { fetcher, ideasApi } from "@/lib/api-client"
-import {
-  addIdeaToCache,
-  applyIdeaUpdate,
-  removeIdeaFromCache,
-  replaceIdeaInCache,
-  revalidateAllIdeas,
-} from "@/lib/swr-helpers"
+import { createIdea } from "@/lib/create-idea"
+import { applyIdeaUpdate, removeIdeaFromCache, revalidateAllIdeas } from "@/lib/swr-helpers"
 import type { Idea, IdeaStatus } from "@/types/idea"
 
 interface IdeasResponse {
@@ -57,32 +52,9 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
   const isLoadingMore = size > 0 && isValidating && hasMore
 
   const create = useCallback(async (content: string) => {
-    const tempId = `temp_${Date.now()}`
-    const tempIdea: Idea = {
-      id: tempId,
-      content,
-      status: "inbox",
-      source: "web",
-      pinned: false,
-      background_color: null,
-      tags: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      deleted_at: null,
-    }
-    addIdeaToCache(tempIdea)
-
-    const res = await ideasApi.create(content)
-    if (res.ok) {
-      const { idea } = await res.json()
-      replaceIdeaInCache(tempId, idea)
-    } else {
-      removeIdeaFromCache(tempId)
-    }
-
+    const result = await createIdea(content)
     mutateRef.current()
-    revalidateAllIdeas()
-    return { ok: res.ok }
+    return { ok: result.ok }
   }, [])
 
   const updateStatus = useCallback(async (id: string, newStatus: IdeaStatus) => {

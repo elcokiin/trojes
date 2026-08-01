@@ -1,163 +1,73 @@
-"use client"
+"use client";
 
-import { useState, useCallback, useRef, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import dynamic from "next/dynamic"
-import { Keyboard, Mic, ChevronUp } from "lucide-react"
-import { Skeleton } from "@/components/ui/skeleton"
-import { MobileHeader } from "@/components/app/mobile-header"
-import { Spinner } from "@/components/ui/spinner"
-import { cn } from "@/lib/utils"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { ideasApi } from "@/lib/api-client"
-import { addIdeaToCache, removeIdeaFromCache, replaceIdeaInCache, revalidateAllIdeas } from "@/lib/swr-helpers"
+import { useState, useCallback, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Keyboard, Mic, ChevronUp } from "lucide-react";
+import { MobileHeader } from "@/components/app/mobile-header";
+import { MobileEditor } from "@/components/editor/mobile-editor";
+import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { createIdea } from "@/lib/create-idea";
+import { useSwipeUp } from "@/hooks/use-swipe";
 
-const EditorX = dynamic(
-  () => import("@/components/editor/editor-x").then((m) => ({ default: m.EditorX })),
-  {
-    loading: () => (
-      <div className="flex-1 flex flex-col gap-3 p-4">
-        <Skeleton className="h-5 w-3/4" />
-        <Skeleton className="h-5 w-1/2" />
-        <Skeleton className="h-5 w-2/3" />
-      </div>
-    ),
-  },
-)
-
-const DASHBOARD_HREF = "/dashboard"
+const DASHBOARD_HREF = "/dashboard";
 
 export function MobileCaptureEntry() {
-  const router = useRouter()
-  const [showEditor, setShowEditor] = useState(false)
-  const [showMicDialog, setShowMicDialog] = useState(false)
-  const [content, setContent] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSwipingUp, setIsSwipingUp] = useState(false)
-  const [showCreatedToast, setShowCreatedToast] = useState(false)
-  const prefetched = useRef(false)
-
-  const touchStartY = useRef(0)
+  const router = useRouter();
+  const [showEditor, setShowEditor] = useState(false);
+  const [showMicDialog, setShowMicDialog] = useState(false);
+  const [showCreatedToast, setShowCreatedToast] = useState(false);
+  const prefetched = useRef(false);
 
   useEffect(() => {
-    if (!showCreatedToast) return
-    const timer = setTimeout(() => setShowCreatedToast(false), 2000)
-    return () => clearTimeout(timer)
-  }, [showCreatedToast])
+    if (!showCreatedToast) return;
+    const timer = setTimeout(() => setShowCreatedToast(false), 2000);
+    return () => clearTimeout(timer);
+  }, [showCreatedToast]);
 
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartY.current = e.touches[0].clientY
-    setIsSwipingUp(false)
-    if (!prefetched.current) {
-      prefetched.current = true
-      router.prefetch(DASHBOARD_HREF)
-    }
-  }, [router])
-
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    const deltaY = e.touches[0].clientY - touchStartY.current
-    setIsSwipingUp(deltaY < -15)
-  }, [])
-
-  const handleTouchEnd = useCallback(
-    (e: React.TouchEvent) => {
-      setIsSwipingUp(false)
-      const deltaY = e.changedTouches[0].clientY - touchStartY.current
-      if (deltaY < -50) {
-        router.push(DASHBOARD_HREF)
+  const { isSwipingUp, onTouchStart, onTouchMove, onTouchEnd } = useSwipeUp({
+    onSwipeUp: () => router.push(DASHBOARD_HREF),
+    onTouchStart: () => {
+      if (!prefetched.current) {
+        prefetched.current = true;
+        router.prefetch(DASHBOARD_HREF);
       }
     },
-    [router],
-  )
+  });
 
   const handleOpenEditor = useCallback(() => {
-    setShowEditor(true)
-  }, [])
+    setShowEditor(true);
+  }, []);
 
   const handleCloseEditor = useCallback(() => {
-    setShowEditor(false)
-    setContent("")
-  }, [])
+    setShowEditor(false);
+  }, []);
 
-  const handleCapture = useCallback(async () => {
-    if (!content.trim() || isSubmitting) return
-    setIsSubmitting(true)
-
-    const tempId = `temp_${Date.now()}`
-    addIdeaToCache({
-      id: tempId,
-      content: content.trim(),
-      status: "inbox",
-      source: "web",
-      pinned: false,
-      background_color: null,
-      tags: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      deleted_at: null,
-    })
-
-    try {
-      const response = await ideasApi.create(content.trim())
-      if (response.ok) {
-        const { idea } = await response.json()
-        replaceIdeaInCache(tempId, idea)
-        revalidateAllIdeas()
-        setShowCreatedToast(true)
-      } else {
-        removeIdeaFromCache(tempId)
-      }
-    } finally {
-      setIsSubmitting(false)
-      setShowEditor(false)
-      setContent("")
-    }
-  }, [content, isSubmitting])
-
-  const handleEscape = useCallback(() => {
-    if (!content.trim()) handleCloseEditor()
-  }, [content, handleCloseEditor])
-
-  const handleModEnter = useCallback(() => {
-    handleCapture()
-  }, [handleCapture])
+  const handleCapture = useCallback(async (content: string) => {
+    const { ok } = await createIdea(content);
+    if (ok) setShowCreatedToast(true);
+  }, []);
 
   return (
-    <div className="flex flex-col h-dvh bg-background" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+    <div
+      className="flex flex-col h-dvh bg-background"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
       <MobileHeader />
 
       {showEditor ? (
-        <>
-          <div className="flex-1 flex flex-col min-h-0">
-            <EditorX
-              value=""
-              onChange={setContent}
-              onEscape={handleEscape}
-              onModEnter={handleModEnter}
-              placeholder="What's on your mind?..."
-              className="flex-1"
-              minHeight="30dvh"
-              focusOnMount
-            />
-          </div>
-          <div className="grid grid-cols-2 border-t border-border shrink-0">
-            <button
-              type="button"
-              onClick={handleCloseEditor}
-              className="h-12 bg-destructive/10 text-destructive font-semibold text-sm hover:bg-destructive/20 transition-colors cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleCapture}
-              disabled={!content.trim() || isSubmitting}
-              className="h-12 bg-primary/10 text-primary font-semibold text-sm hover:bg-primary/20 transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
-            >
-              {isSubmitting ? <Spinner className="size-4 mx-auto" /> : "Create"}
-            </button>
-          </div>
-        </>
+        <MobileEditor
+          onCapture={handleCapture}
+          onClose={handleCloseEditor}
+          overlay={false}
+        />
       ) : (
         <>
           <div className="flex-1" />
@@ -178,14 +88,26 @@ export function MobileCaptureEntry() {
               <Mic className="size-8" />
               <span>Record</span>
             </button>
-            </div>
+          </div>
         </>
       )}
 
       <div className="flex items-center justify-center pb-3 pt-2 gap-2">
-        <ChevronUp className={cn("size-3.5 text-muted-foreground/30 transition-all duration-150", isSwipingUp && "text-primary/60 -translate-y-0.5")} />
-        <span className="text-[11px] text-muted-foreground/40">Swipe to see all ideas</span>
-        <ChevronUp className={cn("size-3.5 text-muted-foreground/30 transition-all duration-150", isSwipingUp && "text-primary/60 -translate-y-0.5")} />
+        <ChevronUp
+          className={cn(
+            "size-3.5 text-muted-foreground/30 transition-all duration-150",
+            isSwipingUp && "text-primary/60 -translate-y-0.5",
+          )}
+        />
+        <span className="text-[11px] text-muted-foreground/40">
+          Swipe to see all ideas
+        </span>
+        <ChevronUp
+          className={cn(
+            "size-3.5 text-muted-foreground/30 transition-all duration-150",
+            isSwipingUp && "text-primary/60 -translate-y-0.5",
+          )}
+        />
       </div>
 
       {showCreatedToast && (
@@ -195,9 +117,11 @@ export function MobileCaptureEntry() {
       )}
 
       <Dialog open={showMicDialog} onOpenChange={setShowMicDialog}>
-        <DialogContent className="max-w-[280px] rounded-xl">
+        <DialogContent className="max-w-70 rounded-xl">
           <DialogHeader>
-            <DialogTitle className="text-center text-base">Voice recording</DialogTitle>
+            <DialogTitle className="text-center text-base">
+              Voice recording
+            </DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center gap-3 pb-4">
             <Mic className="size-12 text-muted-foreground/40" />
@@ -208,5 +132,5 @@ export function MobileCaptureEntry() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

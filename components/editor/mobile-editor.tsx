@@ -7,9 +7,10 @@ import { Spinner } from "@/components/ui/spinner"
 interface MobileEditorProps {
   onCapture: (content: string) => Promise<void>
   onClose: () => void
+  overlay?: boolean
 }
 
-export function MobileEditor({ onCapture, onClose }: MobileEditorProps) {
+export function MobileEditor({ onCapture, onClose, overlay = true }: MobileEditorProps) {
   const [content, setContent] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -34,8 +35,8 @@ export function MobileEditor({ onCapture, onClose }: MobileEditorProps) {
     handleSubmit()
   }, [handleSubmit])
 
-  return (
-    <div className="fixed top-0 left-0 right-0 h-dvh z-50 bg-background flex flex-col">
+  const editor = (
+    <>
       <div className="flex-1 flex flex-col min-h-0">
         <EditorX
           value=""
@@ -66,6 +67,14 @@ export function MobileEditor({ onCapture, onClose }: MobileEditorProps) {
           {isSubmitting ? <Spinner className="size-4 mx-auto" /> : "Create"}
         </button>
       </div>
+    </>
+  )
+
+  if (!overlay) return editor
+
+  return (
+    <div className="fixed top-0 left-0 right-0 h-dvh z-50 bg-background flex flex-col">
+      {editor}
     </div>
   )
 }

@@ -9,8 +9,7 @@ import { MobileHeader } from "@/components/app/mobile-header";
 import { BottomNav } from "@/components/app/bottom-nav";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
-import { addIdeaToCache, removeIdeaFromCache, replaceIdeaInCache, revalidateAllIdeas } from "@/lib/swr-helpers";
-import { ideasApi } from "@/lib/api-client";
+import { createIdea } from "@/lib/create-idea";
 
 function isBeforeInstallPromptEvent(e: Event): e is BeforeInstallPromptEvent {
   return "prompt" in e;
@@ -97,28 +96,7 @@ export function MobileLayout() {
   }, [deferredPrompt]);
 
   const handleCapture = useCallback(async (content: string) => {
-    const tempId = `temp_${Date.now()}`
-    addIdeaToCache({
-      id: tempId,
-      content,
-      status: "inbox",
-      source: "web",
-      pinned: false,
-      background_color: null,
-      tags: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      deleted_at: null,
-    })
-
-    const response = await ideasApi.create(content);
-    if (response.ok) {
-      const { idea } = await response.json()
-      replaceIdeaInCache(tempId, idea)
-    } else {
-      removeIdeaFromCache(tempId)
-    }
-    revalidateAllIdeas()
+    await createIdea(content)
   }, []);
 
   const handleOpenCapture = useCallback(() => {
