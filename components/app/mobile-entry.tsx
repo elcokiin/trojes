@@ -10,7 +10,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ideasApi } from "@/lib/api-client"
-import { revalidateAllIdeas } from "@/lib/swr-helpers"
+import { addIdeaToCache, removeIdeaFromCache, replaceIdeaInCache, revalidateAllIdeas } from "@/lib/swr-helpers"
 
 const EditorX = dynamic(
   () => import("@/components/editor/editor-x").then((m) => ({ default: m.EditorX })),
@@ -82,11 +82,30 @@ export function MobileCaptureEntry() {
   const handleCapture = useCallback(async () => {
     if (!content.trim() || isSubmitting) return
     setIsSubmitting(true)
+
+    const tempId = `temp_${Date.now()}`
+    addIdeaToCache({
+      id: tempId,
+      content: content.trim(),
+      status: "inbox",
+      source: "web",
+      pinned: false,
+      background_color: null,
+      tags: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      deleted_at: null,
+    })
+
     try {
       const response = await ideasApi.create(content.trim())
       if (response.ok) {
+        const { idea } = await response.json()
+        replaceIdeaInCache(tempId, idea)
         revalidateAllIdeas()
         setShowCreatedToast(true)
+      } else {
+        removeIdeaFromCache(tempId)
       }
     } finally {
       setIsSubmitting(false)

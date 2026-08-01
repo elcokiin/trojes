@@ -10,7 +10,7 @@ import { MobileLayout } from "@/components/app/mobile-layout";
 import { IdeasTabs } from "@/components/ideas/ideas-tabs";
 import { QuickCapture } from "@/components/ideas/quick-capture";
 import { ideasApi } from "@/lib/api-client";
-import { addIdeaToCache, revalidateAllIdeas } from "@/lib/swr-helpers";
+import { addIdeaToCache, removeIdeaFromCache, replaceIdeaInCache, revalidateAllIdeas } from "@/lib/swr-helpers";
 import { BottomNav } from "@/components/app/bottom-nav";
 import { PinnedTray } from "@/components/ideas/pinned-tray";
 
@@ -31,10 +31,27 @@ export function Dashboard({ user }: DashboardProps) {
   const searchMode = useSearchStore((s) => s.searchMode);
 
   const handleCapture = useCallback(async (content: string) => {
+    const tempId = `temp_${Date.now()}`
+    addIdeaToCache({
+      id: tempId,
+      content,
+      status: "inbox",
+      source: "web",
+      pinned: false,
+      background_color: null,
+      tags: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      deleted_at: null,
+    })
+
     const response = await ideasApi.create(content)
-    if (!response.ok) return
-    const { idea } = await response.json()
-    addIdeaToCache(idea)
+    if (response.ok) {
+      const { idea } = await response.json()
+      replaceIdeaInCache(tempId, idea)
+    } else {
+      removeIdeaFromCache(tempId)
+    }
     revalidateAllIdeas()
   }, [])
 

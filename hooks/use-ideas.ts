@@ -3,7 +3,13 @@
 import { useCallback, useEffect, useRef } from "react"
 import useSWRInfinite from "swr/infinite"
 import { fetcher, ideasApi } from "@/lib/api-client"
-import { addIdeaToCache, revalidateAllIdeas } from "@/lib/swr-helpers"
+import {
+  addIdeaToCache,
+  applyIdeaUpdate,
+  removeIdeaFromCache,
+  replaceIdeaInCache,
+  revalidateAllIdeas,
+} from "@/lib/swr-helpers"
 import type { Idea, IdeaStatus } from "@/types/idea"
 
 interface IdeasResponse {
@@ -50,53 +56,76 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
   const hasMore = data ? data[data.length - 1]?.nextCursor != null : false
   const isLoadingMore = size > 0 && isValidating && hasMore
 
-  const mutateThenRevalidate = useCallback(
-    async (apiCall: () => Promise<Response>) => {
-      const res = await apiCall()
-      if (res.ok) {
-        mutateRef.current()
-        revalidateAllIdeas()
-      }
-      return { ok: res.ok }
-    },
-    [],
-  )
-
   const create = useCallback(async (content: string) => {
+    const tempId = `temp_${Date.now()}`
+    const tempIdea: Idea = {
+      id: tempId,
+      content,
+      status: "inbox",
+      source: "web",
+      pinned: false,
+      background_color: null,
+      tags: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      deleted_at: null,
+    }
+    addIdeaToCache(tempIdea)
+
     const res = await ideasApi.create(content)
-    if (!res.ok) return { ok: false }
-    const { idea } = await res.json()
-    addIdeaToCache(idea)
+    if (res.ok) {
+      const { idea } = await res.json()
+      replaceIdeaInCache(tempId, idea)
+    } else {
+      removeIdeaFromCache(tempId)
+    }
+
     mutateRef.current()
     revalidateAllIdeas()
-    return { ok: true }
+    return { ok: res.ok }
   }, [])
 
-  const updateStatus = useCallback(
-    (id: string, newStatus: IdeaStatus) =>
-      mutateThenRevalidate(() => ideasApi.update(id, { status: newStatus })),
-    [mutateThenRevalidate],
-  )
+  const updateStatus = useCallback(async (id: string, newStatus: IdeaStatus) => {
+    removeIdeaFromCache(id)
 
-  const updatePin = useCallback(
-    (id: string, pinned: boolean) =>
-      mutateThenRevalidate(() => ideasApi.update(id, { pinned })),
-    [mutateThenRevalidate],
-  )
+    const res = await ideasApi.update(id, { status: newStatus })
 
-  const updateColor = useCallback(
-    (id: string, background_color: string | null) =>
-      mutateThenRevalidate(() =>
-        ideasApi.update(id, { background_color }),
-      ),
-    [mutateThenRevalidate],
-  )
+    mutateRef.current()
+    revalidateAllIdeas()
+    return { ok: res.ok }
+  }, [])
 
-  const permanentDelete = useCallback(
-    (id: string) =>
-      mutateThenRevalidate(() => ideasApi.remove(id)),
-    [mutateThenRevalidate],
-  )
+  const updatePin = useCallback(async (id: string, pinned: boolean) => {
+    applyIdeaUpdate(id, (idea) => ({ ...idea, pinned }))
+
+    const res = await ideasApi.update(id, { pinned })
+
+    // Intentionally no revalidateAllIdeas: the active-list refetch reconciles
+    // the toggle; other views catch up on tab mount / focus / 30s interval.
+    mutateRef.current()
+    return { ok: res.ok }
+  }, [])
+
+  const updateColor = useCallback(async (id: string, background_color: string | null) => {
+    applyIdeaUpdate(id, (idea) => ({ ...idea, background_color }))
+
+    const res = await ideasApi.update(id, { background_color })
+
+    // Intentionally no revalidateAllIdeas: the active-list refetch reconciles
+    // the toggle; other views catch up on tab mount / focus / 30s interval.
+    mutateRef.current()
+    return { ok: res.ok }
+  }, [])
+
+  const permanentDelete = useCallback(async (id: string) => {
+    removeIdeaFromCache(id)
+
+    const res = await ideasApi.remove(id)
+
+    mutateRef.current()
+    revalidateAllIdeas()
+    return { ok: res.ok }
+  }, [])
 
   return {
     ideas,
