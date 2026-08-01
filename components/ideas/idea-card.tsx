@@ -23,6 +23,9 @@ import {
   Copy,
 } from "lucide-react"
 import { IdeaCardMenu } from "@/components/ideas/idea-card-menu"
+import { IdeaEditDialog } from "@/components/ideas/idea-edit-dialog"
+import { MobileEditor } from "@/components/editor/mobile-editor"
+import { useIsMobile } from "@/hooks/use-mobile"
 import ReactMarkdown from "react-markdown"
 import { mdComponents, remarkPlugins } from "@/lib/markdown-components"
 import { cn } from "@/lib/utils"
@@ -38,14 +41,17 @@ export const IdeaCard = memo(function IdeaCard({
   onStatusChange,
   onPinChange,
   onColorChange,
+  onContentChange,
   onPermanentDelete,
   isSelected = false,
   showTrashInfo = false,
 }: IdeaCardProps) {
   const [isUpdating, setIsUpdating] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
+  const isMobile = useIsMobile()
 
   useSuppressGlobalHotkeys(menuOpen, "dropdown")
   const noOverlays = useUIStore(selectNoOverlays)
@@ -111,6 +117,11 @@ export const IdeaCard = memo(function IdeaCard({
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }, [idea.content])
+
+  const handleEdit = useCallback(() => {
+    setMenuOpen(false)
+    setEditOpen(true)
+  }, [])
 
   useHotkeys(
     [
@@ -202,6 +213,7 @@ export const IdeaCard = memo(function IdeaCard({
           onPinToggle={handlePinToggle}
           onPermanentDelete={handlePermanentDelete}
           onCopy={handleCopy}
+          onEdit={handleEdit}
         />
         <CardContent className="pt-2 pl-4 pr-10">
           <div className="space-y-3">
@@ -260,6 +272,24 @@ export const IdeaCard = memo(function IdeaCard({
           </div>
         </CardContent>
       </DropdownMenu>
+
+      {isMobile ? (
+        editOpen && (
+          <MobileEditor
+            initialContent={idea.content}
+            onCapture={(content) => onContentChange(idea.id, content)}
+            onClose={() => setEditOpen(false)}
+          />
+        )
+      ) : (
+        <IdeaEditDialog
+          ideaId={idea.id}
+          initialContent={idea.content}
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          onSave={onContentChange}
+        />
+      )}
     </Card>
   )
 }, (prev, next) => {

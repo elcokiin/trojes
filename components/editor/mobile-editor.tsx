@@ -3,16 +3,22 @@
 import { useState, useCallback } from "react"
 import { EditorX } from "@/components/editor/editor-x"
 import { Spinner } from "@/components/ui/spinner"
+import { useSuppressGlobalHotkeys } from "@/hooks/use-hotkey-scope"
 
 interface MobileEditorProps {
   onCapture: (content: string) => Promise<void>
   onClose: () => void
   overlay?: boolean
+  /** When provided, the editor starts with this content and acts as an edit form. */
+  initialContent?: string
 }
 
-export function MobileEditor({ onCapture, onClose, overlay = true }: MobileEditorProps) {
-  const [content, setContent] = useState("")
+export function MobileEditor({ onCapture, onClose, overlay = true, initialContent }: MobileEditorProps) {
+  const isEdit = initialContent !== undefined
+  const [content, setContent] = useState(initialContent ?? "")
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useSuppressGlobalHotkeys(true)
 
   const handleSubmit = useCallback(async () => {
     if (!content.trim() || isSubmitting) return
@@ -26,10 +32,12 @@ export function MobileEditor({ onCapture, onClose, overlay = true }: MobileEdito
   }, [content, isSubmitting, onCapture, onClose])
 
   const handleEscape = useCallback(() => {
-    if (!content.trim()) {
+    // In edit mode the original content is safe on the card, so Escape always
+    // closes. In create mode, only close when nothing was typed.
+    if (isEdit || !content.trim()) {
       onClose()
     }
-  }, [content, onClose])
+  }, [content, onClose, isEdit])
 
   const handleModEnter = useCallback(() => {
     handleSubmit()
@@ -39,7 +47,7 @@ export function MobileEditor({ onCapture, onClose, overlay = true }: MobileEdito
     <>
       <div className="flex-1 flex flex-col min-h-0">
         <EditorX
-          value=""
+          value={initialContent ?? ""}
           onChange={setContent}
           onEscape={handleEscape}
           onModEnter={handleModEnter}
@@ -64,7 +72,7 @@ export function MobileEditor({ onCapture, onClose, overlay = true }: MobileEdito
           disabled={!content.trim() || isSubmitting}
           className="h-12 bg-primary/10 text-primary font-semibold text-sm hover:bg-primary/20 transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
         >
-          {isSubmitting ? <Spinner className="size-4 mx-auto" /> : "Create"}
+          {isSubmitting ? <Spinner className="size-4 mx-auto" /> : isEdit ? "Save" : "Create"}
         </button>
       </div>
     </>

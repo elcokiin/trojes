@@ -12,13 +12,12 @@ import { useShortcutPreference } from "@/hooks/use-shortcut-preferences";
 import { useDialogCloseHotkey } from "@/hooks/use-dialog-close-hotkey";
 import { useSettingsNavHotkey } from "@/hooks/use-settings-nav-hotkey";
 import { useScrollLock } from "@/hooks/use-scroll-lock";
-import { XIcon } from "lucide-react";
 import { SHORTCUTS } from "@/lib/shortcuts";
 import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
-import { IconTooltip } from "@/components/ui/icon-tooltip";
+import { DialogCloseButton } from "@/components/ui/dialog-close-button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { SettingsHeader } from "@/components/settings/settings-header";
@@ -161,14 +160,7 @@ export function SettingsDialog({
           onClose={() => handleOpenChange(false)}
         />
         {!isMobile && (
-          <IconTooltip
-            icon={<XIcon />}
-            label="Close dialog"
-            shortcut={SHORTCUTS.closeDialog.hotkeys[0]}
-            side="bottom"
-            className="absolute top-4 right-4 z-10"
-            onClick={() => handleOpenChange(false)}
-          />
+          <DialogCloseButton onClick={() => handleOpenChange(false)} />
         )}
         <div
           className={cn(

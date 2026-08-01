@@ -1,9 +1,36 @@
-import { describe, it, expect, vi } from "vitest"
+import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { IdeaCard } from "@/components/ideas/idea-card"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import type { Idea } from "@/types/idea"
+
+const mockUseIsMobile = vi.fn()
+vi.mock("@/hooks/use-mobile", () => ({
+  useIsMobile: () => mockUseIsMobile(),
+}))
+
+vi.mock("@/components/editor/mobile-editor", () => ({
+  MobileEditor: ({
+    initialContent,
+    onCapture,
+    onClose,
+  }: {
+    initialContent?: string
+    onCapture?: (content: string) => void
+    onClose?: () => void
+  }) => (
+    <div data-testid="mobile-editor">
+      <span data-testid="mobile-editor-content">{initialContent}</span>
+      <button type="button" onClick={() => onCapture?.("saved content")}>
+        save
+      </button>
+      <button type="button" onClick={onClose}>
+        close
+      </button>
+    </div>
+  ),
+}))
 
 const baseIdea: Idea = {
   id: "idea-1",
@@ -24,6 +51,7 @@ function renderCard(overrides: Partial<Parameters<typeof IdeaCard>[0]> = {}) {
     onStatusChange: vi.fn(),
     onPinChange: vi.fn(),
     onColorChange: vi.fn(),
+    onContentChange: vi.fn(),
     ...overrides,
   }
   return render(
@@ -34,6 +62,10 @@ function renderCard(overrides: Partial<Parameters<typeof IdeaCard>[0]> = {}) {
 }
 
 describe("IdeaCard", () => {
+  beforeEach(() => {
+    mockUseIsMobile.mockReturnValue(false)
+  })
+
   it("renders markdown content: heading", () => {
     renderCard()
     expect(screen.getByText("Hello")).toBeTruthy()
@@ -104,5 +136,45 @@ describe("IdeaCard", () => {
     renderCard({ idea: { ...baseIdea, status: "deleted" } })
     expect(screen.queryByText("Pin to top")).toBeNull()
     expect(screen.queryByText("Unpin")).toBeNull()
+  })
+
+  it("mobile: Edit menu item opens MobileEditor with card content", async () => {
+    mockUseIsMobile.mockReturnValue(true)
+    renderCard()
+
+    const moreButton = screen.getByText("More actions").closest("button")
+    expect(moreButton).toBeTruthy()
+    await userEvent.click(moreButton!)
+
+    await userEvent.click(screen.getByText("Edit"))
+
+    expect(screen.getByTestId("mobile-editor")).toBeTruthy()
+    expect(screen.getByTestId("mobile-editor-content")).toHaveTextContent(
+      baseIdea.content.replace(/\s+/g, " "),
+    )
+  })
+
+  it("mobile: saving from MobileEditor calls onContentChange", async () => {
+    mockUseIsMobile.mockReturnValue(true)
+    const onContentChange = vi.fn()
+    renderCard({ onContentChange })
+
+    const moreButton = screen.getByText("More actions").closest("button")
+    await userEvent.click(moreButton!)
+    await userEvent.click(screen.getByText("Edit"))
+
+    await userEvent.click(screen.getByText("save"))
+    expect(onContentChange).toHaveBeenCalledWith("idea-1", "saved content")
+  })
+
+  it("desktop: Edit menu item does not open MobileEditor", async () => {
+    mockUseIsMobile.mockReturnValue(false)
+    renderCard()
+
+    const moreButton = screen.getByText("More actions").closest("button")
+    await userEvent.click(moreButton!)
+    await userEvent.click(screen.getByText("Edit"))
+
+    expect(screen.queryByTestId("mobile-editor")).toBeNull()
   })
 })

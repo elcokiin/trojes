@@ -67,27 +67,34 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
     return { ok: res.ok }
   }, [])
 
-  const updatePin = useCallback(async (id: string, pinned: boolean) => {
-    applyIdeaUpdate(id, (idea) => ({ ...idea, pinned }))
+  // In-place field edits (pin, color, content) stay in the same list, so we
+  // optimistically patch the cache and reconcile only the active list. No
+  // revalidateAllIdeas: other views catch up on tab mount / focus / 30s interval.
+  const updateIdeaField = useCallback(
+    async (id: string, patch: Record<string, unknown>, updater: (idea: Idea) => Idea) => {
+      applyIdeaUpdate(id, updater)
+      const res = await ideasApi.update(id, patch)
+      mutateRef.current()
+      return { ok: res.ok }
+    },
+    [],
+  )
 
-    const res = await ideasApi.update(id, { pinned })
+  const updatePin = useCallback(
+    (id: string, pinned: boolean) => updateIdeaField(id, { pinned }, (idea) => ({ ...idea, pinned })),
+    [updateIdeaField],
+  )
 
-    // Intentionally no revalidateAllIdeas: the active-list refetch reconciles
-    // the toggle; other views catch up on tab mount / focus / 30s interval.
-    mutateRef.current()
-    return { ok: res.ok }
-  }, [])
+  const updateColor = useCallback(
+    (id: string, background_color: string | null) =>
+      updateIdeaField(id, { background_color }, (idea) => ({ ...idea, background_color })),
+    [updateIdeaField],
+  )
 
-  const updateColor = useCallback(async (id: string, background_color: string | null) => {
-    applyIdeaUpdate(id, (idea) => ({ ...idea, background_color }))
-
-    const res = await ideasApi.update(id, { background_color })
-
-    // Intentionally no revalidateAllIdeas: the active-list refetch reconciles
-    // the toggle; other views catch up on tab mount / focus / 30s interval.
-    mutateRef.current()
-    return { ok: res.ok }
-  }, [])
+  const updateContent = useCallback(
+    (id: string, content: string) => updateIdeaField(id, { content }, (idea) => ({ ...idea, content })),
+    [updateIdeaField],
+  )
 
   const permanentDelete = useCallback(async (id: string) => {
     removeIdeaFromCache(id)
@@ -112,6 +119,7 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
     updateStatus,
     updatePin,
     updateColor,
+    updateContent,
     permanentDelete,
   }
 }

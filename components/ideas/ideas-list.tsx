@@ -115,6 +115,7 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
     updateStatus,
     updatePin,
     updateColor,
+    updateContent,
     permanentDelete,
   } = useIdeas({ status, search: debouncedSearch, enabled: active })
 
@@ -192,6 +193,10 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
     await updateColor(id, background_color)
   }, [updateColor])
 
+  const handleContentChange = useCallback(async (id: string, content: string) => {
+    await updateContent(id, content)
+  }, [updateContent])
+
   const handlePermanentDelete = useCallback(async (id: string) => {
     await permanentDelete(id)
     setFocusIdeaId(null)
@@ -264,6 +269,7 @@ export function IdeasList({ status, active = true, hideCapture = false }: IdeasL
                     onStatusChange={handleStatusChange}
                     onPinChange={handlePinChange}
                     onColorChange={handleColorChange}
+                    onContentChange={handleContentChange}
                     onPermanentDelete={status === "deleted" ? handlePermanentDelete : undefined}
                     isSelected={globalIndex === selectedIndex}
                     showTrashInfo={status === "deleted"}

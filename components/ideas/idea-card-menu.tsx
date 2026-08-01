@@ -19,6 +19,7 @@ import {
   Check,
   AlertTriangle,
   Copy,
+  Pencil,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CARD_COLORS } from "@/lib/ideas";
@@ -33,6 +34,7 @@ interface IdeaCardMenuProps {
   onPinToggle: () => void;
   onPermanentDelete: () => void;
   onCopy: () => void;
+  onEdit: () => void;
 }
 
 export function IdeaCardMenu({
@@ -44,6 +46,7 @@ export function IdeaCardMenu({
   onPinToggle,
   onPermanentDelete,
   onCopy,
+  onEdit,
 }: IdeaCardMenuProps) {
   return (
     <DropdownMenuContent
@@ -66,6 +69,11 @@ export function IdeaCardMenu({
           )}
         </DropdownMenuItem>
       )}
+
+      <DropdownMenuItem onClick={onEdit}>
+        <Pencil className="size-4 mr-2" />
+        Edit
+      </DropdownMenuItem>
 
       <DropdownMenuSub>
         <DropdownMenuSubTrigger>
