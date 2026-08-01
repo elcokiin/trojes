@@ -1,7 +1,7 @@
 "use client"
 
 import { XIcon } from "lucide-react"
-import { IconTooltip } from "@/components/ui/icon-tooltip"
+import { IconTooltip } from "@/components/ui/custom/icon-tooltip"
 import { SHORTCUTS } from "@/lib/shortcuts"
 import { cn } from "@/lib/utils"
 

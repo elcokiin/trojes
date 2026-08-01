@@ -50,7 +50,7 @@ vi.mock("@/components/settings/settings-keyboard", () => ({
   SettingsKeyboard: () => <div data-testid="settings-keyboard">Keyboard</div>,
 }))
 
-vi.mock("@/components/ui/icon-tooltip", () => ({
+vi.mock("@/components/ui/custom/icon-tooltip", () => ({
   IconTooltip: ({ label, onClick }: { label?: string; onClick?: () => void }) => (
     <button type="button" onClick={onClick} aria-label={label}>
       {label}

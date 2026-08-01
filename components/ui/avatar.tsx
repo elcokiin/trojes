@@ -5,8 +5,8 @@ import * as AvatarPrimitive from '@radix-ui/react-avatar'
 
 import { cn } from '@/lib/utils'
 
-import { AvatarImage } from './avatar-image'
-import { AvatarFallback } from './avatar-fallback'
+import { AvatarImage } from './custom/avatar-image'
+import { AvatarFallback } from './custom/avatar-fallback'
 
 function Avatar({
   className,

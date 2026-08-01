@@ -17,7 +17,7 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
-import { DialogCloseButton } from "@/components/ui/dialog-close-button";
+import { DialogCloseButton } from "@/components/ui/custom/dialog-close-button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { SettingsHeader } from "@/components/settings/settings-header";

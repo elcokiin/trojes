@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { DialogCloseButton } from "@/components/ui/dialog-close-button";
+import { DialogCloseButton } from "@/components/ui/custom/dialog-close-button";
 import { EditorX } from "@/components/editor/editor-x";
 import { useSuppressGlobalHotkeys } from "@/hooks/use-hotkey-scope";
 import { useDialogCloseHotkey } from "@/hooks/use-dialog-close-hotkey";

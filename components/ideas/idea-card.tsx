@@ -7,7 +7,7 @@ import { useUIStore } from "@/stores/ui-store"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { IconTooltip } from "@/components/ui/icon-tooltip"
+import { IconTooltip } from "@/components/ui/custom/icon-tooltip"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
