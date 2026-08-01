@@ -1,20 +1,36 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 
 const SWIPE_THRESHOLD = 50;
 
 type SwipeDirection = "left" | "right";
 
-export function useSwipe(onSwipe: (direction: SwipeDirection) => void) {
-  const touchStart = useRef<{ x: number; y: number } | null>(null);
+interface TouchPoint {
+  x: number;
+  y: number;
+}
 
-  const onTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStart.current = {
-      x: e.touches[0].clientX,
-      y: e.touches[0].clientY,
-    };
-  }, []);
+function getTouchPoint(e: React.TouchEvent): TouchPoint {
+  return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+}
+
+function useTouchStart(onStart?: () => void) {
+  const touchStart = useRef<TouchPoint | null>(null);
+
+  const onTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      touchStart.current = getTouchPoint(e);
+      onStart?.();
+    },
+    [onStart],
+  );
+
+  return { touchStart, onTouchStart };
+}
+
+export function useSwipe(onSwipe: (direction: SwipeDirection) => void) {
+  const { touchStart, onTouchStart } = useTouchStart();
 
   const onTouchEnd = useCallback(
     (e: React.TouchEvent) => {
@@ -30,8 +46,46 @@ export function useSwipe(onSwipe: (direction: SwipeDirection) => void) {
 
       onSwipe(deltaX > 0 ? "right" : "left");
     },
-    [onSwipe],
+    [onSwipe, touchStart],
   );
 
   return { onTouchStart, onTouchEnd };
+}
+
+interface UseSwipeUpOptions {
+  onSwipeUp: () => void;
+  onTouchStart?: () => void;
+}
+
+export function useSwipeUp({ onSwipeUp, onTouchStart: onStart }: UseSwipeUpOptions) {
+  const [isSwipingUp, setIsSwipingUp] = useState(false);
+
+  const { touchStart, onTouchStart } = useTouchStart(() => {
+    setIsSwipingUp(false);
+    onStart?.();
+  });
+
+  const onTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (!touchStart.current) return;
+      const deltaY = e.touches[0].clientY - touchStart.current.y;
+      setIsSwipingUp(deltaY < -15);
+    },
+    [touchStart],
+  );
+
+  const onTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      setIsSwipingUp(false);
+      if (!touchStart.current) return;
+      const deltaY = e.changedTouches[0].clientY - touchStart.current.y;
+      touchStart.current = null;
+      if (deltaY < -SWIPE_THRESHOLD) {
+        onSwipeUp();
+      }
+    },
+    [onSwipeUp, touchStart],
+  );
+
+  return { isSwipingUp, onTouchStart, onTouchMove, onTouchEnd };
 }
