@@ -1,13 +1,13 @@
 "use client"
 
-import { useRef, useEffect, useMemo, useState } from "react"
+import { forwardRef, useImperativeHandle, useRef, useEffect, useMemo, useState } from "react"
 import { LexicalComposer } from "@lexical/react/LexicalComposer"
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin"
 import { ContentEditable as LexicalContentEditable } from "@lexical/react/LexicalContentEditable"
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin"
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary"
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext"
-import { KEY_ENTER_COMMAND, COMMAND_PRIORITY_LOW } from "lexical"
+import { KEY_ENTER_COMMAND, COMMAND_PRIORITY_LOW, type LexicalEditor } from "lexical"
 import { $convertToMarkdownString, $convertFromMarkdownString, TRANSFORMERS } from "@lexical/markdown"
 import { registerMarkdownShortcuts } from "@lexical/markdown"
 import { HeadingNode, QuoteNode } from "@lexical/rich-text"
@@ -33,14 +33,38 @@ import { editorTheme } from "@/components/editor/themes/editor-theme"
 import "@/components/editor/themes/editor-theme.css"
 import { cn } from "@/lib/utils"
 
+function focusEditor(editor: LexicalEditor) {
+  const root = editor.getRootElement()
+  if (!root) return
+  // Lexical's editor.focus() only sets the selection and relies on the browser
+  // focusing the contentEditable as a side effect, which doesn't happen in
+  // jsdom and can be flaky in real browsers. Force the DOM focus explicitly.
+  editor.focus()
+  if (document.activeElement !== root) {
+    root.focus({ preventScroll: true })
+  }
+}
+
 function AutoFocusPlugin() {
   const [editor] = useLexicalComposerContext()
 
   useEffect(() => {
-    const raf = requestAnimationFrame(() => {
-      editor.focus()
-    })
-    return () => cancelAnimationFrame(raf)
+    let cancelled = false
+    const tryFocus = (attempt: number) => {
+      if (cancelled) return
+      // The contentEditable root may not be mounted yet (e.g. inside an
+      // animated overlay), so retry briefly until it exists.
+      if (editor.getRootElement()) {
+        focusEditor(editor)
+      } else if (attempt < 10) {
+        setTimeout(() => tryFocus(attempt + 1), 30)
+      }
+    }
+    const raf = requestAnimationFrame(() => tryFocus(0))
+    return () => {
+      cancelled = true
+      cancelAnimationFrame(raf)
+    }
   }, [editor])
 
   return null
@@ -156,7 +180,27 @@ function KeyboardPlugin({
   return null
 }
 
-export function EditorX({
+export interface EditorXHandle {
+  /** Focuses the Lexical contentEditable root. */
+  focus: () => void
+}
+
+function FocusHandlePlugin({ handleRef }: { handleRef: React.MutableRefObject<EditorXHandle | null> }) {
+  const [editor] = useLexicalComposerContext()
+
+  useEffect(() => {
+    handleRef.current = {
+      focus: () => focusEditor(editor),
+    }
+    return () => {
+      handleRef.current = null
+    }
+  }, [editor, handleRef])
+
+  return null
+}
+
+export const EditorX = forwardRef<EditorXHandle, EditorXProps>(function EditorX({
   value,
   onChange,
   placeholder = "Type here...",
@@ -168,19 +212,7 @@ export function EditorX({
   onModEnter,
   onFocus,
   onBlur,
-}: {
-  value: string
-  onChange: (markdown: string) => void
-  placeholder?: string
-  className?: string
-  minHeight?: string
-  disabled?: boolean
-  focusOnMount?: boolean
-  onEscape?: () => void
-  onModEnter?: () => void
-  onFocus?: () => void
-  onBlur?: () => void
-}) {
+}: EditorXProps, ref) {
   const initialConfig = useMemo(() => ({
     namespace: "TrojesEditor",
     theme: editorTheme,
@@ -203,10 +235,16 @@ export function EditorX({
 
   const [isLinkEditMode, setIsLinkEditMode] = useState(false)
   const anchorRef = useRef<HTMLDivElement>(null)
+  const focusHandleRef = useRef<EditorXHandle | null>(null)
+
+  useImperativeHandle(ref, () => ({
+    focus: () => focusHandleRef.current?.focus(),
+  }), [])
 
   return (
     <div ref={anchorRef} className={cn("relative", disabled && "pointer-events-none opacity-50", className)}>
       <LexicalComposer initialConfig={initialConfig}>
+        <FocusHandlePlugin handleRef={focusHandleRef} />
         <MarkdownShortcutsPlugin />
         <SlashMenuPlugin />
         <EmojiPickerPlugin />
@@ -249,4 +287,18 @@ export function EditorX({
       </LexicalComposer>
     </div>
   )
+})
+
+interface EditorXProps {
+  value: string
+  onChange: (markdown: string) => void
+  placeholder?: string
+  className?: string
+  minHeight?: string
+  disabled?: boolean
+  focusOnMount?: boolean
+  onEscape?: () => void
+  onModEnter?: () => void
+  onFocus?: () => void
+  onBlur?: () => void
 }

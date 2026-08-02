@@ -81,7 +81,14 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
   )
 
   const updatePin = useCallback(
-    (id: string, pinned: boolean) => updateIdeaField(id, { pinned }, (idea) => ({ ...idea, pinned })),
+    async (id: string, pinned: boolean) => {
+      const result = await updateIdeaField(id, { pinned }, (idea) => ({ ...idea, pinned }))
+      // Pinning affects the pinned tray (a separate SWR key), so reconcile it
+      // immediately instead of waiting for tab mount / focus / the refresh
+      // interval.
+      revalidateAllIdeas()
+      return result
+    },
     [updateIdeaField],
   )
 

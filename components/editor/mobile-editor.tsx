@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useCallback } from "react"
-import { EditorX } from "@/components/editor/editor-x"
+import { useState, useCallback, useRef } from "react"
+import { EditorX, type EditorXHandle } from "@/components/editor/editor-x"
 import { Spinner } from "@/components/ui/spinner"
 import { useSuppressGlobalHotkeys } from "@/hooks/use-hotkey-scope"
 
@@ -17,6 +17,7 @@ export function MobileEditor({ onCapture, onClose, overlay = true, initialConten
   const isEdit = initialContent !== undefined
   const [content, setContent] = useState(initialContent ?? "")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const editorRef = useRef<EditorXHandle>(null)
 
   useSuppressGlobalHotkeys(true)
 
@@ -45,8 +46,18 @@ export function MobileEditor({ onCapture, onClose, overlay = true, initialConten
 
   const editor = (
     <>
-      <div className="flex-1 flex flex-col min-h-0">
+      <div
+        className="flex-1 flex flex-col min-h-0 cursor-text"
+        onClick={(e) => {
+          // Don't steal focus from interactive elements such as the floating
+          // link editor input or toolbar buttons.
+          const target = e.target as HTMLElement
+          if (target.closest("input, button, a, [contenteditable='false']")) return
+          editorRef.current?.focus()
+        }}
+      >
         <EditorX
+          ref={editorRef}
           value={initialContent ?? ""}
           onChange={setContent}
           onEscape={handleEscape}
