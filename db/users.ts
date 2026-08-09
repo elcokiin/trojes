@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm"
 import { getDb } from "@/db/client"
 import { accounts, users } from "@/db/schema"
 
-export async function findUserIdByEmail(email: string) {
+export async function findUserIdByEmail(email: string): Promise<string | null> {
   const db = getDb()
   const [user] = await db
     .select({ id: users.id })
