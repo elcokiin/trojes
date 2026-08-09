@@ -161,7 +161,7 @@ export const SHORTCUTS = {
   deselect: {
     id: "deselect",
     label: "Deselect",
-    hotkeys: ["Escape"],
+    hotkeys: ["Escape", "Q"],
     category: "Navigation",
     preferenceKey: "trojes-keyboard-nav",
   },

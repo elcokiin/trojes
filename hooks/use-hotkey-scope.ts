@@ -65,7 +65,10 @@ export function useGlobalHotkeys() {
     ...SHORTCUTS.settings.hotkeys.map((hotkey) => ({
       hotkey,
       callback: () => setSettingsOpen(!settingsOpen),
-      options: { enabled: keyboardEnabled && noOverlays && settingsKeyEnabled },
+      options: {
+        enabled:
+          keyboardEnabled && settingsKeyEnabled && (noOverlays || settingsOpen),
+      },
     })),
     ...SHORTCUTS.toggleTheme.hotkeys.map((hotkey) => ({
       hotkey,
