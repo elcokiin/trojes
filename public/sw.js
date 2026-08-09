@@ -1,4 +1,4 @@
-const CACHE_NAME = "trojes-v3"
+const CACHE_NAME = "trojes-v4"
 const OFFLINE_URLS = ["/offline", "/manifest.webmanifest"]
 
 self.addEventListener("install", (event) => {

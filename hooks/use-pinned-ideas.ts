@@ -1,24 +1,26 @@
 "use client"
 
-import useSWR from "swr"
-import { fetcher } from "@/lib/api-client"
-import type { Idea } from "@/types/idea"
+import { useSession } from "next-auth/react"
+import { useQuery } from "@powersync/react"
+import { getCachedUserId } from "@/lib/offline-identity"
+import { useHydrated } from "@/hooks/use-hydrated"
+import { ideaRowToIdea } from "@/lib/powersync/mappers"
 
 export function usePinnedIdeas() {
-  const { data, error, isLoading, mutate } = useSWR<{ ideas: Idea[] }>(
-    "/api/ideas?pinned=true",
-    fetcher,
-    {
-      refreshInterval: 30_000,
-      revalidateOnFocus: true,
-      focusThrottleInterval: 10_000,
-    }
+  const hydrated = useHydrated()
+  const { data: session } = useSession()
+  const userId = session?.user?.id ?? getCachedUserId()
+
+  const { data, isLoading, error } = useQuery(
+    userId
+      ? "SELECT * FROM ideas WHERE user_id = ? AND pinned = 1 AND status = 'inbox' ORDER BY created_at DESC, id DESC"
+      : "SELECT * FROM ideas WHERE 1=0",
+    userId ? [userId] : [],
   )
 
   return {
-    ideas: data?.ideas ?? [],
+    ideas: (data ?? []).map(ideaRowToIdea),
     error,
-    isLoading,
-    mutate,
+    isLoading: hydrated ? isLoading : false,
   }
 }

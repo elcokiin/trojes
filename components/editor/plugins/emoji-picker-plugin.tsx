@@ -68,7 +68,22 @@ export function EmojiPickerPlugin() {
   const [queryString, setQueryString] = useState<string | null>(null);
   const [emojis, setEmojis] = useState<Array<Emoji>>([]);
   useEffect(() => {
-    import("../utils/emoji-list").then((file) => setEmojis(file.default));
+    let cancelled = false
+    import("../utils/emoji-list")
+      .then((file) => {
+        if (!cancelled) setEmojis(file.default)
+      })
+      .catch((error) => {
+        // Chunk may be unavailable offline (not yet in the service worker
+        // cache). Emoji suggestions simply stay empty instead of crashing.
+        if (!cancelled) {
+          console.warn("Failed to load emoji list:", error)
+          setEmojis([])
+        }
+      })
+    return () => {
+      cancelled = true
+    }
   }, []);
 
   const emojiOptions = useMemo(

@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { SessionProvider } from "@/components/providers/session-provider";
+import { PowerSyncProvider } from "@/components/providers/powersync-provider";
 import { PwaRegister } from "@/components/providers/pwa-register";
 import { HotkeysRootProvider } from "@/components/providers/hotkeys-root-provider";
 import { DevtoolsClient } from "@/components/providers/devtools-client";
@@ -59,7 +60,8 @@ export default function RootLayout({
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
         <SessionProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <PowerSyncProvider>
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <NuqsAdapter>
               <HotkeysRootProvider>
                 <TooltipProvider>
@@ -69,7 +71,8 @@ export default function RootLayout({
                 <DevtoolsClient />
               </HotkeysRootProvider>
             </NuqsAdapter>
-          </ThemeProvider>
+            </ThemeProvider>
+          </PowerSyncProvider>
         </SessionProvider>
         {process.env.NODE_ENV === "production" && <Analytics />}
         <PwaRegister />
