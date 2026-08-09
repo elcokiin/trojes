@@ -24,3 +24,13 @@ the context, impact, and what should be done differently next time.
   the *live* DB schema (via `information_schema`) rather than trusting migrations,
   since this DB predates the migration history.
 
+- **SQL placeholder/param mismatch in offline INSERT (2026-08-09):**
+  `lib/create-idea.ts` had 6 `?` placeholders but 5 params, so `deleted_at`
+  received the timestamp meant for `updated_at` and `updated_at` was unbound.
+  CodeRabbit caught it, not the tests, because `tests/helpers/powersync-fake.ts`
+  binds params positionally and silently stores `undefined` for missing ones.
+  Fixed by making `deleted_at` a literal `NULL` and added a test asserting the
+  placeholder count equals the param count. Lesson: the fake db is permissive;
+  unit tests that only assert on a couple of params will not surface
+  count/ordering bugs — add explicit count + tail-param assertions.
+

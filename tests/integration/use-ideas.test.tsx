@@ -108,9 +108,11 @@ describe("useIdeas", () => {
     ).resolves.toEqual({ ok: true })
 
     await waitFor(() => expect(result.current.ideas).toHaveLength(3))
-    expect(
-      result.current.ideas.some((i) => i.content === "New test idea"),
-    ).toBe(true)
+    const created = result.current.ideas.find((i) => i.content === "New test idea")
+    expect(created).toBeDefined()
+    expect(created?.deleted_at).toBeNull()
+    expect(created?.updated_at).toBeTypeOf("string")
+    expect(created?.updated_at).not.toBe("")
   })
 
   it("updateStatus() updates the row and returns ok", async () => {

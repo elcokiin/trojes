@@ -122,7 +122,9 @@ async function applyOp(op: UploadOp, userId: string) {
 }
 
 // POST - Receives queued offline writes from the client's uploadData().
-// Always returns 2xx so the upload queue never blocks permanently.
+// Auth/infrastructure failures return non-2xx so the client keeps its local
+// queue and retries. Only permanently invalid operations return 2xx, so the
+// client can drop them and continue without blocking the queue forever.
 export async function POST(request: NextRequest) {
   let userId: string | null
   try {
@@ -131,14 +133,14 @@ export async function POST(request: NextRequest) {
     console.error("Failed to authenticate upload:", error)
     return NextResponse.json(
       { success: false, error: "Authentication failed" },
-      { status: 200 },
+      { status: 401 },
     )
   }
 
   if (!userId) {
     return NextResponse.json(
       { success: false, error: "Unauthorized" },
-      { status: 200 },
+      { status: 401 },
     )
   }
 
@@ -149,12 +151,13 @@ export async function POST(request: NextRequest) {
     console.error("Invalid upload payload:", error)
     return NextResponse.json(
       { success: false, error: "Invalid JSON payload" },
-      { status: 200 },
+      { status: 400 },
     )
   }
 
   const operations = Array.isArray(body.operations) ? body.operations : []
   const errors: string[] = []
+  let retryable = false
 
   for (const op of operations) {
     try {
@@ -164,8 +167,16 @@ export async function POST(request: NextRequest) {
       }
     } catch (error) {
       console.error("Failed to apply upload operation:", error)
+      retryable = true
       errors.push(`Failed to apply ${op?.op ?? "unknown"} on ${op?.table ?? "unknown"}`)
     }
+  }
+
+  if (retryable) {
+    return NextResponse.json(
+      { success: false, retryable: true, errors },
+      { status: 503 },
+    )
   }
 
   if (errors.length > 0) {

@@ -9,7 +9,7 @@ import { ideaRowToIdea } from "@/lib/powersync/mappers"
 export function usePinnedIdeas() {
   const hydrated = useHydrated()
   const { data: session } = useSession()
-  const userId = session?.user?.id ?? getCachedUserId()
+  const userId = session?.user?.id ?? (hydrated ? getCachedUserId() : null)
 
   const { data, isLoading, error } = useQuery(
     userId

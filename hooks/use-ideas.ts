@@ -22,7 +22,7 @@ const PAGE_SIZE = 50
 export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
   const hydrated = useHydrated()
   const { data: session } = useSession()
-  const userId = session?.user?.id ?? getCachedUserId()
+  const userId = session?.user?.id ?? (hydrated ? getCachedUserId() : null)
   const [size, setSize] = useState(1)
 
   const canQuery = enabled && Boolean(userId)

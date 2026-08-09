@@ -11,7 +11,7 @@ export async function insertIdea(userId: string, content: string): Promise<Idea 
 
   try {
     await db.execute(
-      "INSERT INTO ideas (id, user_id, content, source, status, tags, pinned, background_color, deleted_at, created_at, updated_at) VALUES (?, ?, ?, 'web', 'inbox', NULL, 0, NULL, ?, ?, ?)",
+      "INSERT INTO ideas (id, user_id, content, source, status, tags, pinned, background_color, deleted_at, created_at, updated_at) VALUES (?, ?, ?, 'web', 'inbox', NULL, 0, NULL, NULL, ?, ?)",
       [id, userId, trimmed, now, now],
     )
     return {
