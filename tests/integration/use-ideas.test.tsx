@@ -1,123 +1,120 @@
-import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest"
+import { describe, it, expect, vi, beforeEach } from "vitest"
 import { renderHook, waitFor, act } from "@testing-library/react"
-import { SWRConfig } from "swr"
-import { setupServer } from "msw/node"
-import { http, HttpResponse } from "msw"
+import { createFakeDb, type FakeDb, type FakeRow } from "../helpers/powersync-fake"
 import { useIdeas } from "@/hooks/use-ideas"
-import type React from "react"
 
-function initialIdeas() {
-  return [
-    {
-      id: "idea-1",
-      content: "First idea",
-      source: "web",
-      status: "inbox",
-      tags: null,
-      pinned: false,
-      background_color: null,
-      created_at: "2024-06-01T12:00:00Z",
-      updated_at: "2024-06-01T12:00:00Z",
-      deleted_at: null,
+const holder = vi.hoisted(() => ({
+  db: null as FakeDb | null,
+  session: { user: { id: "user-1" } },
+  status: "authenticated",
+}))
+
+vi.mock("@/lib/powersync/db", () => ({
+  get db() {
+    return holder.db
+  },
+}))
+
+vi.mock("next-auth/react", () => ({
+  useSession: () => ({ data: holder.session, status: holder.status }),
+  getSession: async () => holder.session,
+}))
+
+vi.mock("@powersync/react", async () => {
+  const React = await import("react")
+  return {
+    PowerSyncContext: React.createContext(null),
+    useQuery: (sql: string, params: unknown[]) => {
+      const [, force] = React.useReducer((c: number) => c + 1, 0)
+      React.useEffect(() => {
+        if (!holder.db) return
+        return holder.db.subscribe(() => force())
+      }, [])
+      const db = holder.db
+      return {
+        data: db ? db.select(sql, params) : [],
+        isLoading: !db,
+        isFetching: false,
+        error: db?.error ?? undefined,
+      }
     },
-    {
+  }
+})
+
+function row(partial: Partial<FakeRow> = {}): FakeRow {
+  return {
+    id: "idea-1",
+    user_id: "user-1",
+    content: "Test idea",
+    source: "web",
+    status: "inbox",
+    tags: null,
+    pinned: 0,
+    background_color: null,
+    deleted_at: null,
+    created_at: "2024-06-01T12:00:00Z",
+    updated_at: "2024-06-01T12:00:00Z",
+    ...partial,
+  }
+}
+
+function seed() {
+  return [
+    row({ id: "idea-1", content: "First idea" }),
+    row({
       id: "idea-2",
       content: "Second idea",
-      source: "api",
-      status: "inbox",
-      tags: ["important"],
-      pinned: true,
-      background_color: null,
+      tags: '["important"]',
+      pinned: 1,
       created_at: "2024-06-02T12:00:00Z",
       updated_at: "2024-06-02T12:00:00Z",
-      deleted_at: null,
-    },
+    }),
   ]
 }
 
-let storedIdeas = initialIdeas()
-
-const server = setupServer(
-  http.get("/api/ideas", ({ request }) => {
-    const url = new URL(request.url)
-    const status = url.searchParams.get("status") || "inbox"
-    const search = url.searchParams.get("search")
-
-    let ideas = storedIdeas.filter((i) => i.status === status)
-
-    if (search) {
-      ideas = ideas.filter((i) =>
-        i.content.toLowerCase().includes(search.toLowerCase()),
-      )
-    }
-
-    return HttpResponse.json({ ideas, nextCursor: null })
-  }),
-
-  http.post("/api/ideas", async ({ request }) => {
-    const body = (await request.json()) as { content: string }
-    storedIdeas.push({
-      id: `idea-${storedIdeas.length + 1}`,
-      content: body.content,
-      source: "web",
-      status: "inbox",
-      tags: null,
-      pinned: false,
-      background_color: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      deleted_at: null,
-    })
-    return HttpResponse.json({ idea: storedIdeas[storedIdeas.length - 1] }, { status: 201 })
-  }),
-
-  http.patch("/api/ideas/:id", async ({ params, request }) => {
-    const body = (await request.json()) as Record<string, unknown>
-    const idx = storedIdeas.findIndex((i) => i.id === params.id)
-    if (idx !== -1) storedIdeas[idx] = { ...storedIdeas[idx], ...body } as typeof storedIdeas[0]
-    return HttpResponse.json({ success: true })
-  }),
-)
-
-beforeAll(() => server.listen({ onUnhandledRequest: "bypass" }))
-afterAll(() => server.close())
-afterEach(() => {
-  server.resetHandlers()
-  storedIdeas = initialIdeas()
+beforeEach(() => {
+  holder.db = createFakeDb(seed())
 })
-
-function wrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>
-      {children}
-    </SWRConfig>
-  )
-}
 
 describe("useIdeas", () => {
   it("fetches and returns inbox ideas", async () => {
-    const { result } = renderHook(() => useIdeas({ status: "inbox" }), { wrapper })
+    const { result } = renderHook(() => useIdeas({ status: "inbox" }))
     await waitFor(() => expect(result.current.isLoading).toBe(false))
     expect(result.current.ideas).toHaveLength(2)
+    expect(result.current.ideas[0].content).toBe("Second idea")
+    expect(result.current.ideas[1].content).toBe("First idea")
+  })
+
+  it("maps rows into Idea objects", async () => {
+    const { result } = renderHook(() => useIdeas({ status: "inbox" }))
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+    const second = result.current.ideas.find((i) => i.id === "idea-2")
+    expect(second?.tags).toEqual(["important"])
+    expect(second?.pinned).toBe(true)
   })
 
   it("fetches archived ideas (empty)", async () => {
-    const { result } = renderHook(() => useIdeas({ status: "archived" }), { wrapper })
+    const { result } = renderHook(() => useIdeas({ status: "archived" }))
     await waitFor(() => expect(result.current.isLoading).toBe(false))
     expect(result.current.ideas).toHaveLength(0)
   })
 
-  it("create() calls POST successfully", async () => {
-    const { result } = renderHook(() => useIdeas({ status: "inbox" }), { wrapper })
+  it("create() inserts locally and returns ok", async () => {
+    const { result } = renderHook(() => useIdeas({ status: "inbox" }))
     await waitFor(() => expect(result.current.isLoading).toBe(false))
 
     await expect(
       act(async () => result.current.create("New test idea")),
     ).resolves.toEqual({ ok: true })
+
+    await waitFor(() => expect(result.current.ideas).toHaveLength(3))
+    expect(
+      result.current.ideas.some((i) => i.content === "New test idea"),
+    ).toBe(true)
   })
 
-  it("updateStatus() calls PATCH and returns ok", async () => {
-    const { result } = renderHook(() => useIdeas({ status: "inbox" }), { wrapper })
+  it("updateStatus() updates the row and returns ok", async () => {
+    const { result } = renderHook(() => useIdeas({ status: "inbox" }))
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false)
       expect(result.current.ideas).toHaveLength(2)
@@ -128,15 +125,30 @@ describe("useIdeas", () => {
     )
 
     expect(res).toEqual({ ok: true })
+    await waitFor(() => expect(result.current.ideas).toHaveLength(1))
   })
 
   it("handles fetch error gracefully", async () => {
-    server.use(
-      http.get("/api/ideas", () => HttpResponse.error()),
-    )
+    holder.db?.setError(new Error("network"))
 
-    const { result } = renderHook(() => useIdeas({ status: "inbox" }), { wrapper })
+    const { result } = renderHook(() => useIdeas({ status: "inbox" }))
     await waitFor(() => expect(result.current.error).toBeTruthy())
     expect(result.current.ideas).toEqual([])
+  })
+
+  it("returns ok:false for create when the db write fails", async () => {
+    const { result } = renderHook(() => useIdeas({ status: "inbox" }))
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+
+    const original = holder.db!.execute
+    holder.db!.execute = async () => {
+      throw new Error("boom")
+    }
+
+    await expect(
+      act(async () => result.current.create("Will fail")),
+    ).resolves.toEqual({ ok: false })
+
+    holder.db!.execute = original
   })
 })

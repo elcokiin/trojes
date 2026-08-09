@@ -1,16 +1,15 @@
 "use client"
 
-import { useCallback, useEffect, useRef } from "react"
-import useSWRInfinite from "swr/infinite"
-import { fetcher, ideasApi } from "@/lib/api-client"
-import { createIdea } from "@/lib/create-idea"
-import { applyIdeaUpdate, removeIdeaFromCache, revalidateAllIdeas } from "@/lib/swr-helpers"
-import type { Idea, IdeaStatus } from "@/types/idea"
-
-interface IdeasResponse {
-  ideas: Idea[]
-  nextCursor: string | null
-}
+import { useCallback, useMemo, useState } from "react"
+import { useSession } from "next-auth/react"
+import { useQuery } from "@powersync/react"
+import { db } from "@/lib/powersync/db"
+import { insertIdea } from "@/lib/create-idea"
+import { getCachedUserId } from "@/lib/offline-identity"
+import { useHydrated } from "@/hooks/use-hydrated"
+import { ideaRowToIdea } from "@/lib/powersync/mappers"
+import type { IdeaRow } from "@/lib/powersync/schema"
+import type { IdeaStatus } from "@/types/idea"
 
 interface UseIdeasOptions {
   status: IdeaStatus
@@ -21,103 +20,140 @@ interface UseIdeasOptions {
 const PAGE_SIZE = 50
 
 export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
-  const getKey = useCallback(
-    (pageIndex: number, previousPageData: IdeasResponse | null) => {
-      if (!enabled) return null
-      if (pageIndex > 0 && !previousPageData?.nextCursor) return null
+  const hydrated = useHydrated()
+  const { data: session } = useSession()
+  const userId = session?.user?.id ?? getCachedUserId()
+  const [size, setSize] = useState(1)
 
-      const params = new URLSearchParams({ status })
-      if (search) params.set("search", search)
-      if (pageIndex > 0 && previousPageData?.nextCursor) {
-        params.set("cursor", previousPageData.nextCursor)
-      }
-      params.set("limit", String(PAGE_SIZE))
-      return `/api/ideas?${params.toString()}`
-    },
-    [status, search, enabled],
+  const canQuery = enabled && Boolean(userId)
+  const fetchLimit = size * PAGE_SIZE + 1
+
+  const query = useMemo(() => {
+    const conditions = ["user_id = ?", "status = ?"]
+    if (search) conditions.push("content LIKE ?")
+    return `SELECT * FROM ideas WHERE ${conditions.join(" AND ")} ORDER BY created_at DESC, id DESC LIMIT ?`
+  }, [search])
+
+  const parameters = useMemo(() => {
+    const params: unknown[] = [userId, status]
+    if (search) params.push(`%${search}%`)
+    params.push(fetchLimit)
+    return params
+  }, [userId, status, search, fetchLimit])
+
+  const { data, isFetching, isLoading, error } = useQuery(
+    canQuery ? query : "SELECT * FROM ideas WHERE 1=0",
+    canQuery ? parameters : [],
   )
 
-  const { data, error, isLoading, isValidating, size, setSize, mutate: boundMutate } =
-    useSWRInfinite<IdeasResponse>(getKey, fetcher, {
-      refreshInterval: 30_000,
-      revalidateOnFocus: true,
-      focusThrottleInterval: 10_000,
-    })
+  const ideas = (data ?? []).slice(0, size * PAGE_SIZE).map(ideaRowToIdea)
+  const hasMore = canQuery ? (data?.length ?? 0) > size * PAGE_SIZE : false
+  const isLoadingMore = canQuery && isFetching && size > 1
 
-  const mutateRef = useRef(boundMutate)
-  useEffect(() => { mutateRef.current = boundMutate }, [boundMutate])
+  const create = useCallback(
+    async (content: string): Promise<{ ok: boolean }> => {
+      if (!userId) return { ok: false }
+      const idea = await insertIdea(userId, content)
+      return { ok: Boolean(idea) }
+    },
+    [userId],
+  )
 
-  const ideas = data?.flatMap((page) => page.ideas) ?? []
-  const hasMore = data ? data[data.length - 1]?.nextCursor != null : false
-  const isLoadingMore = size > 0 && isValidating && hasMore
+  const updateStatus = useCallback(
+    async (id: string, newStatus: IdeaStatus): Promise<{ ok: boolean }> => {
+      const now = new Date().toISOString()
+      try {
+        const existing = await db.getOptional<IdeaRow>("SELECT * FROM ideas WHERE id = ?", [id])
+        if (!existing) return { ok: false }
 
-  const create = useCallback(async (content: string) => {
-    const result = await createIdea(content)
-    mutateRef.current()
-    return { ok: result.ok }
-  }, [])
+        let deletedAt = existing.deleted_at ?? null
+        if (newStatus === "deleted" && !deletedAt) {
+          deletedAt = now
+        } else if (newStatus !== "deleted" && existing.status === "deleted") {
+          deletedAt = null
+        }
 
-  const updateStatus = useCallback(async (id: string, newStatus: IdeaStatus) => {
-    removeIdeaFromCache(id)
-
-    const res = await ideasApi.update(id, { status: newStatus })
-
-    mutateRef.current()
-    revalidateAllIdeas()
-    return { ok: res.ok }
-  }, [])
-
-  // In-place field edits (pin, color, content) stay in the same list, so we
-  // optimistically patch the cache and reconcile only the active list. No
-  // revalidateAllIdeas: other views catch up on tab mount / focus / 30s interval.
-  const updateIdeaField = useCallback(
-    async (id: string, patch: Record<string, unknown>, updater: (idea: Idea) => Idea) => {
-      applyIdeaUpdate(id, updater)
-      const res = await ideasApi.update(id, patch)
-      mutateRef.current()
-      return { ok: res.ok }
+        await db.execute(
+          "UPDATE ideas SET status = ?, deleted_at = ?, updated_at = ? WHERE id = ?",
+          [newStatus, deletedAt, now, id],
+        )
+        return { ok: true }
+      } catch (error) {
+        console.error("Failed to update status:", error)
+        return { ok: false }
+      }
     },
     [],
   )
 
   const updatePin = useCallback(
-    async (id: string, pinned: boolean) => {
-      const result = await updateIdeaField(id, { pinned }, (idea) => ({ ...idea, pinned }))
-      // Pinning affects the pinned tray (a separate SWR key), so reconcile it
-      // immediately instead of waiting for tab mount / focus / the refresh
-      // interval.
-      revalidateAllIdeas()
-      return result
+    async (id: string, pinned: boolean): Promise<{ ok: boolean }> => {
+      const now = new Date().toISOString()
+      try {
+        await db.execute(
+          "UPDATE ideas SET pinned = ?, updated_at = ? WHERE id = ?",
+          [pinned ? 1 : 0, now, id],
+        )
+        return { ok: true }
+      } catch (error) {
+        console.error("Failed to update pin:", error)
+        return { ok: false }
+      }
     },
-    [updateIdeaField],
+    [],
   )
 
   const updateColor = useCallback(
-    (id: string, background_color: string | null) =>
-      updateIdeaField(id, { background_color }, (idea) => ({ ...idea, background_color })),
-    [updateIdeaField],
+    async (id: string, background_color: string | null): Promise<{ ok: boolean }> => {
+      const now = new Date().toISOString()
+      try {
+        await db.execute(
+          "UPDATE ideas SET background_color = ?, updated_at = ? WHERE id = ?",
+          [background_color, now, id],
+        )
+        return { ok: true }
+      } catch (error) {
+        console.error("Failed to update color:", error)
+        return { ok: false }
+      }
+    },
+    [],
   )
 
   const updateContent = useCallback(
-    (id: string, content: string) => updateIdeaField(id, { content }, (idea) => ({ ...idea, content })),
-    [updateIdeaField],
+    async (id: string, content: string): Promise<{ ok: boolean }> => {
+      const now = new Date().toISOString()
+      try {
+        await db.execute(
+          "UPDATE ideas SET content = ?, updated_at = ? WHERE id = ?",
+          [content, now, id],
+        )
+        return { ok: true }
+      } catch (error) {
+        console.error("Failed to update content:", error)
+        return { ok: false }
+      }
+    },
+    [],
   )
 
-  const permanentDelete = useCallback(async (id: string) => {
-    removeIdeaFromCache(id)
-
-    const res = await ideasApi.remove(id)
-
-    mutateRef.current()
-    revalidateAllIdeas()
-    return { ok: res.ok }
-  }, [])
+  const permanentDelete = useCallback(
+    async (id: string): Promise<{ ok: boolean }> => {
+      try {
+        await db.execute("DELETE FROM ideas WHERE id = ?", [id])
+        return { ok: true }
+      } catch (error) {
+        console.error("Failed to delete idea:", error)
+        return { ok: false }
+      }
+    },
+    [],
+  )
 
   return {
     ideas,
-    data,
     error,
-    isLoading,
+    isLoading: canQuery ? (hydrated ? isLoading : false) : false,
     isLoadingMore,
     hasMore,
     size,

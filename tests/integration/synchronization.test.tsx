@@ -1,173 +1,87 @@
-import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from "vitest"
+import { describe, it, expect, vi, beforeEach } from "vitest"
 import { renderHook, waitFor, act } from "@testing-library/react"
-import { SWRConfig, mutate as swrMutate } from "swr"
-import { setupServer } from "msw/node"
-import { http, HttpResponse } from "msw"
+import { createFakeDb, type FakeDb, type FakeRow } from "../helpers/powersync-fake"
 import { useIdeas } from "@/hooks/use-ideas"
 import { usePinnedIdeas } from "@/hooks/use-pinned-ideas"
-import { revalidateAllIdeas } from "@/lib/swr-helpers"
-import { ideasApi } from "@/lib/api-client"
-import type React from "react"
 
-// ──────────────────────────────────────────
-// Data store
-// ──────────────────────────────────────────
+const holder = vi.hoisted(() => ({
+  db: null as FakeDb | null,
+  session: { user: { id: "user-1" } },
+  status: "authenticated",
+}))
 
-interface StoredIdea {
-  id: string
-  content: string
-  source: "web" | "api"
-  status: "inbox" | "archived" | "deleted"
-  tags: string[] | null
-  pinned: boolean
-  background_color: string | null
-  created_at: string
-  updated_at: string
-  deleted_at: string | null
+vi.mock("@/lib/powersync/db", () => ({
+  get db() {
+    return holder.db
+  },
+}))
+
+vi.mock("next-auth/react", () => ({
+  useSession: () => ({ data: holder.session, status: holder.status }),
+  getSession: async () => holder.session,
+}))
+
+vi.mock("@powersync/react", async () => {
+  const React = await import("react")
+  return {
+    PowerSyncContext: React.createContext(null),
+    useQuery: (sql: string, params: unknown[]) => {
+      const [, force] = React.useReducer((c: number) => c + 1, 0)
+      React.useEffect(() => {
+        if (!holder.db) return
+        return holder.db.subscribe(() => force())
+      }, [])
+      const db = holder.db
+      return {
+        data: db ? db.select(sql, params) : [],
+        isLoading: !db,
+        isFetching: false,
+        error: db?.error ?? undefined,
+      }
+    },
+  }
+})
+
+function row(partial: Partial<FakeRow> = {}): FakeRow {
+  return {
+    id: "idea-1",
+    user_id: "user-1",
+    content: "Test idea",
+    source: "web",
+    status: "inbox",
+    tags: null,
+    pinned: 0,
+    background_color: null,
+    deleted_at: null,
+    created_at: "2024-06-01T12:00:00Z",
+    updated_at: "2024-06-01T12:00:00Z",
+    ...partial,
+  }
 }
 
-function initialIdeas(): StoredIdea[] {
+function seed(): FakeRow[] {
   return [
-    {
-      id: "idea-1",
-      content: "First idea",
-      source: "web",
-      status: "inbox",
-      tags: null,
-      pinned: false,
-      background_color: null,
-      created_at: "2024-06-01T12:00:00Z",
-      updated_at: "2024-06-01T12:00:00Z",
-      deleted_at: null,
-    },
-    {
+    row({ id: "idea-1", content: "First idea" }),
+    row({
       id: "idea-2",
       content: "Second idea",
-      source: "api",
-      status: "inbox",
-      tags: ["important"],
-      pinned: true,
-      background_color: null,
+      tags: '["important"]',
+      pinned: 1,
       created_at: "2024-06-02T12:00:00Z",
       updated_at: "2024-06-02T12:00:00Z",
-      deleted_at: null,
-    },
+    }),
   ]
 }
 
-let storedIdeas: StoredIdea[] = initialIdeas()
-
-// ──────────────────────────────────────────
-// Request tracking
-// ──────────────────────────────────────────
-
-let getRequests: { url: string }[] = []
-
-function trackGet(url: string) {
-  getRequests.push({ url })
-}
-
-function pinnedGetRequested(): boolean {
-  return getRequests.some(
-    (r) =>
-      new URL(r.url, "http://localhost").searchParams.get("pinned") === "true",
-  )
-}
-
-// ──────────────────────────────────────────
-// MSW server
-// ──────────────────────────────────────────
-
-const server = setupServer(
-  http.get("/api/ideas", ({ request }) => {
-    const url = new URL(request.url)
-    trackGet(url.toString())
-
-    const status = url.searchParams.get("status") || "inbox"
-    const search = url.searchParams.get("search")
-    const pinned = url.searchParams.get("pinned") === "true"
-    const cursor = url.searchParams.get("cursor")
-    const limit = Math.min(Number(url.searchParams.get("limit")) || 50, 100)
-
-    let ideas = storedIdeas.filter((i) => i.status === status)
-
-    if (pinned) {
-      ideas = storedIdeas.filter((i) => i.pinned && i.status === "inbox")
-    }
-
-    if (search) {
-      ideas = ideas.filter((i) =>
-        i.content.toLowerCase().includes(search.toLowerCase()),
-      )
-    }
-
-    if (cursor) {
-      ideas = ideas.filter((i) => i.created_at < cursor)
-    }
-
-    const hasMore = ideas.length > limit
-    const page = hasMore ? ideas.slice(0, limit) : ideas
-    const nextCursor = hasMore ? page[page.length - 1].created_at : null
-
-    return HttpResponse.json({ ideas: page, nextCursor })
-  }),
-
-  http.post("/api/ideas", async ({ request }) => {
-    const body = (await request.json()) as { content: string }
-    const isApi = request.headers.get("authorization")?.startsWith("Bearer ")
-
-    const newIdea: StoredIdea = {
-      id: `idea-${storedIdeas.length + 1}`,
-      content: body.content,
-      source: isApi ? "api" : "web",
-      status: "inbox",
-      tags: null,
-      pinned: false,
-      background_color: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      deleted_at: null,
-    }
-    storedIdeas.push(newIdea)
-    return HttpResponse.json({ idea: newIdea }, { status: 201 })
-  }),
-
-  http.patch("/api/ideas/:id", async ({ params, request }) => {
-    const body = (await request.json()) as Record<string, unknown>
-    const idx = storedIdeas.findIndex((i) => i.id === params.id)
-    if (idx !== -1) {
-      storedIdeas[idx] = { ...storedIdeas[idx], ...body } as StoredIdea
-    }
-    return HttpResponse.json({ idea: storedIdeas[idx] })
-  }),
-)
-
-beforeAll(() => server.listen({ onUnhandledRequest: "bypass" }))
-afterAll(() => server.close())
-
-afterEach(async () => {
-  server.resetHandlers()
-  storedIdeas = initialIdeas()
-  getRequests = []
-  await swrMutate(() => true, undefined, { revalidate: false })
+beforeEach(() => {
+  holder.db = createFakeDb(seed())
 })
-
-function wrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <SWRConfig value={{ dedupingInterval: 0 }}>{children}</SWRConfig>
-  )
-}
-
-// ──────────────────────────────────────────
-// Tests
-// ──────────────────────────────────────────
 
 describe("synchronization", () => {
   describe("create + list", () => {
     it("propagates a new idea into the inbox list", async () => {
       const { result } = renderHook(
         () => ({ ideas: useIdeas({ status: "inbox" }) }),
-        { wrapper },
       )
 
       await waitFor(() => expect(result.current.ideas.isLoading).toBe(false))
@@ -191,7 +105,6 @@ describe("synchronization", () => {
           ideas: useIdeas({ status: "inbox" }),
           pinned: usePinnedIdeas(),
         }),
-        { wrapper },
       )
 
       await waitFor(() => {
@@ -214,9 +127,6 @@ describe("synchronization", () => {
         ).toBe(true)
       })
 
-      // The pinned API must have been called at least once after the initial fetch
-      expect(pinnedGetRequested()).toBe(true)
-
       // The inbox list should also reflect the new pin state
       const pinnedIdea1 = result.current.ideas.ideas.find(
         (i) => i.id === "idea-1",
@@ -230,7 +140,6 @@ describe("synchronization", () => {
           ideas: useIdeas({ status: "inbox" }),
           pinned: usePinnedIdeas(),
         }),
-        { wrapper },
       )
 
       await waitFor(() => {
@@ -259,38 +168,13 @@ describe("synchronization", () => {
     })
   })
 
-  describe("revalidateAllIdeas utility", () => {
-    it("triggers re-fetch for /api/ideas?pinned=true (regular SWR key)", async () => {
-      const { result } = renderHook(
-        () => ({ pinned: usePinnedIdeas() }),
-        { wrapper },
-      )
-
-      await waitFor(() =>
-        expect(result.current.pinned.isLoading).toBe(false),
-      )
-
-      // Simulate what Dashboard/MobileLayout capture does
-      await act(async () => {
-        await ideasApi.update("idea-2", { pinned: false })
-        revalidateAllIdeas()
-      })
-
-      // Must re-fetch the pinned data
-      await waitFor(() => {
-        expect(result.current.pinned.ideas).toHaveLength(0)
-      })
-    })
-  })
-
-  describe("cross-tab sync", () => {
-    it("updateStatus moves idea between tabs and refreshes both", async () => {
+  describe("status changes across tabs", () => {
+    it("updateStatus moves idea between inbox and archived and refreshes both", async () => {
       const { result } = renderHook(
         () => ({
           inbox: useIdeas({ status: "inbox" }),
           archived: useIdeas({ status: "archived" }),
         }),
-        { wrapper },
       )
 
       await waitFor(() => {

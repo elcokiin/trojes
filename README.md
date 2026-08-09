@@ -36,6 +36,7 @@ Trojes is an **idea capture** built for the moments inspiration strikes. Optimiz
 - **Trash with recovery** — Soft delete with time tracking, permanent delete option.
 - **API-first capture** — Generate API keys from Settings, POST ideas from any tool.
 - **PWA ready** — Install on mobile home screen, works offline.
+- **Offline-first sync** — Ideas are saved to a device-local SQLite mirror (PowerSync) and synced to the server when connectivity returns.
 - **Dark mode** — Light, dark, and system themes with a single keystroke (`d`).
 
 ---
@@ -61,6 +62,21 @@ bun run db:studio     # Open Drizzle Studio
 ```
 
 Environment variables: see `.env.example` — only `DATABASE_URL` is required.
+
+### Offline sync (PowerSync)
+
+Trojes is offline-first: the client reads and writes to a local SQLite mirror
+backed by [PowerSync](https://www.powersync.com), which syncs bidirectionally
+with Neon PostgreSQL. Capture always works — even offline — and local changes
+are uploaded when connectivity returns.
+
+- `DATABASE_URL` remains required for the server database.
+- `POWERSYNC_INSTANCE_URL`, `POWERSYNC_JWT_SECRET`, `POWERSYNC_JWT_KID`, and
+  `POWERSYNC_JWT_AUDIENCE` are required for sync. Your PowerSync instance must
+  be connected to the same Postgres database (logical replication), and the
+  `ideas` table must be in a publication tracked by PowerSync.
+- The client serves its worker from `public/@powersync/` (regenerated on
+  install via the `postinstall` script).
 
 ---
 
@@ -134,9 +150,10 @@ curl -X POST "http://localhost:3000/api/ideas" \
 |---|---|
 | **Framework** | [Next.js 16](https://nextjs.org) (App Router, React 19) |
 | **Database** | [Neon](https://neon.tech) (Serverless PostgreSQL via Drizzle ORM) |
+| **Offline sync** | [PowerSync](https://www.powersync.com) (local SQLite mirror + bidirectional sync) |
 | **Auth** | [NextAuth.js](https://next-auth.js.org) (Google OAuth) |
 | **Styling** | [Tailwind CSS v4](https://tailwindcss.com) + [shadcn/ui](https://ui.shadcn.com) |
-| **Data fetching** | [SWR](https://swr.vercel.app) |
+| **Data fetching** | [SWR](https://swr.vercel.app) (API keys) + PowerSync `useQuery` (ideas) |
 | **State** | [Zustand](https://github.com/pmndrs/zustand) |
 | **Deployment** | [Vercel](https://vercel.com) |
 
