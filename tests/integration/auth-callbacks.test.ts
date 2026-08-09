@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest"
 import { authOptions } from "@/lib/auth"
-import type { Account } from "next-auth"
+import type { Session } from "next-auth"
 
 vi.mock("next-auth/providers/google", () => ({
   default: vi.fn(() => ({ id: "google", name: "Google", type: "oauth" })),
@@ -22,7 +22,9 @@ import {
   createAccount,
 } from "@/db/users"
 
-const { signIn, session, jwt } = authOptions.callbacks!
+const signIn = authOptions.callbacks!.signIn!
+const session = authOptions.callbacks!.session!
+const jwt = authOptions.callbacks!.jwt!
 
 function signInParams(overrides: Record<string, unknown> = {}) {
   return {
@@ -150,7 +152,7 @@ describe("session callback", () => {
   it("assigns user.id when email exists in DB", async () => {
     vi.mocked(findUserIdByEmail).mockResolvedValue("uid-1")
 
-    const result = await session(sessionParams())
+    const result = (await session(sessionParams())) as Session
 
     expect(result.user?.id).toBe("uid-1")
   })
@@ -158,7 +160,7 @@ describe("session callback", () => {
   it("does not assign id when email is not found in DB", async () => {
     vi.mocked(findUserIdByEmail).mockResolvedValue(null)
 
-    const result = await session(sessionParams())
+    const result = (await session(sessionParams())) as Session
 
     expect(result.user?.id).toBeUndefined()
   })
