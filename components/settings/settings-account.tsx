@@ -3,6 +3,8 @@
 import { signOut } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { clearCachedUserId } from "@/lib/offline-identity";
+import { db } from "@/lib/powersync/db";
 import { LogOut } from "lucide-react";
 
 interface SettingsAccountProps {
@@ -21,6 +23,19 @@ export function SettingsAccount({ user }: SettingsAccountProps) {
       .join("")
       .toUpperCase()
       .slice(0, 2) || "U";
+
+  const handleSignOut = async () => {
+    // Explicit logout is the only path that clears the local mirror: the
+    // session provider's "unauthenticated" state can also come from a
+    // transient session fetch failure, which must not wipe offline data.
+    clearCachedUserId();
+    await db
+      .disconnectAndClear()
+      .catch((error) => {
+        console.error("Failed to clear local PowerSync data on sign out:", error);
+      });
+    await signOut({ callbackUrl: "/login" });
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -50,7 +65,7 @@ export function SettingsAccount({ user }: SettingsAccountProps) {
       <Button
         variant="outline"
         className="w-fit gap-2 text-destructive hover:text-destructive"
-        onClick={() => signOut({ callbackUrl: "/login" })}
+        onClick={handleSignOut}
       >
         <LogOut className="size-4" />
         Sign out

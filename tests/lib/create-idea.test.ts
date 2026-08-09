@@ -36,6 +36,16 @@ describe("insertIdea", () => {
     expect(params[2]).toBe("My new idea")
   })
 
+  it("writes deleted_at as a literal NULL and aligns placeholder/param counts", async () => {
+    await insertIdea("user-1", "count check")
+
+    const [sql, params] = executeMock.mock.calls[0] as [string, unknown[]]
+    const placeholderCount = (sql.match(/\?/g) ?? []).length
+    expect(placeholderCount).toBe(params.length)
+    expect(sql).toContain("NULL, NULL, ?, ?)")
+    expect(params[params.length - 1]).toBeTypeOf("string")
+  })
+
   it("returns null for blank content without touching the db", async () => {
     const result = await insertIdea("user-1", "   ")
 

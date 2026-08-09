@@ -25,6 +25,14 @@ vi.mock("@/hooks/use-shortcut-preferences", () => ({
   useShortcutPreference: () => [false, vi.fn()] as const,
 }))
 
+vi.mock("@/lib/powersync/db", () => ({
+  db: { disconnectAndClear: vi.fn().mockResolvedValue(undefined) },
+}))
+
+vi.mock("@/lib/offline-identity", () => ({
+  clearCachedUserId: vi.fn(),
+}))
+
 vi.mock("@/stores/ui-store", () => ({
   useUIStore: (selector?: (s: Record<string, unknown>) => unknown) =>
     selector ? selector({ overlaysOpen: 0, dropdownOpen: 0 }) : {},

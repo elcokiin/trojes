@@ -119,6 +119,7 @@ export async function upsertIdea({
     .onConflictDoUpdate({
       target: ideas.id,
       set: values,
+      setWhere: and(eq(ideas.user_id, userId)),
     })
     .returning()
 
