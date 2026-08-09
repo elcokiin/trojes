@@ -2,6 +2,26 @@ import { and, desc, eq, ilike, lt } from "drizzle-orm"
 import { getDb } from "@/db/client"
 import { ideas, type Idea, type NewIdea } from "@/db/schema"
 
+export type IdeaUpdate = Partial<
+  Pick<Idea, "content" | "status" | "tags" | "pinned" | "background_color" | "deleted_at">
+>
+
+export type IdeaUpsert = {
+  content: string
+} & Partial<
+  Pick<
+    Idea,
+    | "source"
+    | "status"
+    | "tags"
+    | "pinned"
+    | "background_color"
+    | "deleted_at"
+    | "created_at"
+    | "updated_at"
+  >
+>
+
 export async function findIdeas({
   userId,
   status,
@@ -83,6 +103,28 @@ export async function createIdea(values: NewIdea) {
   return idea
 }
 
+export async function upsertIdea({
+  id,
+  userId,
+  values,
+}: {
+  id: string
+  userId: string
+  values: IdeaUpsert
+}) {
+  const db = getDb()
+  const [idea] = await db
+    .insert(ideas)
+    .values({ id, user_id: userId, ...values })
+    .onConflictDoUpdate({
+      target: ideas.id,
+      set: values,
+    })
+    .returning()
+
+  return idea ?? null
+}
+
 export async function updateIdea({
   id,
   userId,
@@ -90,7 +132,7 @@ export async function updateIdea({
 }: {
   id: string
   userId: string
-  values: Partial<Pick<Idea, "content" | "status" | "tags" | "pinned" | "background_color" | "deleted_at">>
+  values: IdeaUpdate
 }) {
   const db = getDb()
   const [idea] = await db
