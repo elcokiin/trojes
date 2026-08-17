@@ -4,7 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { PowerSyncProvider } from "@/components/providers/powersync-provider";
-import { PwaRegister } from "@/components/providers/pwa-register";
+import { SerwistProvider } from "@serwist/turbopack/react";
 import { HotkeysRootProvider } from "@/components/providers/hotkeys-root-provider";
 import { DevtoolsClient } from "@/components/providers/devtools-client";
 import { ThemeColorProvider } from "@/components/providers/theme-color-provider";
@@ -75,7 +75,7 @@ export default function RootLayout({
           </PowerSyncProvider>
         </SessionProvider>
         {process.env.NODE_ENV === "production" && <Analytics />}
-        <PwaRegister />
+        <SerwistProvider swUrl="/serwist/sw.js" />
       </body>
     </html>
   );
