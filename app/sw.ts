@@ -2,7 +2,7 @@
 /// <reference lib="webworker" />
 import { defaultCache } from "@serwist/turbopack/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
-import { Serwist } from "serwist";
+import { ExpirationPlugin, NetworkFirst, Serwist } from "serwist";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -17,11 +17,33 @@ const serwist = new Serwist({
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
-  runtimeCaching: defaultCache,
+  runtimeCaching: [
+    {
+      // Document navigations first: try the network with a short timeout, then
+      // fall back to the last HTML cached for that route. Every online visit
+      // refreshes this cache, so an offline reload always has a shell to serve.
+      matcher: ({ request }) => request.mode === "navigate",
+      handler: new NetworkFirst({
+        cacheName: "document",
+        networkTimeoutSeconds: 3,
+        plugins: [
+          new ExpirationPlugin({
+            maxEntries: 64,
+            maxAgeSeconds: 24 * 60 * 60, // 24 hours
+            maxAgeFrom: "last-used",
+          }),
+        ],
+      }),
+    },
+    ...defaultCache,
+  ],
   fallbacks: {
     entries: [
       {
-        url: "/offline",
+        // Safety net: any navigation that can't be served (uncached route,
+        // never visited) falls back to the precached /dashboard app shell
+        // instead of the browser's dead "no connection" page.
+        url: "/dashboard",
         matcher({ request }) {
           return request.destination === "document";
         },
