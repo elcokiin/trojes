@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
 import { Plus, X, Check } from "lucide-react"
 
 import { SHORTCUTS } from "@/lib/shortcuts"
+import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
 
 interface QuickCaptureProps {
   onCapture: (content: string) => Promise<void>
@@ -22,6 +23,7 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [openCount, setOpenCount] = useState(0)
   const [isFocused, setIsFocused] = useState(false)
+  const [newIdeaKeyEnabled] = useShortcutPreference("trojes-shortcut-new-idea")
 
   const isExpanded = isOpen ?? false
 
@@ -75,7 +77,9 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
       >
         <Plus className="size-4 transition-transform group-hover:scale-110" />
         <span>Capture a new idea...</span>
-        <ShortcutKbd hotkey={SHORTCUTS.newIdea.hotkeys[0]} className="ml-auto" />
+        {newIdeaKeyEnabled && (
+          <ShortcutKbd hotkey={SHORTCUTS.newIdea.hotkeys[0]} className="ml-auto" />
+        )}
       </Button>
     )
   }

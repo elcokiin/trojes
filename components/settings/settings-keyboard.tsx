@@ -52,10 +52,12 @@ export function SettingsKeyboard() {
             <p className="text-sm">New idea key</p>
             <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
               <span>Quick capture shortcut</span>
-              <ShortcutKbdGroup
-                hotkeys={SHORTCUTS.newIdea.hotkeys}
-                className="flex-wrap justify-end"
-              />
+              {newIdeaKeyEnabled && (
+                <ShortcutKbdGroup
+                  hotkeys={SHORTCUTS.newIdea.hotkeys}
+                  className="flex-wrap justify-end"
+                />
+              )}
             </div>
           </div>
           <Switch
@@ -86,10 +88,12 @@ export function SettingsKeyboard() {
             <p className="text-sm">Settings key</p>
             <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
               <span>Settings dialog shortcuts</span>
-              <ShortcutKbdGroup
-                hotkeys={SHORTCUTS.settings.hotkeys}
-                className="flex-wrap justify-end"
-              />
+              {settingsKeyEnabled && (
+                <ShortcutKbdGroup
+                  hotkeys={SHORTCUTS.settings.hotkeys}
+                  className="flex-wrap justify-end"
+                />
+              )}
             </div>
           </div>
           <Switch

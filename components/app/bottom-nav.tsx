@@ -12,6 +12,9 @@ import { useQueryState } from "nuqs";
 export function BottomNav() {
   const isMobile = useIsMobile();
   const [showShortcutHints] = useShortcutPreference("trojes-shortcut-hints");
+  const [settingsKeyEnabled] = useShortcutPreference(
+    "trojes-shortcut-settings",
+  );
   const searchQuery = useSearchStore((s) => s.searchQuery);
   const debouncedSearch = useSearchStore((s) => s.debouncedSearch);
   const setSearchQuery = useSearchStore((s) => s.setSearchQuery);
@@ -178,7 +181,7 @@ export function BottomNav() {
           >
             <Settings className="size-4" />
             <span className="text-sm font-medium">Settings</span>
-            {showShortcutHints && <Kbd>S</Kbd>}
+            {showShortcutHints && settingsKeyEnabled && <Kbd>S</Kbd>}
           </button>
         </>
       )}
