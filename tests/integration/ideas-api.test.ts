@@ -120,7 +120,6 @@ describe("POST /api/ideas", () => {
     }))
     const res = await POST(request)
     expect(res.status).toBe(201)
-    const body = await res.json()
     expect(createIdea).toHaveBeenCalledWith(
       expect.objectContaining({ source: "web" }),
     )

@@ -42,10 +42,6 @@ or workflow that future agents should know before making changes.
   pass; the failure is a harness issue, not a test failure. Do not treat exit
   code 1 as "tests failing" — compare the "Tests" count instead.
 
-- `eslint` is not installed in this repo: the `lint` script (`eslint .`) fails
-  with `eslint: command not found`, and eslint is absent from `package.json`
-  and `node_modules`. Do not claim `bun run lint` ran for verification.
-
 - Zustand v5 `persist` + `createJSONStorage` type contract: the generic on
   `createJSONStorage<PersistedState>` is the *partialized* (inner) state, but
   at runtime persist wraps it into `{ state, version }` before calling the

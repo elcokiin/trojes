@@ -1,9 +1,5 @@
 import { existsSync } from "fs"
-import {
-  SETUP_TIMEOUT_MS,
-  SETUP_TIMEOUT_MIN,
-  AUTH_FILE,
-} from "./e2e-constants"
+import { SETUP_TIMEOUT_MIN, AUTH_FILE } from "./e2e-constants"
 const args = process.argv.slice(2)
 
 const PROJECTS = [

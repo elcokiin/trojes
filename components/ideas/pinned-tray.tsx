@@ -18,12 +18,10 @@ import { cn } from "@/lib/utils";
 
 function PinnedCard({
   idea,
-  index,
   onUnpin,
   onFocus,
 }: {
   idea: { id: string; content: string; created_at: string };
-  index: number;
   onUnpin: (id: string) => void;
   onFocus?: (id: string) => void;
 }) {
@@ -139,11 +137,10 @@ export function PinnedTray() {
 
   const listContent = ideas.length > 0 && (
     <div className="flex flex-col gap-2">
-      {ideas.map((idea, index) => (
+      {ideas.map((idea) => (
         <PinnedCard
           key={idea.id}
           idea={idea}
-          index={index}
           onUnpin={handleUnpin}
           onFocus={handleFocusIdea}
         />

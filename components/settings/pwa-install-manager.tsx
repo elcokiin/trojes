@@ -23,7 +23,7 @@ export function PwaInstallManager() {
     if (typeof window === "undefined") return false
     return isStandaloneMode()
   })
-  const [isIos, setIsIos] = useState(() => {
+  const [isIos] = useState(() => {
     if (typeof window === "undefined") return false
     return /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase())
   })

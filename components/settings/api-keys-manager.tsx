@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useApiKeys } from "@/hooks/use-api-keys"
-import type { ApiKey } from "@/hooks/use-api-keys"
 import { Key, Plus, Trash2, Copy, Check, Pencil } from "lucide-react"
 
 const formatDate = (dateString: string) => {

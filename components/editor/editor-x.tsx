@@ -205,7 +205,6 @@ export const EditorX = forwardRef<EditorXHandle, EditorXProps>(function EditorX(
   onChange,
   placeholder = "Type here...",
   className,
-  minHeight = "1lh",
   disabled,
   focusOnMount,
   onEscape,

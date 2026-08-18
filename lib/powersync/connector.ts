@@ -29,34 +29,30 @@ export class BackendConnector implements PowerSyncBackendConnector {
     const transaction = await database.getNextCrudTransaction();
     if (!transaction) return;
 
-    try {
-      const operations = transaction.crud.map((op) => ({
-        id: op.id,
-        op: op.op,
-        table: op.table,
-        opData: op.opData,
-      }));
+    const operations = transaction.crud.map((op) => ({
+      id: op.id,
+      op: op.op,
+      table: op.table,
+      opData: op.opData,
+    }));
 
-      const res = await fetch(UPLOAD_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ operations }),
-      });
+    const res = await fetch(UPLOAD_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ operations }),
+    });
 
-      if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
+    if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
 
-      const result = (await res.json()) as {
-        success: boolean;
-        errors?: string[];
-      };
+    const result = (await res.json()) as {
+      success: boolean;
+      errors?: string[];
+    };
 
-      if (!result.success) {
-        console.warn("Upload had errors:", result.errors);
-      }
-
-      await transaction.complete();
-    } catch (ex) {
-      throw ex;
+    if (!result.success) {
+      console.warn("Upload had errors:", result.errors);
     }
+
+    await transaction.complete();
   }
 }
