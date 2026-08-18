@@ -3,6 +3,7 @@
 import { useMemo, useRef } from "react";
 import { useHotkeys } from "@tanstack/react-hotkeys";
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences";
+import { SHORTCUTS } from "@/lib/shortcuts";
 
 type SettingsSection =
   | "appearance"
@@ -58,8 +59,8 @@ export function useSettingsNavHotkey(
 
   useHotkeys(
     [
-      {
-        hotkey: "J",
+      ...SHORTCUTS.settingsSectionNext.hotkeys.map((hotkey) => ({
+        hotkey,
         callback: () => {
           const sections = visibleSectionsRef.current;
           const current = activeSectionRef.current as SettingsSection;
@@ -67,19 +68,9 @@ export function useSettingsNavHotkey(
           if (idx === -1) return;
           onSectionChange(sections[(idx + 1) % sections.length]);
         },
-      },
-      {
-        hotkey: "ArrowDown",
-        callback: () => {
-          const sections = visibleSectionsRef.current;
-          const current = activeSectionRef.current as SettingsSection;
-          const idx = sections.indexOf(current);
-          if (idx === -1) return;
-          onSectionChange(sections[(idx + 1) % sections.length]);
-        },
-      },
-      {
-        hotkey: "K",
+      })),
+      ...SHORTCUTS.settingsSectionPrev.hotkeys.map((hotkey) => ({
+        hotkey,
         callback: () => {
           const sections = visibleSectionsRef.current;
           const current = activeSectionRef.current as SettingsSection;
@@ -89,19 +80,7 @@ export function useSettingsNavHotkey(
             sections[(idx - 1 + sections.length) % sections.length],
           );
         },
-      },
-      {
-        hotkey: "ArrowUp",
-        callback: () => {
-          const sections = visibleSectionsRef.current;
-          const current = activeSectionRef.current as SettingsSection;
-          const idx = sections.indexOf(current);
-          if (idx === -1) return;
-          onSectionChange(
-            sections[(idx - 1 + sections.length) % sections.length],
-          );
-        },
-      },
+      })),
     ],
     {
       enabled,

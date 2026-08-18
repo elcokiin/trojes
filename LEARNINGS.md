@@ -41,3 +41,17 @@ or workflow that future agents should know before making changes.
   lexical/jsdom exception in `tests/components/idea-card.test.tsx`. 115 tests
   pass; the failure is a harness issue, not a test failure. Do not treat exit
   code 1 as "tests failing" — compare the "Tests" count instead.
+
+- `eslint` is not installed in this repo: the `lint` script (`eslint .`) fails
+  with `eslint: command not found`, and eslint is absent from `package.json`
+  and `node_modules`. Do not claim `bun run lint` ran for verification.
+
+- Zustand v5 `persist` + `createJSONStorage` type contract: the generic on
+  `createJSONStorage<PersistedState>` is the *partialized* (inner) state, but
+  at runtime persist wraps it into `{ state, version }` before calling the
+  underlying storage, and reads it back expecting that wrapped shape. With a
+  custom `StateStorage`, `setItem` receives the JSON string of `{ state,
+  version }` (must parse `.state.prefs`), and `getItem` must return the
+  stringified `{ state: { prefs }, version: 0 }` shape or hydration silently
+  no-ops. `createJSONStorage(() => ...)` is SSR-safe (try/catch around
+  `getStorage()`), and hydration is synchronous for sync storage.

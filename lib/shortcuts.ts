@@ -31,7 +31,9 @@ export type ShortcutId =
   | "togglePin"
   | "togglePinnedTray"
   | "goToFirst"
-  | "goToLast";
+  | "goToLast"
+  | "settingsSectionNext"
+  | "settingsSectionPrev";
 
 export interface ShortcutDefinition {
   id: ShortcutId;
@@ -198,6 +200,20 @@ export const SHORTCUTS = {
     category: "Navigation",
     preferenceKey: "trojes-keyboard-nav",
   },
+  settingsSectionNext: {
+    id: "settingsSectionNext",
+    label: "Next settings section",
+    hotkeys: ["J", "ArrowDown"],
+    category: "System",
+    preferenceKey: "trojes-keyboard-nav",
+  },
+  settingsSectionPrev: {
+    id: "settingsSectionPrev",
+    label: "Previous settings section",
+    hotkeys: ["K", "ArrowUp"],
+    category: "System",
+    preferenceKey: "trojes-keyboard-nav",
+  },
 } satisfies Record<string, ShortcutDefinition>;
 
 export const SHORTCUT_GROUPS = [
@@ -208,19 +224,3 @@ export const SHORTCUT_GROUPS = [
   "Editing",
 ] as const;
 
-export function readShortcutPreference(key: ShortcutPreferenceKey) {
-  if (typeof window === "undefined") return SHORTCUT_DEFAULTS[key];
-
-  const stored = window.localStorage.getItem(key);
-  if (stored !== null) return stored === "true";
-
-  return SHORTCUT_DEFAULTS[key];
-}
-
-export function writeShortcutPreference(
-  key: ShortcutPreferenceKey,
-  enabled: boolean,
-) {
-  window.localStorage.setItem(key, String(enabled));
-  window.dispatchEvent(new CustomEvent(key, { detail: enabled }));
-}

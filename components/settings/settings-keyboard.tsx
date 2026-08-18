@@ -1,36 +1,28 @@
-"use client"
+"use client";
 
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { Keyboard } from "lucide-react"
-import { ShortcutKbdGroup } from "@/components/shortcuts/shortcut-kbd"
-import { SHORTCUTS } from "@/lib/shortcuts"
-import { useShortcutPreference } from "@/hooks/use-shortcut-preferences"
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { ShortcutKbdGroup } from "@/components/shortcuts/shortcut-kbd";
+import { SHORTCUTS } from "@/lib/shortcuts";
+import { useShortcutPreference } from "@/hooks/use-shortcut-preferences";
 
 export function SettingsKeyboard() {
-  const [keyboardNav, setKeyboardNav] = useShortcutPreference("trojes-keyboard-nav")
-  const [shortcutHintsEnabled, setShortcutHintsEnabled] = useShortcutPreference("trojes-shortcut-hints")
-  const [newIdeaKeyEnabled, setNewIdeaKeyEnabled] = useShortcutPreference("trojes-shortcut-new-idea")
-  const [themeToggleKeyEnabled, setThemeToggleKeyEnabled] = useShortcutPreference("trojes-shortcut-theme-toggle")
-  const [settingsKeyEnabled, setSettingsKeyEnabled] = useShortcutPreference("trojes-shortcut-settings")
+  const [keyboardNav, setKeyboardNav] = useShortcutPreference(
+    "trojes-keyboard-nav",
+  );
+  const [shortcutHintsEnabled, setShortcutHintsEnabled] = useShortcutPreference(
+    "trojes-shortcut-hints",
+  );
+  const [newIdeaKeyEnabled, setNewIdeaKeyEnabled] = useShortcutPreference(
+    "trojes-shortcut-new-idea",
+  );
+  const [themeToggleKeyEnabled, setThemeToggleKeyEnabled] =
+    useShortcutPreference("trojes-shortcut-theme-toggle");
+  const [settingsKeyEnabled, setSettingsKeyEnabled] = useShortcutPreference(
+    "trojes-shortcut-settings",
+  );
   return (
     <>
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col gap-1">
-          <Label className="text-sm font-medium flex items-center gap-2">
-            <Keyboard />
-            Keyboard Navigation
-          </Label>
-          <p className="text-xs text-muted-foreground">
-            Navigate with vim-style keys
-          </p>
-        </div>
-        <Switch
-          checked={keyboardNav}
-          onCheckedChange={setKeyboardNav}
-        />
-      </div>
-
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-1">
           <Label className="text-sm font-medium">Shortcut Hints</Label>
@@ -46,6 +38,16 @@ export function SettingsKeyboard() {
 
       <div className="flex flex-col gap-3 border-t pt-2">
         <Label className="text-sm font-medium">Shortcut Toggles</Label>
+
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-1">
+            <Label className="text-sm font-medium">Keyboard Navigation</Label>
+            <p className="text-xs text-muted-foreground">
+              Navigate with inside the ideas
+            </p>
+          </div>
+          <Switch checked={keyboardNav} onCheckedChange={setKeyboardNav} />
+        </div>
 
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-1">
@@ -127,10 +129,13 @@ export function SettingsKeyboard() {
             SHORTCUTS.deselect,
             SHORTCUTS.saveCapture,
             SHORTCUTS.cancelCapture,
-            { id: "settingsNavDown", label: "Next settings section", hotkeys: SHORTCUTS.navDown.hotkeys, category: "System" as const },
-            { id: "settingsNavUp", label: "Previous settings section", hotkeys: SHORTCUTS.navUp.hotkeys, category: "System" as const },
+            SHORTCUTS.settingsSectionNext,
+            SHORTCUTS.settingsSectionPrev,
           ].map((shortcut) => (
-            <div key={shortcut.id} className="flex items-center justify-between gap-3">
+            <div
+              key={shortcut.id}
+              className="flex items-center justify-between gap-3"
+            >
               <span className="text-muted-foreground">{shortcut.label}</span>
               <ShortcutKbdGroup
                 hotkeys={shortcut.hotkeys}

@@ -1,37 +1,24 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import {
-  readShortcutPreference,
-  SHORTCUT_DEFAULTS,
-  type ShortcutPreferenceKey,
-  writeShortcutPreference,
-} from "@/lib/shortcuts"
+import { useCallback } from "react"
+import { useShortcutStore } from "@/stores/shortcut-store"
+import type { ShortcutPreferenceKey } from "@/lib/shortcuts"
 
-function isBooleanCustomEvent(event: Event): event is CustomEvent<boolean> {
-  return "detail" in event
-}
-
+/**
+ * Read and toggle a persisted shortcut preference.
+ *
+ * Thin wrapper over the shared `useShortcutStore`: the value is a single
+ * source of truth, so every consumer stays in sync without broadcasting
+ * window events, and persistence is handled by the store's persist middleware.
+ */
 export function useShortcutPreference(key: ShortcutPreferenceKey) {
-  const [enabled, setEnabled] = useState(SHORTCUT_DEFAULTS[key])
+  const enabled = useShortcutStore((s) => s.prefs[key])
+  const setPreference = useShortcutStore((s) => s.setPreference)
 
-  useEffect(() => {
-    setEnabled(readShortcutPreference(key))
-
-    const handleChange = (event: Event) => {
-      if (isBooleanCustomEvent(event)) {
-        setEnabled(event.detail)
-      }
-    }
-
-    window.addEventListener(key, handleChange)
-    return () => window.removeEventListener(key, handleChange)
-  }, [key])
-
-  const update = (nextEnabled: boolean) => {
-    setEnabled(nextEnabled)
-    writeShortcutPreference(key, nextEnabled)
-  }
+  const update = useCallback(
+    (nextEnabled: boolean) => setPreference(key, nextEnabled),
+    [key, setPreference],
+  )
 
   return [enabled, update] as const
 }
