@@ -124,6 +124,7 @@ export function SettingsKeyboard() {
             SHORTCUTS.navRight,
             SHORTCUTS.openActions,
             SHORTCUTS.copyIdea,
+            SHORTCUTS.editIdea,
             SHORTCUTS.togglePin,
             SHORTCUTS.togglePinnedTray,
             SHORTCUTS.deselect,

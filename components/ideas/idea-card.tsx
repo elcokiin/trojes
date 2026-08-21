@@ -135,6 +135,11 @@ export const IdeaCard = memo(function IdeaCard({
         callback: handleCopy,
         options: { enabled: isSelected && noOverlays },
       })),
+      ...SHORTCUTS.editIdea.hotkeys.map((hotkey) => ({
+        hotkey,
+        callback: handleEdit,
+        options: { enabled: isSelected && noOverlays },
+      })),
       ...SHORTCUTS.togglePin.hotkeys.map((hotkey) => ({
         hotkey,
         callback: () => handlePinToggle(),

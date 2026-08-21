@@ -88,6 +88,7 @@ are uploaded when connectivity returns.
 | `j` / `k` | Navigate down / up |
 | `h` / `l` | Navigate left / right |
 | `Enter` | Open card menu |
+| `e` | Edit selected idea |
 | `Esc` / `q` | Close menu / deselect |
 | `q` | Close dialog |
 | `e` | Open settings |

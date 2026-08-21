@@ -28,6 +28,7 @@ export type ShortcutId =
   | "saveCapture"
   | "cancelCapture"
   | "copyIdea"
+  | "editIdea"
   | "togglePin"
   | "togglePinnedTray"
   | "goToFirst"
@@ -146,6 +147,12 @@ export const SHORTCUTS = {
     id: "copyIdea",
     label: "Copy idea text",
     hotkeys: ["C"],
+    category: "Editing",
+  },
+  editIdea: {
+    id: "editIdea",
+    label: "Edit idea",
+    hotkeys: ["E"],
     category: "Editing",
   },
   togglePin: {
