@@ -33,3 +33,7 @@ public/@powersync/*
 # Serwist statically generated service worker
 public/sw.js
 public/swe-worker*
+
+
+# alchemy
+.alchemy/

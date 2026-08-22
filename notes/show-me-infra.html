@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trojes — infrastructure map</title>
+<style>
+  :root{
+    --bg:#1b1a17; --surface:#26231e; --surface2:#211f19;
+    --line:#3d3630; --panel:#4a443a;
+    --ink:#efe9de; --muted:#a99f92; --dim:#837b6d;
+    --green:#6ac27e; --amber:#e08b2c; --blue:#5d9fd8;
+    font-family:ui-sans-serif, system-ui, sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);padding:46px 24px;line-height:1.5}
+  .wrap{max-width:1200px;margin:0 auto}
+  h1{font-size:25px;margin:0;letter-spacing:-.01em}
+  .sub{color:var(--muted);margin:8px 0 0;font-size:13.5px}
+  .header{display:flex;gap:12px;align-items:center}
+
+  .zone{background:var(--surface2);border:1px solid var(--panel);border-radius:16px;padding:24px;margin-top:22px}
+  .zone h2{margin:0;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .zone p.intro{margin:8px 0 0;font-size:12.5px;color:var(--muted)}
+
+  .foot{color:var(--dim);font-size:11.5px;text-align:center;margin-top:26px}
+
+  /* box */
+  .b{border-radius:12px;padding:14px 16px}
+  .b h5{margin:0;font-size:13px}
+  .b small{display:block;color:var(--dim);font-size:10.5px;margin-top:2px}
+  .b p{margin:7px 0 0;font-size:11px;color:var(--muted)}
+  .path{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10.5px;color:#7c9c7c;
+    background:#16140f;padding:1px 7px;border-radius:5px;display:inline-block;margin:6px 0 0}
+  .node{background:var(--surface);border:1px solid var(--line)}
+  .client{background:#2a2520;border:1px solid #8a8274}
+
+  /* vertical stack */
+  .stack{display:flex;flex-direction:column;align-items:center;gap:4px;margin-top:16px}
+  .combo{display:flex;gap:8px}
+  .combo .b{flex:0 0 auto}
+  .stack .b{margin:0}
+
+  .gate{width:60px;height:34px;min-height:34px;display:flex;align-items:center;justify-content:center;
+    border-radius:17px;background:#1c1912;border:1px solid var(--amber);color:var(--amber);
+    font-size:9.5px;text-align:center;white-space:normal}
+  .gate.blue{border-color:var(--blue);color:var(--blue)}
+  .gate.green{border-color:var(--green);color:var(--green)}
+
+  .wire{width:2px;height:18px;margin:0 auto;background:var(--amber);border-radius:2px}
+  .wire.green{background:var(--green)}
+  .wire.blue{background:var(--blue)}
+
+  .rowC{display:flex;align-items:center;gap:10px}
+  .rowC .b{flex:1}
+
+  .note{background:#161410;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--muted);margin-top:16px}
+  .note b{color:var(--ink)}
+
+  /* offline / online mini flow */
+  .mflow{display:flex;flex-direction:column;align-items:center;gap:0}
+  .step{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:9px 12px;
+    font-size:12px;min-width:190px;text-align:center}
+  .step span{display:block;font-size:9.5px;color:var(--dim);margin-top:2px}
+  .mflow .wire{height:14px;margin-top:6px}
+
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:36px}
+  .split > div > h3{font-size:15px;margin:0 0 8px}
+  .split .p{margin:4px 0 14px;font-size:11.5px;color:var(--muted)}
+
+  .files{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:16px}
+  .files .b h5{font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+
+  @media(max-width:900px){
+    .split{grid-template-columns:1fr;gap:20px}
+    body{padding:28px 18px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <svg width="32" height="32" viewBox="0 0 180 180" aria-hidden="true">
+      <path d="M46 77L90 48L134 77V132C134 140.284 127.284 147 119 147H61C52.716 147 46 140.284 46 132V77Z" fill="#28613a"/>
+      <path d="M46 78L90 48L134 78" stroke="#efe9e4" stroke-width="10" fill="none" stroke-linecap="round"/>
+      <path d="M103 124C103 112.954 111.954 104 123 104C123 115.046 114.046 124 103 124Z" fill="#6ac27e"/>
+      <circle cx="103" cy="124" r="6" fill="#efe9e4"/>
+    </svg>
+    <div>
+      <h1>Trojes infrastructure, now</h1>
+      <p class="sub">Next.js 16 · React 19 · Neon PostgreSQL · PowerSync offline sync · NextAuth JWT · Vercel</p>
+    </div>
+  </div>
+
+  <!-- ================= TOPOLOGY ================= -->
+  <div class="zone">
+    <h2>Topology</h2>
+    <p class="intro">A single Next.js process serves the dashboard, the API, auth, and the PWA. Data reaches Postgres down two independent paths: online REST and offline PowerSync.</p>
+
+    <div class="stack">
+      <div class="combo">
+        <div class="b client" style="flex:0"><h5>Clients</h5><small>browser · PWA · tools</small></div>
+        <div class="gate">session<br>guard</div>
+        <div class="b"><h5>proxy middleware</h5><small>redirects / guards routes</small><span class="path">proxy.ts</span></div>
+      </div>
+      <div class="wire"></div>
+      <div class="b node"><h5>Next.js App (Vercel)</h5><small>React 19 · RSC default · API routes under app/api</small></div>
+      <div class="wire"></div>
+      <div class="b node"><h5>Neon PostgreSQL</h5><small>Drizzle ORM · users · accounts · ideas · api_keys</small></div>
+    </div>
+    <div class="note"><b>Two writes in.</b> Online writes hit Postgres directly via the API. Offline writes hit the local SQLite mirror first, then relay through PowerSync upload. The <b>local mirror is the source of truth</b> while disconnected.</div>
+  </div>
+
+  <!-- ================= TWO PATHS ================= -->
+  <div class="zone">
+    <h2>Two data paths</h2>
+    <p class="intro">Both wind up in the same ideas table — but only one touches the network per keystroke.</p>
+
+    <div class="split">
+      <!-- offline -->
+      <div>
+        <h3 style="color:var(--green)">1 · Offline (PowerSync) — default for the app</h3>
+        <p class="p">The <b>React clients use this path</b>. They read a local SQLite mirror and write to it; the PowerSync worker reconciles when a connection exists.</p>
+        <div class="mflow">
+          <div class="step">React <b>useQuery</b> → SELECT from SQLite<span>lib/powersync/db.ts · trojes.sqlite (WASM worker)</span></div>
+          <div class="wire green"></div>
+          <div class="step">mutations queue up<br><b>useIdeas → db.execute</b><span>local-first, works offline</span></div>
+          <div class="wire green"></div>
+          <div class="step"><b>BackendConnector.uploadData</b></div>
+          <div class="wire green"></div>
+          <div class="step" style="border-color:var(--green)">
+            <b>POST /api/powersync/upload</b><span>hits the App route</span>
+          </div>
+          <div class="wire"></div>
+          <div class="step"><b>applyOp</b> → Drizzle upsert</div>
+          <div class="wire"></div>
+          <div class="step"><b>Neon</b> — Postgres</div>
+        </div>
+      </div>
+      <!-- online -->
+      <div>
+        <h3 style="color:var(--blue)">2 · Online (REST) — for tools &amp; server</h3>
+        <p class="p">The API path, used by <b>any HTTP tool</b> with an API key, plus the dashboard when it opts into server reads.</p>
+        <div class="mflow">
+          <div class="step"><b>Bearer</b> credential
+            <span>JWT session (NextAuth) OR hashed API key</span>
+          </div>
+          <div class="wire blue"></div>
+          <div class="step"><b>GET / POST / PATCH /api/ideas</b>
+            <span>db/ideas.ts</span>
+          </div>
+          <div class="wire blue"></div>
+          <div class="step"><b>Neon Postgres</b>
+            <span>direct select / insert</span>
+          </div>
+        </div>
+        <p class="p" style="margin-top:18px;color:var(--dim)">Meant for automation (cURL, Telegram, whatever speaks HTTP) — <b>not</b> the main app read path.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= KEY FILES ================= -->
+  <div class="zone">
+    <h2>Key files</h2>
+    <div class="files">
+      <div class="f"><span class="path">app/api/ideas/route.ts</span><p>REST list + create, source detection. Calls db/ideas.</p></div>
+      <div class="f"><span class="path">app/api/powersync/token/route.ts</span><p>Issues a 60m JWT to the PowerSync cloud per user.</p></div>
+      <div class="f"><span class="path">app/api/powersync/upload/route.ts</span><p>Replays queued offline mutations to Postgres; 401 keeps the local queue.</p></div>
+      <div class="f"><span class="path">lib/powersync/connector.ts</span><p>fetchCredentials + uploadData — the app↔PowerSync bridge.</p></div>
+      <div class="f"><span class="path">lib/powersync/db.ts</span><p>Constructs the PowerSyncDatabase (SQLite mirror) + schema.</p></div>
+      <div class="f"><span class="path">db/schema.ts · lib/ideas.ts</span><p>Drizzle models + CRUD; client hydrating servers, typemaps.</p></div>
+      <div class="f"><span class="path">lib/auth.ts · api-keys.ts</span><p>AuthN: NextAuth JWT + Bearer API-key lookup + hashing.</p></div>
+      <div class="f"><span class="path">proxy.ts</span><p>Edge proxy: session guard and device-based home redirect.</p></div>
+    </div>
+  </div>
+
+  <div class="foot">Built from current source (app/ lib/ db/ drizzle/ proxy.ts) — matches the code as it is now.</div>
+</div>
+</body>
+</html>
