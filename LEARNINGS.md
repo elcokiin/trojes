@@ -51,3 +51,12 @@ or workflow that future agents should know before making changes.
   stringified `{ state: { prefs }, version: 0 }` shape or hydration silently
   no-ops. `createJSONStorage(() => ...)` is SSR-safe (try/catch around
   `getStorage()`), and hydration is synchronous for sync storage.
+
+- `drizzle-orm` is pinned to `1.0.0-rc.5-ab785fc`, whose `drizzle-orm/neon-http`
+  `drizzle()` signature differs from the v0.x docs: the connection
+  string/client is the first positional arg (no two-arg `drizzle(client,
+  { schema })`), and the schema goes in the config under `relations:
+  defineRelations(schema)` (the `schema` key was removed from
+  `DrizzlePgConfig`). `db/schema.ts` exports tables only, so
+  `defineRelations(schema)` (or `buildRelations(schema, {...})`) must be used
+  to produce the `TableRelationalConfig` map the RC expects.

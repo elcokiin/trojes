@@ -1,4 +1,4 @@
-import { neon } from "@neondatabase/serverless"
+import { defineRelations } from "drizzle-orm"
 import { drizzle } from "drizzle-orm/neon-http"
 import * as schema from "@/db/schema"
 
@@ -13,8 +13,7 @@ function createDatabase() {
     throw new Error("DATABASE_URL environment variable is not set")
   }
 
-  const client = neon(databaseUrl)
-  return drizzle(client, { schema })
+  return drizzle(databaseUrl, { relations: defineRelations(schema) })
 }
 
 export function getDb() {
