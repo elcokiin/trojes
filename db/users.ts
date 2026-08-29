@@ -19,9 +19,10 @@ export async function createUser(values: {
   image?: string | null
 }) {
   const db = getDb()
+  const id = crypto.randomUUID()
   const [user] = await db
     .insert(users)
-    .values(values)
+    .values({ ...values, id })
     .returning({ id: users.id })
 
   return user
@@ -69,7 +70,8 @@ export async function accountExists({
   return Boolean(account)
 }
 
-export async function createAccount(values: typeof accounts.$inferInsert) {
+export async function createAccount(values: Omit<typeof accounts.$inferInsert, "id"> & { id?: string }) {
   const db = getDb()
-  await db.insert(accounts).values(values)
+  const id = values.id ?? crypto.randomUUID()
+  await db.insert(accounts).values({ ...values, id })
 }

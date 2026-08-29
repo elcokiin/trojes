@@ -6,8 +6,11 @@ import path from "path"
 
 dotenv.config({ path: path.resolve(__dirname, "../.env.test") })
 
-if (process.env.TEST_DATABASE_URL) {
-  process.env.DATABASE_URL = process.env.TEST_DATABASE_URL
+if (process.env.TEST_TURSO_DATABASE_URL) {
+  process.env.TURSO_DATABASE_URL = process.env.TEST_TURSO_DATABASE_URL
+}
+if (process.env.TEST_TURSO_AUTH_TOKEN) {
+  process.env.TURSO_AUTH_TOKEN = process.env.TEST_TURSO_AUTH_TOKEN
 }
 
 afterEach(() => cleanup())

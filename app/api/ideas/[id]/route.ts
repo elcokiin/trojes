@@ -70,7 +70,7 @@ export async function PATCH(
     const newContent = content !== undefined ? content.trim() : idea.content
     const newStatus = status !== undefined ? status : idea.status
     const newTags = tags !== undefined ? tags : idea.tags
-    const newPinned = pinned !== undefined ? pinned : idea.pinned
+    const newPinned = pinned !== undefined ? (pinned ? 1 : 0) : idea.pinned
     const newBackgroundColor = background_color !== undefined ? background_color : idea.background_color
     
     // Handle deleted_at based on status transitions

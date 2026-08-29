@@ -24,9 +24,10 @@ export async function createApiKey(values: {
   key_preview: string
 }) {
   const db = getDb()
+  const id = crypto.randomUUID()
   const [key] = await db
     .insert(apiKeys)
-    .values(values)
+    .values({ ...values, id })
     .returning({
       id: apiKeys.id,
       name: apiKeys.name,

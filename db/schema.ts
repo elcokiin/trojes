@@ -1,28 +1,25 @@
 import {
-  boolean,
   index,
   integer,
-  pgTable,
+  sqliteTable,
   text,
-  timestamp,
   uniqueIndex,
-  uuid,
-} from "drizzle-orm/pg-core"
+} from "drizzle-orm/sqlite-core"
 
-export const users = pgTable("users", {
-  id: uuid("id").defaultRandom().primaryKey(),
+export const users = sqliteTable("users", {
+  id: text("id").primaryKey(),
   name: text("name"),
   email: text("email").notNull().unique(),
   image: text("image"),
-  created_at: timestamp("created_at", { withTimezone: true, mode: "string" }).defaultNow(),
-  updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" }).defaultNow(),
+  created_at: text("created_at").default(""),
+  updated_at: text("updated_at").default(""),
 })
 
-export const accounts = pgTable(
+export const accounts = sqliteTable(
   "accounts",
   {
-    id: uuid("id").defaultRandom().primaryKey(),
-    user_id: uuid("user_id")
+    id: text("id").primaryKey(),
+    user_id: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     type: text("type").notNull(),
@@ -34,8 +31,8 @@ export const accounts = pgTable(
     token_type: text("token_type"),
     scope: text("scope"),
     id_token: text("id_token"),
-    created_at: timestamp("created_at", { withTimezone: true, mode: "string" }).defaultNow(),
-    updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" }).defaultNow(),
+    created_at: text("created_at").default(""),
+    updated_at: text("updated_at").default(""),
   },
   (table) => [
     index("idx_accounts_user_id").on(table.user_id),
@@ -43,38 +40,38 @@ export const accounts = pgTable(
   ]
 )
 
-export const ideas = pgTable(
+export const ideas = sqliteTable(
   "ideas",
   {
-    id: uuid("id").defaultRandom().primaryKey(),
-    user_id: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+    id: text("id").primaryKey(),
+    user_id: text("user_id").references(() => users.id, { onDelete: "cascade" }),
     content: text("content").notNull(),
-    source: text("source").default("web").$type<"web" | "telegram" | "api">(),
-    status: text("status").default("inbox").$type<"inbox" | "archived" | "deleted">(),
-    tags: text("tags").array(),
-    pinned: boolean("pinned").default(false),
+    source: text("source").default("web"),
+    status: text("status").default("inbox"),
+    tags: text("tags"),
+    pinned: integer("pinned").default(0),
     background_color: text("background_color"),
-    deleted_at: timestamp("deleted_at", { withTimezone: true, mode: "string" }),
-    created_at: timestamp("created_at", { withTimezone: true, mode: "string" }).defaultNow(),
-    updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" }).defaultNow(),
+    deleted_at: text("deleted_at"),
+    created_at: text("created_at").default(""),
+    updated_at: text("updated_at").default(""),
   },
   (table) => [
     index("idx_ideas_user_status_created").on(table.user_id, table.status, table.created_at),
   ]
 )
 
-export const apiKeys = pgTable(
+export const apiKeys = sqliteTable(
   "api_keys",
   {
-    id: uuid("id").defaultRandom().primaryKey(),
-    user_id: uuid("user_id")
+    id: text("id").primaryKey(),
+    user_id: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     key_hash: text("key_hash").notNull().unique(),
     key_preview: text("key_preview").notNull(),
-    created_at: timestamp("created_at", { withTimezone: true, mode: "string" }).defaultNow(),
-    last_used_at: timestamp("last_used_at", { withTimezone: true, mode: "string" }),
+    created_at: text("created_at").default(""),
+    last_used_at: text("last_used_at"),
   },
   (table) => [
     index("idx_api_keys_user_id").on(table.user_id),

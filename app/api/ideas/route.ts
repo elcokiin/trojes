@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       content: content.trim(),
       source,
       status: "inbox",
-      pinned: false,
+      pinned: 0,
       background_color: null,
     })
     

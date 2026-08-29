@@ -1,5 +1,5 @@
 import { defineRelations } from "drizzle-orm"
-import { drizzle } from "drizzle-orm/neon-http"
+import { drizzle } from "drizzle-orm/libsql"
 import * as schema from "@/db/schema"
 
 type Database = ReturnType<typeof createDatabase>
@@ -7,13 +7,17 @@ type Database = ReturnType<typeof createDatabase>
 let database: Database | null = null
 
 function createDatabase() {
-  const databaseUrl = process.env.DATABASE_URL
+  const url = process.env.TURSO_DATABASE_URL
+  const authToken = process.env.TURSO_AUTH_TOKEN
 
-  if (!databaseUrl) {
-    throw new Error("DATABASE_URL environment variable is not set")
+  if (!url) {
+    throw new Error("TURSO_DATABASE_URL environment variable is not set")
   }
 
-  return drizzle(databaseUrl, { relations: defineRelations(schema) })
+  return drizzle({
+    connection: { url, authToken },
+    relations: defineRelations(schema),
+  })
 }
 
 export function getDb() {

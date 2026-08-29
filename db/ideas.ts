@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, lt } from "drizzle-orm"
+import { and, desc, eq, like, lt } from "drizzle-orm"
 import { getDb } from "@/db/client"
 import { ideas, type Idea, type NewIdea } from "@/db/schema"
 
@@ -44,7 +44,7 @@ export async function findIdeas({
   ]
 
   if (pinned) {
-    filters.push(eq(ideas.pinned, true))
+    filters.push(eq(ideas.pinned, 1))
   }
 
   if (cursor) {
@@ -52,7 +52,7 @@ export async function findIdeas({
   }
 
   if (search) {
-    filters.push(ilike(ideas.content, `%${search}%`))
+    filters.push(like(ideas.content, `%${search}%`))
   }
 
   return db
@@ -74,7 +74,7 @@ export async function findPinnedIdeas({
     .from(ideas)
     .where(and(
       eq(ideas.user_id, userId),
-      eq(ideas.pinned, true),
+      eq(ideas.pinned, 1),
       eq(ideas.status, "inbox"),
     ))
     .orderBy(desc(ideas.created_at))
@@ -97,9 +97,10 @@ export async function findIdeaById({
   return idea ?? null
 }
 
-export async function createIdea(values: NewIdea) {
+export async function createIdea(values: Omit<NewIdea, "id"> & { id?: string }) {
   const db = getDb()
-  const [idea] = await db.insert(ideas).values(values).returning()
+  const id = values.id ?? crypto.randomUUID()
+  const [idea] = await db.insert(ideas).values({ ...values, id }).returning()
   return idea
 }
 

@@ -15,22 +15,24 @@ type UploadOp = {
   opData?: Record<string, unknown>
 }
 
-function parseTags(tags: unknown): string[] | null {
+function parseTags(tags: unknown): string | null {
   if (tags == null || tags === "") return null
+  let arr: string[]
   if (Array.isArray(tags)) {
-    return tags.filter((t): t is string => typeof t === "string")
-  }
-  if (typeof tags === "string") {
+    arr = tags.filter((t): t is string => typeof t === "string")
+  } else if (typeof tags === "string") {
     try {
       const parsed = JSON.parse(tags)
-      return Array.isArray(parsed)
+      arr = Array.isArray(parsed)
         ? parsed.filter((t): t is string => typeof t === "string")
-        : null
+        : []
     } catch {
       return null
     }
+  } else {
+    return null
   }
-  return null
+  return arr.length > 0 ? JSON.stringify(arr) : null
 }
 
 function toBoolean(value: unknown): boolean {
@@ -52,7 +54,7 @@ function normalizeOpData(opData: Record<string, unknown>): Partial<IdeaUpdate & 
       : "inbox"
   }
   if (opData.tags !== undefined) normalized.tags = parseTags(opData.tags)
-  if (opData.pinned !== undefined) normalized.pinned = toBoolean(opData.pinned)
+  if (opData.pinned !== undefined) normalized.pinned = toBoolean(opData.pinned) ? 1 : 0
   if (opData.background_color !== undefined) {
     normalized.background_color =
       typeof opData.background_color === "string" && opData.background_color.trim() !== ""
