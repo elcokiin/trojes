@@ -8,6 +8,7 @@ if (existsSync(".env.local")) {
 }
 
 const url = process.env.TURSO_DATABASE_URL ?? "file:local.db";
+const token = process.env.TURSO_AUTH_TOKEN;
 
 export default defineConfig({
   out: "./drizzle",
@@ -15,5 +16,6 @@ export default defineConfig({
   dialect: "sqlite",
   dbCredentials: {
     url,
+    token,
   },
 });

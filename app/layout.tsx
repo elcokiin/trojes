@@ -3,7 +3,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { SessionProvider } from "@/components/providers/session-provider";
-import { PowerSyncProvider } from "@/components/providers/powersync-provider";
+
 import { SerwistProvider } from "@serwist/turbopack/react";
 import { HotkeysRootProvider } from "@/components/providers/hotkeys-root-provider";
 import { DevtoolsClient } from "@/components/providers/devtools-client";
@@ -60,19 +60,17 @@ export default function RootLayout({
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
         <SessionProvider>
-          <PowerSyncProvider>
-            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <NuqsAdapter>
-              <HotkeysRootProvider>
-                <TooltipProvider>
-                  <ThemeColorProvider />
-                  {children}
-                </TooltipProvider>
-                <DevtoolsClient />
-              </HotkeysRootProvider>
-            </NuqsAdapter>
-            </ThemeProvider>
-          </PowerSyncProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <NuqsAdapter>
+            <HotkeysRootProvider>
+              <TooltipProvider>
+                <ThemeColorProvider />
+                {children}
+              </TooltipProvider>
+              <DevtoolsClient />
+            </HotkeysRootProvider>
+          </NuqsAdapter>
+          </ThemeProvider>
         </SessionProvider>
         {process.env.NODE_ENV === "production" && <Analytics />}
         <SerwistProvider swUrl="/serwist/sw.js" />

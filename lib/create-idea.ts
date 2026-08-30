@@ -1,30 +1,22 @@
-import { resolveUserId } from "@/lib/offline-identity"
-import { db } from "@/lib/powersync/db"
 import type { Idea } from "@/types/idea"
 
-export async function insertIdea(userId: string, content: string): Promise<Idea | null> {
+export async function insertIdea(content: string): Promise<Idea | null> {
   const trimmed = content.trim()
   if (!trimmed) return null
 
-  const now = new Date().toISOString()
-  const id = crypto.randomUUID()
-
   try {
-    await db.execute(
-      "INSERT INTO ideas (id, user_id, content, source, status, tags, pinned, background_color, deleted_at, created_at, updated_at) VALUES (?, ?, ?, 'web', 'inbox', NULL, 0, NULL, NULL, ?, ?)",
-      [id, userId, trimmed, now, now],
-    )
+    const res = await fetch("/api/ideas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: trimmed }),
+    })
+
+    if (!res.ok) return null
+
+    const { idea } = await res.json()
     return {
-      id,
-      content: trimmed,
-      source: "web",
-      status: "inbox",
-      tags: null,
-      pinned: false,
-      background_color: null,
-      created_at: now,
-      updated_at: now,
-      deleted_at: null,
+      ...idea,
+      pinned: Boolean(idea.pinned),
     }
   } catch (error) {
     console.error("Failed to create idea:", error)
@@ -33,11 +25,7 @@ export async function insertIdea(userId: string, content: string): Promise<Idea 
 }
 
 export async function createIdea(content: string): Promise<{ ok: boolean; idea?: Idea }> {
-  const userId = await resolveUserId()
-  if (!userId) return { ok: false }
-
-  const idea = await insertIdea(userId, content)
+  const idea = await insertIdea(content)
   if (!idea) return { ok: false }
-
   return { ok: true, idea }
 }

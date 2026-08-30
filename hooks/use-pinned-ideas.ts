@@ -1,26 +1,43 @@
 "use client"
 
+import useSWR from "swr"
 import { useSession } from "next-auth/react"
-import { useQuery } from "@powersync/react"
-import { getCachedUserId } from "@/lib/offline-identity"
-import { useHydrated } from "@/hooks/use-hydrated"
-import { ideaRowToIdea } from "@/lib/powersync/mappers"
+import type { Idea } from "@/types/idea"
+
+function normalizeIdea(row: Record<string, unknown>): Idea {
+  return {
+    id: row.id as string,
+    content: row.content as string,
+    source: row.source as Idea["source"],
+    status: row.status as Idea["status"],
+    tags: row.tags ? JSON.parse(row.tags as string) : null,
+    pinned: Boolean(row.pinned),
+    background_color: row.background_color as string | null,
+    created_at: row.created_at as string,
+    updated_at: row.updated_at as string,
+    deleted_at: row.deleted_at as string | null,
+  }
+}
+
+const fetcher = (url: string) =>
+  fetch(url).then((r) => {
+    if (!r.ok) throw new Error("Failed to fetch")
+    return r.json()
+  })
 
 export function usePinnedIdeas() {
-  const hydrated = useHydrated()
   const { data: session } = useSession()
-  const userId = session?.user?.id ?? (hydrated ? getCachedUserId() : null)
+  const userId = session?.user?.id
 
-  const { data, isLoading, error } = useQuery(
-    userId
-      ? "SELECT * FROM ideas WHERE user_id = ? AND pinned = 1 AND status = 'inbox' ORDER BY created_at DESC, id DESC"
-      : "SELECT * FROM ideas WHERE 1=0",
-    userId ? [userId] : [],
-  )
+  const swrKey = userId ? "/api/ideas?pinned=true" : null
+
+  const { data, error, isLoading } = useSWR(swrKey, fetcher)
+
+  const ideas: Idea[] = ((data?.ideas ?? []) as Record<string, unknown>[]).map(normalizeIdea)
 
   return {
-    ideas: (data ?? []).map(ideaRowToIdea),
+    ideas,
     error,
-    isLoading: hydrated ? isLoading : false,
+    isLoading,
   }
 }
