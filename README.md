@@ -11,7 +11,7 @@
 [![Neon](https://img.shields.io/badge/Neon-PostgreSQL-00e599?logo=neon)](https://neon.tech)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-Trojes is an **idea capture** built for the moments inspiration strikes. Optimized for speed of entry, not elaborate categorization at the point of capture.
+Trojes is an **idea capture and analysis** app built for the moments inspiration strikes. Capture is optimized for speed of entry — no structure, no tags, no overhead — and every captured idea is queued to be **grilled**: an interactive interview that walks you through a tree of questions, researches the state of the art, and closes with a verdict. Capture is just the beginning; clarity is the product.
 
 ---
 
@@ -38,6 +38,8 @@ Trojes is an **idea capture** built for the moments inspiration strikes. Optimiz
 - **PWA ready** — Install on mobile home screen, works offline.
 - **Offline-first sync** — Ideas are saved to a device-local SQLite mirror (PowerSync) and synced to the server when connectivity returns.
 - **Dark mode** — Light, dark, and system themes with a single keystroke (`d`).
+
+> **Coming next: the grilling pipeline.** A visible queue that preps each captured idea (transcription, distillation, web research, question-tree generation), an interactive 8-branch grilling interview, and a verdict — AI recommends, you vote (pin / keep / archive). See [Roadmap](#roadmap).
 
 ---
 
@@ -162,11 +164,19 @@ curl -X POST "http://localhost:3000/api/ideas" \
 
 ## Roadmap
 
-### Goal 1 — Trojes as a Platform
+### Goal — Trojes as an Idea Court
 
-![Trojes platform architecture](public/screenshots/platform-goal.png)
+Capture is done. The roadmap is the **analysis layer**:
 
-> Track the full roadmap on [Fizzy](https://app.fizzy.do/6226632/public/boards/cKgowfGq5NpUrGW2NHHywCwz).
+1. **Queue** — a visible inbox with a "thinking" prep state (transcription, distillation, web scan, tree generation) and a "ready" state that invites grilling.
+2. **Grilling** — the interactive 8-branch interview (problem, who it's for, stakes, alternatives, feasibility, differentiation, what would kill it, next smallest proof).
+3. **Web-by-default research** — anonymized scans that flag near-duplicate existing products as an early-stop risk.
+4. **Verdict** — AI recommends, the user votes (pin / keep / archive); both the vote and the recommendation are stored.
+5. **Runtime hybrid** — cloud analysis by default (zero config), with a path for the user's own LLM/agent to run the same steps.
+
+Out of scope for v1: execution (no tasks, tickets, emails, or documents), integrations, and sharing. Those ideas are documented as dormant in `notes/research/trojes-product-model.md`.
+
+For the product model, vocabulary, and design rationale, read [`notes/research/trojes-product-model.md`](notes/research/trojes-product-model.md).
 
 Open to collaborate, feedback, or just a good idea — alwaaays learniiing.
 
