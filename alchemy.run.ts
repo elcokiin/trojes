@@ -1,8 +1,10 @@
 import * as Alchemy from "alchemy";
+import { Exec, providers as CommandProviders } from "alchemy/Command";
 import * as Provider from "alchemy/Provider";
 import { Resource } from "alchemy/Resource";
 import { Stack } from "alchemy/Stack";
 import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
 
 export interface TursoDatabaseProps {
   name: string;
@@ -90,9 +92,9 @@ export const TursoDatabaseProvider = () =>
             return yield* Effect.fail(new Error(`Turso create failed: ${res.status} ${errBody}`));
           } else {
             const json = (yield* Effect.tryPromise(() => res.json())) as {
-              Name: string; Hostname: string;
+              database: { Name: string; Hostname: string };
             };
-            live = { name: json.Name, group, url: `libsql://${json.Hostname}`, authToken: "" };
+            live = { name: json.database.Name, group, url: `libsql://${json.database.Hostname}`, authToken: "" };
           }
         }
 
@@ -136,7 +138,7 @@ export const TursoDatabaseProvider = () =>
 export default Alchemy.Stack(
   "Trojes",
   {
-    providers: TursoDatabaseProvider(),
+    providers: Layer.mergeAll(TursoDatabaseProvider(), CommandProviders()),
     state: Alchemy.localState(),
   },
   Effect.gen(function* () {
@@ -147,6 +149,15 @@ export default Alchemy.Stack(
       const primary = yield* TursoDatabase("trojes-primary", {
         name: "trojes",
         group: "default",
+      });
+
+      yield* Exec("drizzle-push", {
+        command: "bunx drizzle-kit push",
+        env: {
+          TURSO_DATABASE_URL: primary.url,
+          TURSO_AUTH_TOKEN: primary.authToken,
+        },
+        memo: { include: ["db/schema.ts"] },
       });
 
       return {
@@ -161,6 +172,15 @@ export default Alchemy.Stack(
       name: "trojes",
       group: "default",
       parentDatabase: "trojes",
+    });
+
+    yield* Exec("drizzle-push", {
+      command: "bunx drizzle-kit push",
+      env: {
+        TURSO_DATABASE_URL: branch.url,
+        TURSO_AUTH_TOKEN: branch.authToken,
+      },
+      memo: { include: ["db/schema.ts"] },
     });
 
     return {

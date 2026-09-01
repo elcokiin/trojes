@@ -4,7 +4,7 @@ import { defineConfig } from "drizzle-kit";
 
 config();
 if (existsSync(".env.local")) {
-  config({ path: ".env.local", override: true });
+  config({ path: ".env.local", override: false });
 }
 
 const url = process.env.TURSO_DATABASE_URL ?? "file:local.db";
