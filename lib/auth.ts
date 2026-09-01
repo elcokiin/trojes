@@ -78,9 +78,13 @@ export const authOptions: NextAuthOptions = {
       if (session.user && token.sub) {
         const email = session.user.email
         if (email) {
-          const userId = await findUserIdByEmail(email)
-          if (userId) {
-            session.user.id = userId
+          try {
+            const userId = await findUserIdByEmail(email)
+            if (userId) {
+              session.user.id = userId
+            }
+          } catch (error) {
+            console.error("Error fetching user in session callback:", error)
           }
         }
       }

@@ -13,9 +13,9 @@ const token = process.env.TURSO_AUTH_TOKEN;
 export default defineConfig({
   out: "./drizzle",
   schema: "./db/schema.ts",
-  dialect: "sqlite",
+  dialect: "turso",
   dbCredentials: {
     url,
-    token,
+    authToken: token,
   },
 });
