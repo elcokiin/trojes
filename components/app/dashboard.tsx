@@ -9,7 +9,7 @@ import { useSearchStore } from "@/stores/search-store";
 import { MobileLayout } from "@/components/app/mobile-layout";
 import { IdeasTabs } from "@/components/ideas/ideas-tabs";
 import { QuickCapture } from "@/components/ideas/quick-capture";
-import { createIdea } from "@/lib/create-idea";
+import { optimisticCreateIdea } from "@/lib/create-idea";
 import { BottomNav } from "@/components/app/bottom-nav";
 import { PinnedTray } from "@/components/ideas/pinned-tray";
 
@@ -30,7 +30,7 @@ export function Dashboard({ user }: DashboardProps) {
   const searchMode = useSearchStore((s) => s.searchMode);
 
   const handleCapture = useCallback(async (content: string) => {
-    await createIdea(content)
+    await optimisticCreateIdea(content)
   }, [])
 
   return (

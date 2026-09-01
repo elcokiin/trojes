@@ -100,7 +100,13 @@ export async function findIdeaById({
 export async function createIdea(values: Omit<NewIdea, "id"> & { id?: string }) {
   const db = getDb()
   const id = values.id ?? crypto.randomUUID()
-  const [idea] = await db.insert(ideas).values({ ...values, id }).returning()
+  const now = new Date().toISOString()
+  const [idea] = await db.insert(ideas).values({
+    ...values,
+    id,
+    created_at: values.created_at ?? now,
+    updated_at: values.updated_at ?? now,
+  }).returning()
   return idea
 }
 

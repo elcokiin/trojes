@@ -5,14 +5,15 @@ import {
   text,
   uniqueIndex,
 } from "drizzle-orm/sqlite-core"
+import { sql } from "drizzle-orm"
 
 export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
   name: text("name"),
   email: text("email").notNull().unique(),
   image: text("image"),
-  created_at: text("created_at").default(""),
-  updated_at: text("updated_at").default(""),
+  created_at: text("created_at").default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+  updated_at: text("updated_at").default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
 })
 
 export const accounts = sqliteTable(
@@ -31,8 +32,8 @@ export const accounts = sqliteTable(
     token_type: text("token_type"),
     scope: text("scope"),
     id_token: text("id_token"),
-    created_at: text("created_at").default(""),
-    updated_at: text("updated_at").default(""),
+    created_at: text("created_at").default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+    updated_at: text("updated_at").default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
   },
   (table) => [
     index("idx_accounts_user_id").on(table.user_id),
@@ -52,8 +53,8 @@ export const ideas = sqliteTable(
     pinned: integer("pinned").default(0),
     background_color: text("background_color"),
     deleted_at: text("deleted_at"),
-    created_at: text("created_at").default(""),
-    updated_at: text("updated_at").default(""),
+    created_at: text("created_at").default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+    updated_at: text("updated_at").default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
   },
   (table) => [
     index("idx_ideas_user_status_created").on(table.user_id, table.status, table.created_at),
@@ -70,7 +71,7 @@ export const apiKeys = sqliteTable(
     name: text("name").notNull(),
     key_hash: text("key_hash").notNull().unique(),
     key_preview: text("key_preview").notNull(),
-    created_at: text("created_at").default(""),
+    created_at: text("created_at").default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
     last_used_at: text("last_used_at"),
   },
   (table) => [

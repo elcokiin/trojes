@@ -9,7 +9,7 @@ import { MobileHeader } from "@/components/app/mobile-header";
 import { BottomNav } from "@/components/app/bottom-nav";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
-import { createIdea } from "@/lib/create-idea";
+import { optimisticCreateIdea } from "@/lib/create-idea";
 
 function isBeforeInstallPromptEvent(e: Event): e is BeforeInstallPromptEvent {
   return "prompt" in e;
@@ -96,7 +96,7 @@ export function MobileLayout() {
   }, [deferredPrompt]);
 
   const handleCapture = useCallback(async (content: string) => {
-    await createIdea(content)
+    await optimisticCreateIdea(content)
   }, []);
 
   const handleOpenCapture = useCallback(() => {

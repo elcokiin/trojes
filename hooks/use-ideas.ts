@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react"
 import useSWR, { mutate } from "swr"
 import { useSession } from "next-auth/react"
-import { insertIdea } from "@/lib/create-idea"
+import { optimisticCreateIdea } from "@/lib/create-idea"
 import type { IdeaStatus, Idea } from "@/types/idea"
 
 interface UseIdeasOptions {
@@ -56,13 +56,10 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
   const create = useCallback(
     async (content: string): Promise<{ ok: boolean }> => {
       if (!userId) return { ok: false }
-      const idea = await insertIdea(content)
-      if (idea) {
-        mutate(swrKey)
-      }
-      return { ok: Boolean(idea) }
+      const result = await optimisticCreateIdea(content)
+      return { ok: result.ok }
     },
-    [userId, swrKey],
+    [userId],
   )
 
   const updateStatus = useCallback(
