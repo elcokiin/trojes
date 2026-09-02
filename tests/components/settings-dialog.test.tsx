@@ -25,10 +25,6 @@ vi.mock("@/hooks/use-shortcut-preferences", () => ({
   useShortcutPreference: () => [false, vi.fn()] as const,
 }))
 
-vi.mock("@/lib/powersync/db", () => ({
-  db: { disconnectAndClear: vi.fn().mockResolvedValue(undefined) },
-}))
-
 vi.mock("@/lib/offline-identity", () => ({
   clearCachedUserId: vi.fn(),
 }))

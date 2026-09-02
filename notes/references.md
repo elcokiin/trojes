@@ -126,29 +126,6 @@ Current source repository references:
   - `config/routes.rb` — line 90 (card pin resource), line 186 (my pins collection)
   - `db/schema.rb` — pins table (lines 422-432)
 
-### `notes/references/sdks/`
-
-SDK and tooling references consulted during implementation. These are versioned
-notes; the PowerSync web SDK API changes between versions, so record the exact
-version used alongside integration notes.
-
-- `@powersync/web@2.1.1` + `@powersync/react@2.0.0` + `@journeyapps/wa-sqlite@2.0.1`:
-  used for Trojes's offline-first local SQLite mirror and bidirectional sync with
-  Neon PostgreSQL. Implemented in `lib/powersync/` (schema, db, connector,
-  mappers) with `components/providers/powersync-provider.tsx`, hooks
-  `hooks/use-ideas.ts` and `hooks/use-pinned-ideas.ts` reading via `useQuery`,
-  and server routes `app/api/powersync/token` and `app/api/powersync/upload`.
-  - The v2.1.1 SDK ships a single bundled `worker.js`; run
-    `powersync-web copy-assets -o public` (the `postinstall` script) to serve
-    it from `public/@powersync/`. Assets are gitignored and regenerated.
-  - `PowerSyncDatabase` options accept `database.worker` and `sync.worker` as
-    `string | URL | (() => SharedWorker)`; `database: { dbFilename,
-    disableSSRWarning }` plus `sync: { worker }`.
-  - There is no `@powersync/testing` package on npm; unit/integration tests use
-    `tests/helpers/powersync-fake.ts`, an in-memory fake that evaluates the
-    app's SQL surface and is wired in via mocked `@/lib/powersync/db`,
-    `@powersync/react` (`useQuery`), and `next-auth/react`.
-
 ### `notes/references/documents/`
 
 References to articles, specs, PDFs, technical docs, research notes, or other

@@ -3,10 +3,6 @@ import { createIdea, insertIdea } from "@/lib/create-idea"
 
 const executeMock = vi.hoisted(() => vi.fn())
 
-vi.mock("@/lib/powersync/db", () => ({
-  db: { execute: executeMock },
-}))
-
 vi.mock("@/lib/offline-identity", () => ({
   resolveUserId: vi.fn(),
   setCachedUserId: vi.fn(),

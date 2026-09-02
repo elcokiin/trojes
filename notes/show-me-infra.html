@@ -89,14 +89,14 @@
     </svg>
     <div>
       <h1>Trojes infrastructure, now</h1>
-      <p class="sub">Next.js 16 · React 19 · Neon PostgreSQL · PowerSync offline sync · NextAuth JWT · Vercel</p>
+      <p class="sub">Next.js 16 · React 19 · Turso (libsql) · NextAuth JWT · Vercel</p>
     </div>
   </div>
 
   <!-- ================= TOPOLOGY ================= -->
   <div class="zone">
     <h2>Topology</h2>
-    <p class="intro">A single Next.js process serves the dashboard, the API, auth, and the PWA. Data reaches Postgres down two independent paths: online REST and offline PowerSync.</p>
+    <p class="intro">A single Next.js process serves the dashboard, the API, auth, and the PWA. All data flows through Turso (libsql) via Drizzle ORM.</p>
 
     <div class="stack">
       <div class="combo">
@@ -107,55 +107,27 @@
       <div class="wire"></div>
       <div class="b node"><h5>Next.js App (Vercel)</h5><small>React 19 · RSC default · API routes under app/api</small></div>
       <div class="wire"></div>
-      <div class="b node"><h5>Neon PostgreSQL</h5><small>Drizzle ORM · users · accounts · ideas · api_keys</small></div>
+      <div class="b node"><h5>Turso (libsql)</h5><small>Drizzle ORM · users · accounts · ideas · api_keys</small></div>
     </div>
-    <div class="note"><b>Two writes in.</b> Online writes hit Postgres directly via the API. Offline writes hit the local SQLite mirror first, then relay through PowerSync upload. The <b>local mirror is the source of truth</b> while disconnected.</div>
+    <div class="note"><b>Single write path.</b> All reads and writes go through the API to Turso via Drizzle ORM.</div>
   </div>
 
-  <!-- ================= TWO PATHS ================= -->
+  <!-- ================= DATA PATH ================= -->
   <div class="zone">
-    <h2>Two data paths</h2>
-    <p class="intro">Both wind up in the same ideas table — but only one touches the network per keystroke.</p>
+    <h2>Data path</h2>
+    <p class="intro">All data flows through the REST API to Turso.</p>
 
-    <div class="split">
-      <!-- offline -->
-      <div>
-        <h3 style="color:var(--green)">1 · Offline (PowerSync) — default for the app</h3>
-        <p class="p">The <b>React clients use this path</b>. They read a local SQLite mirror and write to it; the PowerSync worker reconciles when a connection exists.</p>
-        <div class="mflow">
-          <div class="step">React <b>useQuery</b> → SELECT from SQLite<span>lib/powersync/db.ts · trojes.sqlite (WASM worker)</span></div>
-          <div class="wire green"></div>
-          <div class="step">mutations queue up<br><b>useIdeas → db.execute</b><span>local-first, works offline</span></div>
-          <div class="wire green"></div>
-          <div class="step"><b>BackendConnector.uploadData</b></div>
-          <div class="wire green"></div>
-          <div class="step" style="border-color:var(--green)">
-            <b>POST /api/powersync/upload</b><span>hits the App route</span>
-          </div>
-          <div class="wire"></div>
-          <div class="step"><b>applyOp</b> → Drizzle upsert</div>
-          <div class="wire"></div>
-          <div class="step"><b>Neon</b> — Postgres</div>
-        </div>
+    <div class="stack">
+      <div class="step"><b>Bearer</b> credential
+        <span>JWT session (NextAuth) OR hashed API key</span>
       </div>
-      <!-- online -->
-      <div>
-        <h3 style="color:var(--blue)">2 · Online (REST) — for tools &amp; server</h3>
-        <p class="p">The API path, used by <b>any HTTP tool</b> with an API key, plus the dashboard when it opts into server reads.</p>
-        <div class="mflow">
-          <div class="step"><b>Bearer</b> credential
-            <span>JWT session (NextAuth) OR hashed API key</span>
-          </div>
-          <div class="wire blue"></div>
-          <div class="step"><b>GET / POST / PATCH /api/ideas</b>
-            <span>db/ideas.ts</span>
-          </div>
-          <div class="wire blue"></div>
-          <div class="step"><b>Neon Postgres</b>
-            <span>direct select / insert</span>
-          </div>
-        </div>
-        <p class="p" style="margin-top:18px;color:var(--dim)">Meant for automation (cURL, Telegram, whatever speaks HTTP) — <b>not</b> the main app read path.</p>
+      <div class="wire blue"></div>
+      <div class="step"><b>GET / POST / PATCH /api/ideas</b>
+        <span>db/ideas.ts</span>
+      </div>
+      <div class="wire blue"></div>
+      <div class="step"><b>Turso (libsql)</b>
+        <span>Drizzle ORM select / insert / update</span>
       </div>
     </div>
   </div>
@@ -165,11 +137,8 @@
     <h2>Key files</h2>
     <div class="files">
       <div class="f"><span class="path">app/api/ideas/route.ts</span><p>REST list + create, source detection. Calls db/ideas.</p></div>
-      <div class="f"><span class="path">app/api/powersync/token/route.ts</span><p>Issues a 60m JWT to the PowerSync cloud per user.</p></div>
-      <div class="f"><span class="path">app/api/powersync/upload/route.ts</span><p>Replays queued offline mutations to Postgres; 401 keeps the local queue.</p></div>
-      <div class="f"><span class="path">lib/powersync/connector.ts</span><p>fetchCredentials + uploadData — the app↔PowerSync bridge.</p></div>
-      <div class="f"><span class="path">lib/powersync/db.ts</span><p>Constructs the PowerSyncDatabase (SQLite mirror) + schema.</p></div>
       <div class="f"><span class="path">db/schema.ts · lib/ideas.ts</span><p>Drizzle models + CRUD; client hydrating servers, typemaps.</p></div>
+      <div class="f"><span class="path">db/client.ts</span><p>Drizzle ORM client setup (Turso/libsql).</p></div>
       <div class="f"><span class="path">lib/auth.ts · api-keys.ts</span><p>AuthN: NextAuth JWT + Bearer API-key lookup + hashing.</p></div>
       <div class="f"><span class="path">proxy.ts</span><p>Edge proxy: session guard and device-based home redirect.</p></div>
     </div>

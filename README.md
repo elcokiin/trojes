@@ -8,7 +8,6 @@
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org)
-[![Neon](https://img.shields.io/badge/Neon-PostgreSQL-00e599?logo=neon)](https://neon.tech)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 Trojes is an **idea capture and analysis** app built for the moments inspiration strikes. Capture is optimized for speed of entry — no structure, no tags, no overhead — and every captured idea is queued to be **grilled**: an interactive interview that walks you through a tree of questions, researches the state of the art, and closes with a verdict. Capture is just the beginning; clarity is the product.
@@ -36,7 +35,7 @@ Trojes is an **idea capture and analysis** app built for the moments inspiration
 - **Trash with recovery** — Soft delete with time tracking, permanent delete option.
 - **API-first capture** — Generate API keys from Settings, POST ideas from any tool.
 - **PWA ready** — Install on mobile home screen, works offline.
-- **Offline-first sync** — Ideas are saved to a device-local SQLite mirror (PowerSync) and synced to the server when connectivity returns.
+- **Offline-ready** — Works offline via PWA with local caching.
 - **Dark mode** — Light, dark, and system themes with a single keystroke (`d`).
 
 > **Coming next: the grilling pipeline.** A visible queue that preps each captured idea (transcription, distillation, web research, question-tree generation), an interactive 8-branch grilling interview, and a verdict — AI recommends, you vote (pin / keep / archive). See [Roadmap](#roadmap).
@@ -55,7 +54,7 @@ Open [http://localhost:3000](http://localhost:3000) — sign in with Google.
 
 ### Database
 
-Trojes uses Drizzle ORM with Neon PostgreSQL:
+Trojes uses Drizzle ORM with Turso (libsql):
 
 ```bash
 bun run db:generate   # Create migration
@@ -63,22 +62,7 @@ bun run db:migrate    # Apply migration
 bun run db:studio     # Open Drizzle Studio
 ```
 
-Environment variables: see `.env.example` — only `DATABASE_URL` is required.
-
-### Offline sync (PowerSync)
-
-Trojes is offline-first: the client reads and writes to a local SQLite mirror
-backed by [PowerSync](https://www.powersync.com), which syncs bidirectionally
-with Neon PostgreSQL. Capture always works — even offline — and local changes
-are uploaded when connectivity returns.
-
-- `DATABASE_URL` remains required for the server database.
-- `POWERSYNC_INSTANCE_URL`, `POWERSYNC_JWT_SECRET`, `POWERSYNC_JWT_KID`, and
-  `POWERSYNC_JWT_AUDIENCE` are required for sync. Your PowerSync instance must
-  be connected to the same Postgres database (logical replication), and the
-  `ideas` table must be in a publication tracked by PowerSync.
-- The client serves its worker from `public/@powersync/` (regenerated on
-  install via the `postinstall` script).
+Environment variables: see `.env.example` — `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` are required.
 
 ---
 
@@ -152,11 +136,10 @@ curl -X POST "http://localhost:3000/api/ideas" \
 | | |
 |---|---|
 | **Framework** | [Next.js 16](https://nextjs.org) (App Router, React 19) |
-| **Database** | [Neon](https://neon.tech) (Serverless PostgreSQL via Drizzle ORM) |
-| **Offline sync** | [PowerSync](https://www.powersync.com) (local SQLite mirror + bidirectional sync) |
+| **Database** | [Turso](https://turso.tech) (libsql via Drizzle ORM) |
 | **Auth** | [NextAuth.js](https://next-auth.js.org) (Google OAuth) |
 | **Styling** | [Tailwind CSS v4](https://tailwindcss.com) + [shadcn/ui](https://ui.shadcn.com) |
-| **Data fetching** | [SWR](https://swr.vercel.app) (API keys) + PowerSync `useQuery` (ideas) |
+| **Data fetching** | [SWR](https://swr.vercel.app) |
 | **State** | [Zustand](https://github.com/pmndrs/zustand) |
 | **Deployment** | [Vercel](https://vercel.com) |
 
