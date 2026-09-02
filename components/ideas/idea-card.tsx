@@ -65,12 +65,10 @@ export const IdeaCard = memo(function IdeaCard({
     setMenuOpen(open)
   }, [])
 
-  const resolvedId = idea._serverId ?? idea.id
-
   const handleStatusChange = async (newStatus: "inbox" | "archived" | "deleted") => {
     setIsUpdating(true)
     try {
-      await onStatusChange(resolvedId, newStatus)
+      await onStatusChange(idea.id, newStatus)
     } finally {
       setIsUpdating(false)
     }
@@ -80,7 +78,7 @@ export const IdeaCard = memo(function IdeaCard({
   const handlePinToggle = async () => {
     setIsUpdating(true)
     try {
-      await onPinChange(resolvedId, !idea.pinned)
+      await onPinChange(idea.id, !idea.pinned)
     } finally {
       setIsUpdating(false)
     }
@@ -90,7 +88,7 @@ export const IdeaCard = memo(function IdeaCard({
   const handleColorSelect = async (colorId: string | null) => {
     setIsUpdating(true)
     try {
-      await onColorChange(resolvedId, colorId)
+      await onColorChange(idea.id, colorId)
     } finally {
       setIsUpdating(false)
     }
@@ -100,7 +98,7 @@ export const IdeaCard = memo(function IdeaCard({
     if (onPermanentDelete) {
       setIsUpdating(true)
       try {
-        await onPermanentDelete(resolvedId)
+        await onPermanentDelete(idea.id)
       } finally {
         setIsUpdating(false)
       }
@@ -297,13 +295,13 @@ export const IdeaCard = memo(function IdeaCard({
         editOpen && (
           <MobileEditor
             initialContent={idea.content}
-            onCapture={(content) => onContentChange(resolvedId, content)}
+            onCapture={(content) => onContentChange(idea.id, content)}
             onClose={() => setEditOpen(false)}
           />
         )
       ) : (
         <IdeaEditDialog
-          ideaId={resolvedId}
+          ideaId={idea.id}
           initialContent={idea.content}
           open={editOpen}
           onOpenChange={setEditOpen}
