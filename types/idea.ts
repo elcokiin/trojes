@@ -9,6 +9,7 @@ export interface Idea {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  _serverId?: string;
 }
 
 export type IdeaStatus = "inbox" | "archived" | "deleted";

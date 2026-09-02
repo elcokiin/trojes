@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, startTransition, useState } from "react"
 import useSWR, { mutate } from "swr"
 import { useSession } from "next-auth/react"
 import { optimisticCreateIdea } from "@/lib/create-idea"
@@ -64,36 +64,116 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
 
   const updateStatus = useCallback(
     async (id: string, newStatus: IdeaStatus): Promise<{ ok: boolean }> => {
+      let prevInbox: { ideas: Idea[] } | undefined
+      let prevPinned: { ideas: Idea[] } | undefined
+      const wasPinned = ideas.find((i) => i.id === id)?.pinned ?? false
+
+      startTransition(() => {
+        mutate(
+          swrKey,
+          (current: { ideas: Idea[] } | undefined) => {
+            if (!current) return current
+            prevInbox = current
+            return {
+              ...current,
+              ideas: current.ideas.map((i) =>
+                i.id === id ? { ...i, status: newStatus } : i,
+              ),
+            }
+          },
+          { revalidate: false },
+        )
+
+        if (wasPinned && newStatus !== "inbox") {
+          mutate(
+            "/api/ideas?pinned=true",
+            (current: { ideas: Idea[] } | undefined) => {
+              if (!current) return current
+              prevPinned = current
+              return { ...current, ideas: current.ideas.filter((i) => i.id !== id) }
+            },
+            { revalidate: false },
+          )
+        }
+      })
+
       try {
         const res = await fetch(`/api/ideas/${id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: newStatus }),
         })
-        if (!res.ok) return { ok: false }
-        mutate(swrKey)
+        if (!res.ok) {
+          if (prevInbox) mutate(swrKey, prevInbox, { revalidate: false })
+          if (prevPinned) mutate("/api/ideas?pinned=true", prevPinned, { revalidate: false })
+          return { ok: false }
+        }
         return { ok: true }
       } catch (err) {
         console.error("Failed to update status:", err)
+        if (prevInbox) mutate(swrKey, prevInbox, { revalidate: false })
+        if (prevPinned) mutate("/api/ideas?pinned=true", prevPinned, { revalidate: false })
         return { ok: false }
       }
     },
-    [swrKey],
+    [swrKey, ideas],
   )
 
   const updatePin = useCallback(
     async (id: string, pinned: boolean): Promise<{ ok: boolean }> => {
+      let prevInbox: { ideas: Idea[] } | undefined
+      let prevPinned: { ideas: Idea[] } | undefined
+
+      startTransition(() => {
+        mutate(
+          swrKey,
+          (current: { ideas: Idea[] } | undefined) => {
+            if (!current) return current
+            prevInbox = current
+            return {
+              ...current,
+              ideas: current.ideas.map((i) =>
+                i.id === id ? { ...i, pinned } : i,
+              ),
+            }
+          },
+          { revalidate: false },
+        )
+
+        mutate(
+          "/api/ideas?pinned=true",
+          (current: { ideas: Idea[] } | undefined) => {
+            if (!current) return current
+            prevPinned = current
+            if (pinned) {
+              const idea = prevInbox?.ideas.find((i) => i.id === id)
+              if (idea) {
+                return { ...current, ideas: [{ ...idea, pinned }, ...current.ideas] }
+              }
+              return current
+            }
+            return { ...current, ideas: current.ideas.filter((i) => i.id !== id) }
+          },
+          { revalidate: false },
+        )
+      })
+
       try {
         const res = await fetch(`/api/ideas/${id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ pinned }),
         })
-        if (!res.ok) return { ok: false }
-        mutate(swrKey)
+        if (!res.ok) {
+          if (prevInbox) mutate(swrKey, prevInbox, { revalidate: false })
+          if (prevPinned) mutate("/api/ideas?pinned=true", prevPinned, { revalidate: false })
+          return { ok: false }
+        }
         return { ok: true }
       } catch (err) {
         console.error("Failed to update pin:", err)
+        if (prevInbox) mutate(swrKey, prevInbox, { revalidate: false })
+        if (prevPinned) mutate("/api/ideas?pinned=true", prevPinned, { revalidate: false })
         return { ok: false }
       }
     },
