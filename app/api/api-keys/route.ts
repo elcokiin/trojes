@@ -1,7 +1,12 @@
 import { getAuthenticatedUserId } from "@/lib/auth"
 import { NextRequest, NextResponse } from "next/server"
+import * as Effect from "effect/Effect"
 import { createApiKey, findApiKeysByUserId } from "@/db/api-keys"
 import { generateApiKey, hashApiKey } from "@/lib/api-keys"
+
+function runEffect<A>(effect: Effect.Effect<A, any, never>): Promise<A> {
+  return Effect.runPromise(effect as Effect.Effect<A, never, never>)
+}
 
 export async function GET() {
   try {
@@ -10,8 +15,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const keys = await findApiKeysByUserId(userId)
-
+    const keys = await runEffect(findApiKeysByUserId(userId))
     return NextResponse.json({ keys })
   } catch (error) {
     console.error("Failed to fetch API keys:", error)
@@ -37,12 +41,14 @@ export async function POST(request: NextRequest) {
     const keyHash = hashApiKey(fullKey)
     const keyPreview = fullKey.slice(-4)
 
-    const key = await createApiKey({
-      user_id: userId,
-      name,
-      key_hash: keyHash,
-      key_preview: keyPreview,
-    })
+    const key = await runEffect(
+      createApiKey({
+        user_id: userId,
+        name,
+        key_hash: keyHash,
+        key_preview: keyPreview,
+      }),
+    )
 
     return NextResponse.json(
       {
@@ -51,7 +57,7 @@ export async function POST(request: NextRequest) {
           full_key: fullKey,
         },
       },
-      { status: 201 }
+      { status: 201 },
     )
   } catch (error) {
     console.error("Failed to create API key:", error)

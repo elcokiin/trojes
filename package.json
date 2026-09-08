@@ -23,7 +23,7 @@
   "dependencies": {
     "@effect/platform-bun": "^4.0.0-rc.111",
     "@effect/platform-node": "^4.0.0-rc.111",
-    "@effect/sql-pg": "^0.53.0",
+    "@effect/sql-libsql": "4.0.0-rc.111",
     "@formkit/auto-animate": "^0.10.0",
     "@lexical/code": "^0.45.0",
     "@lexical/extension": "^0.45.0",

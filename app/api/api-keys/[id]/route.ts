@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
+import * as Effect from "effect/Effect"
 import { authOptions } from "@/lib/auth"
 import { deleteApiKey, updateApiKeyName } from "@/db/api-keys"
 
+function runEffect<A>(effect: Effect.Effect<A, any, never>): Promise<A> {
+  return Effect.runPromise(effect as Effect.Effect<A, never, never>)
+}
+
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -22,11 +27,13 @@ export async function PATCH(
 
     const { id } = await params
 
-    const key = await updateApiKeyName({
-      id,
-      userId: session.user.id,
-      name,
-    })
+    const key = await runEffect(
+      updateApiKeyName({
+        id,
+        userId: session.user.id,
+        name,
+      }),
+    )
 
     if (!key) {
       return NextResponse.json({ error: "API key not found" }, { status: 404 })
@@ -41,7 +48,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -51,7 +58,7 @@ export async function DELETE(
 
     const { id } = await params
 
-    const key = await deleteApiKey({ id, userId: session.user.id })
+    const key = await runEffect(deleteApiKey({ id, userId: session.user.id }))
 
     if (!key) {
       return NextResponse.json({ error: "API key not found" }, { status: 404 })

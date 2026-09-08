@@ -7,7 +7,7 @@
       "dependencies": {
         "@effect/platform-bun": "^4.0.0-rc.111",
         "@effect/platform-node": "^4.0.0-rc.111",
-        "@effect/sql-pg": "^0.53.0",
+        "@effect/sql-libsql": "4.0.0-rc.111",
         "@formkit/auto-animate": "^0.10.0",
         "@lexical/code": "^0.45.0",
         "@lexical/extension": "^0.45.0",
@@ -217,6 +217,8 @@
     "@effect/sql": ["@effect/sql@0.52.1", "", { "dependencies": { "uuid": "^11.0.3" }, "peerDependencies": { "@effect/experimental": "^0.61.1", "@effect/platform": "^0.97.1", "effect": "^3.22.1" } }, "sha512-dUVPjlUgpga6sDa/MtYipHAqzHx2St41hxI00nXTBt4IBBJaf2lTGaOvlEoBg/q6PHVAgSoKnxe19pWUvabC9g=="],
 
     "@effect/sql-d1": ["@effect/sql-d1@4.0.0-rc.112", "", { "dependencies": { "@cloudflare/workers-types": "^5.20260822.1" }, "peerDependencies": { "effect": "^4.0.0-rc.112" } }, "sha512-Wxdr6aU3pBHqhyBiybzbHmEK7qZ2w4iy0IxBgJHe9BLleYzCxObOaBQI9qq/VZSqEvc0IaOBMpbk2zh3dlPNSQ=="],
+
+    "@effect/sql-libsql": ["@effect/sql-libsql@4.0.0-rc.111", "", { "dependencies": { "@libsql/client": "^0.17.4" }, "peerDependencies": { "effect": "^4.0.0-rc.111" } }, "sha512-rm1AopMEaojqA/uNdaH+DQm7kqm7CnHYpjoy0ERA0N6PwyG+otGqX4ADrXJWmJo9nn8pwtuFGmkiIzgPpbc16g=="],
 
     "@effect/sql-pg": ["@effect/sql-pg@0.53.0", "", { "dependencies": { "pg": "^8.16.3", "pg-connection-string": "2.9.1", "pg-cursor": "^2.15.3", "pg-pool": "^3.10.1", "pg-types": "^4.1.0" }, "peerDependencies": { "@effect/experimental": "^0.61.0", "@effect/platform": "^0.97.0", "@effect/sql": "^0.52.0", "effect": "^3.22.0" } }, "sha512-E9LPkP3aB9RNPhAl9R19z6dcmleNyJJGatg0N/zpH3LyIg3dB/4Qhv543rNOGyQlox5ebUADbHUxWk5UzDfSCA=="],
 

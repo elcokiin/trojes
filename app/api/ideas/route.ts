@@ -1,30 +1,32 @@
 import { getAuthenticatedUserId } from "@/lib/auth"
 import { NextRequest, NextResponse } from "next/server"
+import * as Effect from "effect/Effect"
 import { createIdea, findIdeas, findPinnedIdeas } from "@/db/ideas"
 import type { Idea } from "@/db/schema"
 
 const VALID_STATUSES: Idea["status"][] = ["inbox", "archived", "deleted"]
 
 function parseIdeaStatus(raw: string | null): NonNullable<Idea["status"]> {
-  const status = raw || "inbox" as string
+  const status = raw || ("inbox" as string)
   if (VALID_STATUSES.includes(status as NonNullable<Idea["status"]>)) {
     return status as NonNullable<Idea["status"]>
   }
   return "inbox"
 }
 
+function runEffect<A>(effect: Effect.Effect<A, any, never>): Promise<A> {
+  return Effect.runPromise(effect as Effect.Effect<A, never, never>)
+}
+
 // GET - Fetch all ideas (for web dashboard)
 export async function GET(request: NextRequest) {
   try {
     const userId = await getAuthenticatedUserId(request)
-    
+
     if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
-    
+
     const { searchParams } = new URL(request.url)
     const status = parseIdeaStatus(searchParams.get("status"))
     const search = searchParams.get("search")
@@ -36,28 +38,27 @@ export async function GET(request: NextRequest) {
     let nextCursor: string | null = null
 
     if (pinned) {
-      ideas = await findPinnedIdeas({ userId })
+      ideas = await runEffect(findPinnedIdeas({ userId }))
     } else {
-      const results = await findIdeas({
-        userId,
-        status,
-        search,
-        cursor,
-        limit,
-      })
+      const results = await runEffect(
+        findIdeas({
+          userId,
+          status,
+          search,
+          cursor,
+          limit,
+        }),
+      )
       const hasMore = results.length > limit
       if (hasMore) results.pop()
       nextCursor = hasMore ? results[results.length - 1].created_at : null
       ideas = results
     }
-    
+
     return NextResponse.json({ ideas, nextCursor })
   } catch (error) {
     console.error("Failed to fetch ideas:", error)
-    return NextResponse.json(
-      { error: "Failed to fetch ideas" },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: "Failed to fetch ideas" }, { status: 500 })
   }
 }
 
@@ -65,41 +66,34 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const userId = await getAuthenticatedUserId(request)
-    
+
     if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
-    
+
     const source = request.headers.get("authorization")?.startsWith("Bearer ") ? "api" : "web"
-    
+
     const body = await request.json()
     const { content } = body
-    
+
     if (!content || typeof content !== "string" || content.trim().length === 0) {
-      return NextResponse.json(
-        { error: "Content is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "Content is required" }, { status: 400 })
     }
-    
-    const idea = await createIdea({
-      user_id: userId,
-      content: content.trim(),
-      source,
-      status: "inbox",
-      pinned: 0,
-      background_color: null,
-    })
-    
+
+    const idea = await runEffect(
+      createIdea({
+        user_id: userId,
+        content: content.trim(),
+        source,
+        status: "inbox",
+        pinned: 0,
+        background_color: null,
+      }),
+    )
+
     return NextResponse.json({ idea }, { status: 201 })
   } catch (error) {
     console.error("Failed to create idea:", error)
-    return NextResponse.json(
-      { error: "Failed to create idea" },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: "Failed to create idea" }, { status: 500 })
   }
 }
