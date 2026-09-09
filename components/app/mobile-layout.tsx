@@ -9,7 +9,7 @@ import { MobileHeader } from "@/components/app/mobile-header";
 import { BottomNav } from "@/components/app/bottom-nav";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
-import { optimisticCreateIdea } from "@/lib/create-idea";
+import { useIdeas } from "@/hooks/use-ideas";
 
 function isBeforeInstallPromptEvent(e: Event): e is BeforeInstallPromptEvent {
   return "prompt" in e;
@@ -25,6 +25,7 @@ export function MobileLayout() {
   const prevScrollY = useRef(0);
   const captureOpen = useUIStore((s) => s.captureOpen);
   const setCaptureOpen = useUIStore((s) => s.setCaptureOpen);
+  const { create: createIdea, isOnline } = useIdeas({ status: "inbox" });
 
   useEffect(() => {
     if (captureOpen && !mobileEditorOpen) {
@@ -96,8 +97,8 @@ export function MobileLayout() {
   }, [deferredPrompt]);
 
   const handleCapture = useCallback(async (content: string) => {
-    await optimisticCreateIdea(content)
-  }, []);
+    await createIdea(content);
+  }, [createIdea]);
 
   const handleOpenCapture = useCallback(() => {
     setMobileEditorOpen(true);
@@ -112,6 +113,12 @@ export function MobileLayout() {
     <div className="flex flex-col h-dvh">
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
         <MobileHeader />
+
+        {!isOnline && (
+          <div className="bg-yellow-500/10 text-yellow-600 text-center py-1 text-sm">
+            You're offline — ideas will sync when reconnected
+          </div>
+        )}
 
         {showBanner && (
           <div className="relative w-full h-10 bg-primary/5 overflow-hidden">

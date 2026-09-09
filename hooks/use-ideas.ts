@@ -1,9 +1,12 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import useSWR, { mutate } from "swr"
 import { useSession } from "next-auth/react"
-import { insertIdea } from "@/lib/create-idea"
+import { saveIdeaLocally, getPendingItems, markSynced } from "@/lib/outbox/idea-repository"
+import { resolveUserId, setCachedUserId } from "@/lib/offline-identity"
+import { initSync } from "@/lib/outbox/sync"
+import { useOfflineIdeasStore } from "@/stores/offline-ideas-store"
 import type { IdeaStatus, Idea } from "@/types/idea"
 
 interface UseIdeasOptions {
@@ -37,6 +40,57 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
   const { data: session } = useSession()
   const userId = session?.user?.id
   const [size, setSize] = useState(1)
+  const { localIdeas, setLocalIdeas, addLocalIdea, removeLocalIdea, setIsOnline } =
+    useOfflineIdeasStore()
+
+  useEffect(() => {
+    setIsOnline(navigator.onLine)
+
+    const handleOnline = () => setIsOnline(true)
+    const handleOffline = () => setIsOnline(false)
+
+    window.addEventListener("online", handleOnline)
+    window.addEventListener("offline", handleOffline)
+
+    initSync()
+
+    return () => {
+      window.removeEventListener("online", handleOnline)
+      window.removeEventListener("offline", handleOffline)
+    }
+  }, [setIsOnline])
+
+  useEffect(() => {
+    if (!userId) return
+
+    setCachedUserId(userId)
+
+    const loadLocalIdeas = async () => {
+      const pending = await getPendingItems()
+      const unsynced = pending.map((item) => ({
+        id: item.id,
+        content: item.content,
+        source: "web" as Idea["source"],
+        status: "inbox" as IdeaStatus,
+        tags: null,
+        pinned: false,
+        background_color: null,
+        created_at: item.createdAt,
+        updated_at: item.createdAt,
+        deleted_at: null,
+      }))
+      setLocalIdeas(unsynced)
+    }
+
+    loadLocalIdeas()
+
+    const handleFocus = () => loadLocalIdeas()
+    window.addEventListener("focus", handleFocus)
+
+    return () => {
+      window.removeEventListener("focus", handleFocus)
+    }
+  }, [userId, setLocalIdeas])
 
   const params = new URLSearchParams()
   if (userId) params.set("status", status)
@@ -46,40 +100,70 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
   const swrKey =
     enabled && userId ? `/api/ideas?${params.toString()}` : null
 
-  const { data, error, isLoading, isValidating } = useSWR(swrKey, fetcher)
+  const isOnline = useOfflineIdeasStore((s) => s.isOnline)
 
-  const rawIdeas: Record<string, unknown>[] = data?.ideas ?? []
-  const ideas = rawIdeas.map(normalizeIdea)
+  const { data, error, isLoading, isValidating } = useSWR(swrKey, fetcher, {
+    revalidateOnFocus: isOnline,
+    revalidateOnReconnect: isOnline,
+    onErrorRetry: (_err, _key, _config, revalidate, { retryCount }) => {
+      if (!navigator.onLine) return
+      if (retryCount >= 3) return
+      setTimeout(() => revalidate({ retryCount }), 5000)
+    },
+  })
+
+  const serverIdeas: Idea[] = (data?.ideas ?? []).map(normalizeIdea)
   const hasMore = (data?.ideas?.length ?? 0) > size * 50
   const isLoadingMore = isValidating && size > 1
 
+  const serverIds = new Set(serverIdeas.map((i) => i.id))
+  const serverContent = new Set(serverIdeas.map((i) => i.content))
+  const mergedIdeas = [
+    ...localIdeas.filter((i) => !serverIds.has(i.id) && !serverContent.has(i.content)),
+    ...serverIdeas,
+  ].toSorted(
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  )
+
   const create = useCallback(
     async (content: string): Promise<{ ok: boolean }> => {
-      if (!userId || !swrKey) return { ok: false }
-      const idea = await insertIdea(content)
-      if (!idea) return { ok: false }
+      const resolvedUserId = userId || (await resolveUserId())
+      if (!resolvedUserId) return { ok: false }
 
-      mutate(
-        swrKey,
-        (current: { ideas: Idea[] } | undefined) => {
-          if (!current) return current
-          return { ...current, ideas: [idea, ...current.ideas] }
-        },
-        { revalidate: false },
-      )
+      const localIdea = await saveIdeaLocally(content, resolvedUserId)
+
+      addLocalIdea(localIdea as unknown as Idea)
+
+      if (isOnline && swrKey) {
+        try {
+          const res = await fetch("/api/ideas", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content: localIdea.content }),
+          })
+
+          if (res.ok) {
+            await markSynced(localIdea.id)
+            removeLocalIdea(localIdea.id)
+            mutate(swrKey)
+          }
+        } catch {
+          // Will retry on next online event
+        }
+      }
 
       return { ok: true }
     },
-    [userId, swrKey],
+    [userId, isOnline, swrKey, addLocalIdea, removeLocalIdea],
   )
 
   const updateStatus = useCallback(
     async (id: string, newStatus: IdeaStatus): Promise<{ ok: boolean }> => {
       if (!swrKey) return { ok: false }
 
-      const wasPinned = ideas.find((i) => i.id === id)?.pinned ?? false
+      const wasPinned = mergedIdeas.find((i) => i.id === id)?.pinned ?? false
 
-      // Optimistically remove or update the idea in the current list
       mutate(
         swrKey,
         (current: { ideas: Idea[] } | undefined) => {
@@ -97,7 +181,6 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
         { revalidate: false },
       )
 
-      // If the idea was pinned and is leaving inbox, remove from pinned list
       if (wasPinned && newStatus !== "inbox") {
         mutate(
           "/api/ideas?pinned=true",
@@ -126,14 +209,13 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
         return { ok: false }
       }
     },
-    [swrKey, ideas, status],
+    [swrKey, mergedIdeas, status],
   )
 
   const updatePin = useCallback(
     async (id: string, pinned: boolean): Promise<{ ok: boolean }> => {
       if (!swrKey) return { ok: false }
 
-      // Optimistically toggle pin in the current list
       mutate(
         swrKey,
         (current: { ideas: Idea[] } | undefined) => {
@@ -148,13 +230,12 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
         { revalidate: false },
       )
 
-      // Update the pinned list
       mutate(
         "/api/ideas?pinned=true",
         (current: { ideas: Idea[] } | undefined) => {
           if (!current) return current
           if (pinned) {
-            const idea = ideas.find((i) => i.id === id)
+            const idea = mergedIdeas.find((i) => i.id === id)
             if (idea) {
               return { ...current, ideas: [{ ...idea, pinned }, ...current.ideas] }
             }
@@ -184,7 +265,7 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
         return { ok: false }
       }
     },
-    [swrKey, ideas],
+    [swrKey, mergedIdeas],
   )
 
   const updateColor = useCallback(
@@ -293,13 +374,14 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
   )
 
   return {
-    ideas,
-    error,
+    ideas: mergedIdeas,
+    error: isOnline ? error : null,
     isLoading,
     isLoadingMore,
     hasMore,
     size,
     setSize,
+    isOnline,
     create,
     updateStatus,
     updatePin,

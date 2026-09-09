@@ -9,7 +9,7 @@ import { useSearchStore } from "@/stores/search-store";
 import { MobileLayout } from "@/components/app/mobile-layout";
 import { IdeasTabs } from "@/components/ideas/ideas-tabs";
 import { QuickCapture } from "@/components/ideas/quick-capture";
-import { optimisticCreateIdea } from "@/lib/create-idea";
+import { useIdeas } from "@/hooks/use-ideas";
 import { BottomNav } from "@/components/app/bottom-nav";
 import { PinnedTray } from "@/components/ideas/pinned-tray";
 
@@ -28,13 +28,21 @@ export function Dashboard({ user }: DashboardProps) {
   const captureOpen = useUIStore((s) => s.captureOpen);
   const setCaptureOpen = useUIStore((s) => s.setCaptureOpen);
   const searchMode = useSearchStore((s) => s.searchMode);
+  const { create: createIdea, isOnline } = useIdeas({
+    status: "inbox",
+  });
 
   const handleCapture = useCallback(async (content: string) => {
-    await optimisticCreateIdea(content)
-  }, [])
+    await createIdea(content);
+  }, [createIdea]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {!isOnline && (
+        <div className="bg-yellow-500/10 text-yellow-600 text-center py-1 text-sm">
+          You're offline — ideas will sync when reconnected
+        </div>
+      )}
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} user={user} />
       <ShortcutHelp />
 

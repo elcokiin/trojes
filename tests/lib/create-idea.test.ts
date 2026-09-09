@@ -3,13 +3,6 @@ import { createIdea, insertIdea } from "@/lib/create-idea"
 
 const executeMock = vi.hoisted(() => vi.fn())
 
-vi.mock("@/lib/offline-identity", () => ({
-  resolveUserId: vi.fn(),
-  setCachedUserId: vi.fn(),
-}))
-
-import { resolveUserId } from "@/lib/offline-identity"
-
 beforeEach(() => {
   vi.clearAllMocks()
   executeMock.mockResolvedValue({ rowsAffected: 1 })
@@ -60,7 +53,10 @@ describe("insertIdea", () => {
 
 describe("createIdea", () => {
   it("posts the content and returns ok with the created idea", async () => {
-    vi.mocked(resolveUserId).mockResolvedValue("user-1")
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ idea: { id: "1", content: "My new idea" } }),
+    })
 
     const result = await createIdea("My new idea")
 
@@ -70,18 +66,19 @@ describe("createIdea", () => {
   })
 
   it("returns ok:false when there is no user id", async () => {
-    vi.mocked(resolveUserId).mockResolvedValue(null)
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+    })
 
     const result = await createIdea("Will not post")
 
     expect(result.ok).toBe(false)
     expect(result.idea).toBeUndefined()
-    expect(executeMock).not.toHaveBeenCalled()
   })
 
   it("returns ok:false when the db write fails and does not throw", async () => {
-    vi.mocked(resolveUserId).mockResolvedValue("user-1")
-    executeMock.mockRejectedValue(new Error("boom"))
+    globalThis.fetch = vi.fn().mockRejectedValue(new Error("boom"))
 
     const result = await createIdea("Will fail")
 

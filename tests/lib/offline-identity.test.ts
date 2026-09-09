@@ -1,12 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { resolveUserId } from "@/lib/offline-identity"
 
-vi.mock("next-auth/react", () => ({
-  getSession: vi.fn(),
-}))
-
-import { getSession } from "next-auth/react"
-
 const localStorageMock = vi.hoisted(() => {
   const store = new Map<string, string>()
   return {
@@ -33,10 +27,9 @@ beforeEach(() => {
 
 describe("resolveUserId", () => {
   it("returns the live session user id and refreshes the cache", async () => {
-    vi.mocked(getSession).mockResolvedValue({
-      user: { id: "live-user" },
-      expires: new Date().toISOString(),
-    } as never)
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve({ user: { id: "live-user" } }),
+    })
 
     const id = await resolveUserId()
 
@@ -48,7 +41,9 @@ describe("resolveUserId", () => {
   })
 
   it("falls back to the cached id when the session fetch resolves null (offline)", async () => {
-    vi.mocked(getSession).mockResolvedValue(null)
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve({ user: null }),
+    })
 
     const id = await resolveUserId()
 
@@ -56,7 +51,7 @@ describe("resolveUserId", () => {
   })
 
   it("falls back to the cached id when the session fetch throws", async () => {
-    vi.mocked(getSession).mockRejectedValue(new Error("network down"))
+    globalThis.fetch = vi.fn().mockRejectedValue(new Error("network down"))
 
     const id = await resolveUserId()
 
@@ -64,7 +59,9 @@ describe("resolveUserId", () => {
   })
 
   it("returns null when both the session and cache are unavailable", async () => {
-    vi.mocked(getSession).mockResolvedValue(null)
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve({ user: null }),
+    })
     localStorageMock.getItem.mockImplementation(() => null)
 
     const id = await resolveUserId()
