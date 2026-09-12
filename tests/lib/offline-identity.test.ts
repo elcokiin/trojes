@@ -1,71 +1,165 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { resolveUserId } from "@/lib/offline-identity"
+import { Effect } from "effect"
+import {
+  OfflineIdentity,
+  OfflineIdentityLive,
+} from "@/lib/outbox/offline-identity"
 
-const localStorageMock = vi.hoisted(() => {
-  const store = new Map<string, string>()
-  return {
-    getItem: vi.fn((key: string) => store.get(key) ?? null),
-    setItem: vi.fn((key: string, value: string) => store.set(key, value)),
-    removeItem: vi.fn((key: string) => store.delete(key)),
-  }
-})
+const STORAGE_KEY = "trojes:offline-user-id"
+
+function runWithLive<A>(effect: Effect.Effect<A, any>): Promise<A> {
+  return Effect.runPromise(effect.pipe(Effect.provide(OfflineIdentityLive)))
+}
 
 beforeEach(() => {
   vi.clearAllMocks()
-  localStorageMock.getItem.mockImplementation((key: string) => {
-    const store = new Map<string, string>([
-      ["trojes:offline-user-id", "cached-user"],
-    ])
-    return store.get(key) ?? null
-  })
-  Object.defineProperty(globalThis, "localStorage", {
-    value: localStorageMock,
-    configurable: true,
-    writable: true,
-  })
+  window.localStorage.setItem(STORAGE_KEY, "cached-user")
 })
 
-describe("resolveUserId", () => {
-  it("returns the live session user id and refreshes the cache", async () => {
-    globalThis.fetch = vi.fn().mockResolvedValue({
-      json: () => Promise.resolve({ user: { id: "live-user" } }),
+describe("OfflineIdentity", () => {
+  describe("resolveUserId", () => {
+    it("returns the live session user id and refreshes the cache", async () => {
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        json: () => Promise.resolve({ user: { id: "live-user" } }),
+      })
+
+      const id = await runWithLive(
+        Effect.gen(function* () {
+          const identity = yield* OfflineIdentity
+          return yield* identity.resolveUserId()
+        }),
+      )
+
+      expect(id).toBe("live-user")
+      expect(window.localStorage.setItem).toHaveBeenCalledWith(
+        STORAGE_KEY,
+        "live-user",
+      )
     })
 
-    const id = await resolveUserId()
+    it("falls back to the cached id when the session fetch resolves null", async () => {
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        json: () => Promise.resolve({ user: null }),
+      })
 
-    expect(id).toBe("live-user")
-    expect(localStorageMock.setItem).toHaveBeenCalledWith(
-      "trojes:offline-user-id",
-      "live-user",
-    )
-  })
+      const id = await runWithLive(
+        Effect.gen(function* () {
+          const identity = yield* OfflineIdentity
+          return yield* identity.resolveUserId()
+        }),
+      )
 
-  it("falls back to the cached id when the session fetch resolves null (offline)", async () => {
-    globalThis.fetch = vi.fn().mockResolvedValue({
-      json: () => Promise.resolve({ user: null }),
+      expect(id).toBe("cached-user")
     })
 
-    const id = await resolveUserId()
+    it("falls back to the cached id when the session fetch throws", async () => {
+      globalThis.fetch = vi.fn().mockRejectedValue(new Error("network down"))
 
-    expect(id).toBe("cached-user")
-  })
+      const id = await runWithLive(
+        Effect.gen(function* () {
+          const identity = yield* OfflineIdentity
+          return yield* identity.resolveUserId()
+        }),
+      )
 
-  it("falls back to the cached id when the session fetch throws", async () => {
-    globalThis.fetch = vi.fn().mockRejectedValue(new Error("network down"))
-
-    const id = await resolveUserId()
-
-    expect(id).toBe("cached-user")
-  })
-
-  it("returns null when both the session and cache are unavailable", async () => {
-    globalThis.fetch = vi.fn().mockResolvedValue({
-      json: () => Promise.resolve({ user: null }),
+      expect(id).toBe("cached-user")
     })
-    localStorageMock.getItem.mockImplementation(() => null)
 
-    const id = await resolveUserId()
+    it("returns null when both the session and cache are unavailable", async () => {
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        json: () => Promise.resolve({ user: null }),
+      })
+      window.localStorage.clear()
 
-    expect(id).toBeNull()
+      const id = await runWithLive(
+        Effect.gen(function* () {
+          const identity = yield* OfflineIdentity
+          return yield* identity.resolveUserId()
+        }),
+      )
+
+      expect(id).toBeNull()
+    })
+  })
+
+  describe("getCachedUserId / setCachedUserId / clearCachedUserId", () => {
+    it("returns the cached user id", async () => {
+      const result = await runWithLive(
+        Effect.gen(function* () {
+          const identity = yield* OfflineIdentity
+          return yield* identity.getCachedUserId()
+        }),
+      )
+
+      expect(result).toBe("cached-user")
+    })
+
+    it("stores and retrieves a user id", async () => {
+      await runWithLive(
+        Effect.gen(function* () {
+          const identity = yield* OfflineIdentity
+          yield* identity.setCachedUserId("new-user")
+        }),
+      )
+
+      expect(window.localStorage.setItem).toHaveBeenCalledWith(
+        STORAGE_KEY,
+        "new-user",
+      )
+
+      const result = await runWithLive(
+        Effect.gen(function* () {
+          const identity = yield* OfflineIdentity
+          return yield* identity.getCachedUserId()
+        }),
+      )
+
+      expect(result).toBe("new-user")
+    })
+
+    it("clears the cached user id", async () => {
+      await runWithLive(
+        Effect.gen(function* () {
+          const identity = yield* OfflineIdentity
+          yield* identity.clearCachedUserId()
+        }),
+      )
+
+      expect(window.localStorage.removeItem).toHaveBeenCalledWith(STORAGE_KEY)
+    })
+  })
+
+  describe("isOnline", () => {
+    it("returns true when online", async () => {
+      Object.defineProperty(navigator, "onLine", {
+        value: true,
+        configurable: true,
+      })
+
+      const result = await runWithLive(
+        Effect.gen(function* () {
+          const identity = yield* OfflineIdentity
+          return yield* identity.isOnline()
+        }),
+      )
+
+      expect(result).toBe(true)
+    })
+
+    it("returns false when offline", async () => {
+      Object.defineProperty(navigator, "onLine", {
+        value: false,
+        configurable: true,
+      })
+
+      const result = await runWithLive(
+        Effect.gen(function* () {
+          const identity = yield* OfflineIdentity
+          return yield* identity.isOnline()
+        }),
+      )
+
+      expect(result).toBe(false)
+    })
   })
 })

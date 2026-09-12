@@ -13,3 +13,22 @@ export class NotFoundError extends Data.TaggedError("NotFoundError")<{
   readonly resource: string
   readonly id?: string
 }> {}
+
+export class NetworkError extends Data.TaggedError("NetworkError")<{
+  readonly cause: unknown
+  readonly url?: string
+}> {}
+
+export class RepositoryError extends Data.TaggedError("RepositoryError")<{
+  readonly cause: unknown
+  readonly operation: string
+}> {}
+
+export class SyncError extends Data.TaggedError("SyncError")<{
+  readonly cause: unknown
+  readonly itemId?: string
+}> {}
+
+export class OfflineIdentityError extends Data.TaggedError("OfflineIdentityError")<{
+  readonly cause: unknown
+}> {}

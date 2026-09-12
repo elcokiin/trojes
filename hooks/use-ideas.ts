@@ -3,10 +3,13 @@
 import { useCallback, useEffect, useState } from "react"
 import useSWR, { mutate } from "swr"
 import { useSession } from "next-auth/react"
-import { saveIdeaLocally, getPendingItems, markSynced } from "@/lib/outbox/idea-repository"
-import { resolveUserId, setCachedUserId } from "@/lib/offline-identity"
-import { initSync } from "@/lib/outbox/sync"
+import { Effect } from "effect"
+import { SaveIdeaLocally, GetPendingItems, MarkSynced } from "@/lib/outbox/idea-repository"
+import { OfflineIdentity } from "@/lib/outbox/offline-identity"
+import { SyncService } from "@/lib/outbox/sync"
+import { AppLayer } from "@/lib/effect-runtime"
 import { useOfflineIdeasStore } from "@/stores/offline-ideas-store"
+import { useEffectRunEffectUnchecked } from "@/hooks/use-effect"
 import type { IdeaStatus, Idea } from "@/types/idea"
 
 interface UseIdeasOptions {
@@ -43,53 +46,81 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
   const { localIdeas, setLocalIdeas, addLocalIdea, removeLocalIdea, setIsOnline } =
     useOfflineIdeasStore()
 
-  useEffect(() => {
-    setIsOnline(navigator.onLine)
+  useEffectRunEffectUnchecked(
+    () =>
+      Effect.gen(function* () {
+        const identity = yield* OfflineIdentity
+        const sync = yield* SyncService
 
-    const handleOnline = () => setIsOnline(true)
-    const handleOffline = () => setIsOnline(false)
+        const online = yield* identity.isOnline()
+        setIsOnline(online)
 
-    window.addEventListener("online", handleOnline)
-    window.addEventListener("offline", handleOffline)
+        yield* Effect.try({
+          try: () => {
+            window.addEventListener("online", () => setIsOnline(true))
+            window.addEventListener("offline", () => setIsOnline(false))
+          },
+          catch: () => {},
+        })
 
-    initSync()
+        yield* sync.initSync()
+      }),
+    [setIsOnline],
+  )
 
-    return () => {
-      window.removeEventListener("online", handleOnline)
-      window.removeEventListener("offline", handleOffline)
-    }
-  }, [setIsOnline])
+  useEffectRunEffectUnchecked(
+    () =>
+      Effect.gen(function* () {
+        if (!userId) return
+
+        const identity = yield* OfflineIdentity
+
+        yield* identity.setCachedUserId(userId)
+
+        const pending = yield* GetPendingItems.execute()
+        const unsynced = pending.map((item) => ({
+          id: item.id,
+          content: item.content,
+          source: "web" as Idea["source"],
+          status: "inbox" as IdeaStatus,
+          tags: null,
+          pinned: false,
+          background_color: null,
+          created_at: item.createdAt,
+          updated_at: item.createdAt,
+          deleted_at: null,
+        }))
+        setLocalIdeas(unsynced)
+      }),
+    [userId, setLocalIdeas],
+  )
 
   useEffect(() => {
     if (!userId) return
 
-    setCachedUserId(userId)
-
-    const loadLocalIdeas = async () => {
-      const pending = await getPendingItems()
-      const unsynced = pending.map((item) => ({
-        id: item.id,
-        content: item.content,
-        source: "web" as Idea["source"],
-        status: "inbox" as IdeaStatus,
-        tags: null,
-        pinned: false,
-        background_color: null,
-        created_at: item.createdAt,
-        updated_at: item.createdAt,
-        deleted_at: null,
-      }))
-      setLocalIdeas(unsynced)
+    const handleFocus = () => {
+      Effect.runPromise(
+        Effect.gen(function* () {
+          const pending = yield* GetPendingItems.execute()
+          const unsynced = pending.map((item) => ({
+            id: item.id,
+            content: item.content,
+            source: "web" as Idea["source"],
+            status: "inbox" as IdeaStatus,
+            tags: null,
+            pinned: false,
+            background_color: null,
+            created_at: item.createdAt,
+            updated_at: item.createdAt,
+            deleted_at: null,
+          }))
+          setLocalIdeas(unsynced)
+        }).pipe(Effect.catch(() => Effect.void)),
+      )
     }
 
-    loadLocalIdeas()
-
-    const handleFocus = () => loadLocalIdeas()
     window.addEventListener("focus", handleFocus)
-
-    return () => {
-      window.removeEventListener("focus", handleFocus)
-    }
+    return () => window.removeEventListener("focus", handleFocus)
   }, [userId, setLocalIdeas])
 
   const params = new URLSearchParams()
@@ -128,32 +159,45 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
 
   const create = useCallback(
     async (content: string): Promise<{ ok: boolean }> => {
-      const resolvedUserId = userId || (await resolveUserId())
-      if (!resolvedUserId) return { ok: false }
+      return Effect.runPromise(
+        Effect.provide(
+          Effect.gen(function* () {
+            const identity = yield* OfflineIdentity
 
-      const localIdea = await saveIdeaLocally(content, resolvedUserId)
+            const resolvedUserId = userId || (yield* identity.resolveUserId())
+            if (!resolvedUserId) return { ok: false }
 
-      addLocalIdea(localIdea as unknown as Idea)
+            const localIdea = yield* SaveIdeaLocally.execute(content, resolvedUserId)
 
-      if (isOnline && swrKey) {
-        try {
-          const res = await fetch("/api/ideas", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ content: localIdea.content }),
-          })
+            addLocalIdea(localIdea as unknown as Idea)
 
-          if (res.ok) {
-            await markSynced(localIdea.id)
-            removeLocalIdea(localIdea.id)
-            mutate(swrKey)
-          }
-        } catch {
-          // Will retry on next online event
-        }
-      }
+            if (isOnline && swrKey) {
+              try {
+                const res = yield* Effect.tryPromise({
+                  try: () =>
+                    fetch("/api/ideas", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ content: localIdea.content }),
+                    }),
+                  catch: () => new Error("Network error"),
+                })
 
-      return { ok: true }
+                if (res.ok) {
+                  yield* MarkSynced.execute(localIdea.id)
+                  removeLocalIdea(localIdea.id)
+                  mutate(swrKey)
+                }
+              } catch {
+                // Will retry on next online event
+              }
+            }
+
+            return { ok: true }
+          }).pipe(Effect.catch(() => Effect.succeed({ ok: false }))),
+          AppLayer,
+        ),
+      )
     },
     [userId, isOnline, swrKey, addLocalIdea, removeLocalIdea],
   )

@@ -1,78 +1,119 @@
+import { Context, Effect, Layer, Schedule } from "effect"
 import type { OutboxItem } from "./db"
-import { markSynced, markFailed, getPendingItems } from "./idea-repository"
+import { GetPendingItems, MarkSynced, MarkFailed } from "./idea-repository"
+import { SyncError, NetworkError, RepositoryError } from "@/lib/errors"
 
 const MAX_RETRIES = 5
-const RETRY_DELAYS = [1000, 2000, 4000, 8000, 16000]
+const RETRY_BASE_DELAY = 1000
 
 let syncing = false
 
-async function syncOutboxItem(item: OutboxItem): Promise<boolean> {
-  try {
-    const res = await fetch("/api/ideas", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        content: item.content,
-        client_id: item.id,
-      }),
+function syncOutboxItem(item: OutboxItem): Effect.Effect<boolean, SyncError | NetworkError | RepositoryError> {
+  return Effect.gen(function* () {
+    const res = yield* Effect.tryPromise({
+      try: () =>
+        fetch("/api/ideas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            content: item.content,
+            client_id: item.id,
+          }),
+        }),
+      catch: (cause) => new NetworkError({ cause, url: "/api/ideas" }),
     })
 
     if (res.ok) {
-      await markSynced(item.id)
+      yield* MarkSynced.execute(item.id)
       return true
     }
 
     if (res.status === 401 || res.status === 403) {
-      await markFailed(item.id, `Auth error: ${res.status}`)
+      yield* MarkFailed.execute(item.id, `Auth error: ${res.status}`)
       return false
     }
 
     if (res.status >= 500) {
-      await markFailed(item.id, `Server error: ${res.status}`)
+      yield* MarkFailed.execute(item.id, `Server error: ${res.status}`)
       return false
     }
 
-    await markFailed(item.id, `Client error: ${res.status}`)
+    yield* MarkFailed.execute(item.id, `Client error: ${res.status}`)
     return false
-  } catch (error) {
-    await markFailed(item.id, `Network error: ${error}`)
-    return false
-  }
+  })
 }
 
-export async function syncOutbox(): Promise<void> {
-  if (syncing) return
-  syncing = true
+function syncItemWithRetry(item: OutboxItem): Effect.Effect<void, SyncError | NetworkError | RepositoryError> {
+  return Effect.gen(function* () {
+    if (item.retryCount >= MAX_RETRIES) {
+      yield* MarkFailed.execute(item.id, "Max retries exceeded")
+      return
+    }
 
-  try {
-    const pending = await getPendingItems()
+    const retrySchedule = Schedule.concat(
+      Schedule.recurs(MAX_RETRIES - item.retryCount),
+      Schedule.exponential(RETRY_BASE_DELAY),
+    )
 
-    const syncPromises = pending.map(async (item) => {
-      if (item.retryCount >= MAX_RETRIES) {
-        await markFailed(item.id, "Max retries exceeded")
-        return
-      }
+    yield* syncOutboxItem(item).pipe(
+      Effect.catch(() => Effect.succeed(false)),
+      Effect.repeat(retrySchedule),
+      Effect.catch(() => Effect.void),
+    )
+  })
+}
 
-      const success = await syncOutboxItem(item)
-      if (!success && item.retryCount < MAX_RETRIES) {
-        const delay = RETRY_DELAYS[Math.min(item.retryCount, RETRY_DELAYS.length - 1)]
-        await new Promise((resolve) => setTimeout(resolve, delay))
-      }
+export interface SyncServiceOps {
+  readonly syncOutbox: () => Effect.Effect<void, SyncError | NetworkError | RepositoryError>
+  readonly initSync: () => Effect.Effect<void, SyncError | NetworkError | RepositoryError>
+}
+
+export const SyncService = Context.Service<SyncServiceOps>("SyncService")
+
+function syncOutboxImpl(): Effect.Effect<void, SyncError | NetworkError | RepositoryError> {
+  return Effect.gen(function* () {
+    if (syncing) return
+    syncing = true
+
+    try {
+      const pending = yield* GetPendingItems.execute()
+
+      yield* Effect.forEach(pending, (item) => syncItemWithRetry(item), {
+        concurrency: "unbounded",
+      })
+    } finally {
+      syncing = false
+    }
+  })
+}
+
+function initSyncImpl(): Effect.Effect<void, SyncError | NetworkError | RepositoryError> {
+  return Effect.gen(function* () {
+    yield* Effect.try({
+      try: () => {
+        window.addEventListener("online", () => {
+          console.log("[Outbox] Back online, syncing...")
+          Effect.runPromise(syncOutboxImpl())
+        })
+      },
+      catch: (cause) => new SyncError({ cause }),
     })
 
-    await Promise.all(syncPromises)
-  } finally {
-    syncing = false
-  }
-}
+    const isOnline = yield* Effect.try({
+      try: () => navigator.onLine,
+      catch: () => new SyncError({ cause: new Error("Failed to check online status") }),
+    })
 
-export function initSync(): void {
-  window.addEventListener("online", () => {
-    console.log("[Outbox] Back online, syncing...")
-    syncOutbox()
+    if (isOnline) {
+      yield* syncOutboxImpl()
+    }
   })
-
-  if (navigator.onLine) {
-    syncOutbox()
-  }
 }
+
+export const SyncServiceLive = Layer.succeed(
+  SyncService,
+  {
+    syncOutbox: syncOutboxImpl,
+    initSync: initSyncImpl,
+  },
+)

@@ -1,4 +1,6 @@
+import { Effect } from "effect"
 import { db, type OutboxItem, type CachedIdea } from "./db"
+import { RepositoryError } from "@/lib/errors"
 
 export async function saveIdeaLocally(
   content: string,
@@ -74,4 +76,46 @@ export async function removeIdea(id: string): Promise<void> {
 
 export async function getCachedIdea(id: string): Promise<CachedIdea | undefined> {
   return db.ideas.get(id)
+}
+
+function wrapRepository<A>(operation: string, fn: () => Promise<A>): Effect.Effect<A, RepositoryError> {
+  return Effect.tryPromise({
+    try: fn,
+    catch: (cause) => new RepositoryError({ cause, operation }),
+  })
+}
+
+export const SaveIdeaLocally = {
+  execute: (content: string, userId: string) =>
+    wrapRepository("saveIdeaLocally", () => saveIdeaLocally(content, userId)),
+}
+
+export const GetCachedIdeas = {
+  execute: (userId: string) =>
+    wrapRepository("getCachedIdeas", () => getCachedIdeas(userId)),
+}
+
+export const MarkSynced = {
+  execute: (id: string) =>
+    wrapRepository("markSynced", () => markSynced(id)),
+}
+
+export const MarkFailed = {
+  execute: (id: string, error: string) =>
+    wrapRepository("markFailed", () => markFailed(id, error)),
+}
+
+export const GetPendingItems = {
+  execute: () =>
+    wrapRepository("getPendingItems", () => getPendingItems()),
+}
+
+export const RemoveIdea = {
+  execute: (id: string) =>
+    wrapRepository("removeIdea", () => removeIdea(id)),
+}
+
+export const GetCachedIdea = {
+  execute: (id: string) =>
+    wrapRepository("getCachedIdea", () => getCachedIdea(id)),
 }
