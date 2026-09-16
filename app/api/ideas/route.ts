@@ -1,7 +1,7 @@
 import { getAuthenticatedUserId } from "@/lib/auth"
 import { NextRequest, NextResponse } from "next/server"
-import * as Effect from "effect/Effect"
 import { createIdea, findIdeas, findPinnedIdeas } from "@/db/ideas"
+import { runEffect } from "@/lib/effect-runtime"
 import type { Idea } from "@/db/schema"
 
 const VALID_STATUSES: Idea["status"][] = ["inbox", "archived", "deleted"]
@@ -12,10 +12,6 @@ function parseIdeaStatus(raw: string | null): NonNullable<Idea["status"]> {
     return status as NonNullable<Idea["status"]>
   }
   return "inbox"
-}
-
-function runEffect<A>(effect: Effect.Effect<A, any, never>): Promise<A> {
-  return Effect.runPromise(effect as Effect.Effect<A, never, never>)
 }
 
 // GET - Fetch all ideas (for web dashboard)

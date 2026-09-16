@@ -1,3 +1,20 @@
+import type { Idea, IdeaStatus } from "@/types/idea"
+
+export function normalizeIdea(row: Record<string, unknown>): Idea {
+  return {
+    id: row.id as string,
+    content: row.content as string,
+    source: row.source as Idea["source"],
+    status: row.status as IdeaStatus,
+    tags: row.tags ? JSON.parse(row.tags as string) : null,
+    pinned: Boolean(row.pinned),
+    background_color: row.background_color as string | null,
+    created_at: row.created_at as string,
+    updated_at: row.updated_at as string,
+    deleted_at: row.deleted_at as string | null,
+  }
+}
+
 interface ColorOption {
   id: string | null;
   name: string;

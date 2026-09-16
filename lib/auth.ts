@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import { type NextRequest } from "next/server"
 import * as Effect from "effect/Effect"
+import { runEffect } from "@/lib/effect-runtime"
 import { getUserIdFromApiKey } from "@/lib/api-keys"
 import {
   accountExists,
@@ -14,10 +15,6 @@ import {
 
 function env(name: string): string {
   return process.env[name] as string
-}
-
-function runEffect<A>(effect: Effect.Effect<A, any, never>): Promise<A> {
-  return Effect.runPromise(effect as Effect.Effect<A, never, never>)
 }
 
 export const authOptions: NextAuthOptions = {

@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import * as Effect from "effect/Effect"
 import { authOptions } from "@/lib/auth"
 import { deleteApiKey, updateApiKeyName } from "@/db/api-keys"
-
-function runEffect<A>(effect: Effect.Effect<A, any, never>): Promise<A> {
-  return Effect.runPromise(effect as Effect.Effect<A, never, never>)
-}
+import { runEffect } from "@/lib/effect-runtime"
 
 export async function PATCH(
   request: NextRequest,

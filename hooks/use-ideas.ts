@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react"
 import useSWR, { mutate } from "swr"
 import { useSession } from "next-auth/react"
 import { Effect } from "effect"
+import { fetcher } from "@/lib/api-client"
+import { normalizeIdea } from "@/lib/ideas"
 import { SaveIdeaLocally, GetPendingItems, MarkSynced } from "@/lib/outbox/idea-repository"
 import { OfflineIdentity } from "@/lib/outbox/offline-identity"
 import { SyncService } from "@/lib/outbox/sync"
@@ -17,27 +19,6 @@ interface UseIdeasOptions {
   search?: string
   enabled?: boolean
 }
-
-function normalizeIdea(row: Record<string, unknown>): Idea {
-  return {
-    id: row.id as string,
-    content: row.content as string,
-    source: row.source as Idea["source"],
-    status: row.status as IdeaStatus,
-    tags: row.tags ? JSON.parse(row.tags as string) : null,
-    pinned: Boolean(row.pinned),
-    background_color: row.background_color as string | null,
-    created_at: row.created_at as string,
-    updated_at: row.updated_at as string,
-    deleted_at: row.deleted_at as string | null,
-  }
-}
-
-const fetcher = (url: string) =>
-  fetch(url).then((r) => {
-    if (!r.ok) throw new Error("Failed to fetch")
-    return r.json()
-  })
 
 export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
   const { data: session } = useSession()

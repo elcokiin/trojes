@@ -1,5 +1,3 @@
-"use client";
-
 import type { RegisterableHotkey } from "@tanstack/react-hotkeys";
 
 export type ShortcutPreferenceKey =

@@ -10,7 +10,6 @@ export default defineConfig({
     setupFiles: ["./tests/setup.ts"],
     include: [
       "tests/**/*.test.{ts,tsx}",
-      "tests/**/*.test.{ts,tsx}",
     ],
     exclude: ["node_modules", ".next", "tests/e2e"],
   },

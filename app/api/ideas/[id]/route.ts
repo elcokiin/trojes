@@ -1,11 +1,7 @@
 import { getAuthenticatedUserId } from "@/lib/auth"
 import { NextRequest, NextResponse } from "next/server"
-import * as Effect from "effect/Effect"
 import { deleteIdea, findIdeaById, updateIdea } from "@/db/ideas"
-
-function runEffect<A>(effect: Effect.Effect<A, any, never>): Promise<A> {
-  return Effect.runPromise(effect as Effect.Effect<A, never, never>)
-}
+import { runEffect } from "@/lib/effect-runtime"
 
 // GET - Fetch single idea
 export async function GET(
