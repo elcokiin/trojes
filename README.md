@@ -147,6 +147,12 @@ curl -X POST "http://localhost:3000/api/ideas" \
 
 ## Roadmap
 
+### Goal — Trojes as a Platform
+
+![Trojes platform architecture](public/screenshots/platform-goal.png)
+
+> Track the full roadmap on [Fizzy](https://app.fizzy.do/6226632/public/boards/cKgowfGq5NpUrGW2NHHywCwz).
+
 ### Goal — Trojes as an Idea Court
 
 Capture is done. The roadmap is the **analysis layer**:

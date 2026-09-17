@@ -2,7 +2,6 @@
 
 import { useState, useLayoutEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
 import { ShortcutKbd } from "@/components/shortcuts/shortcut-kbd"
 import { EditorX } from "@/components/editor/editor-x"
 import { cn } from "@/lib/utils"
@@ -20,7 +19,6 @@ interface QuickCaptureProps {
 
 export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: QuickCaptureProps) {
   const [content, setContent] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [openCount, setOpenCount] = useState(0)
   const [isFocused, setIsFocused] = useState(false)
   const [newIdeaKeyEnabled] = useShortcutPreference("trojes-shortcut-new-idea")
@@ -40,16 +38,12 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
 
   const handleSubmit = useCallback(async () => {
     const currentContent = content
-    if (!currentContent.trim() || isSubmitting) return
+    if (!currentContent.trim()) return
 
-    setIsSubmitting(true)
-    try {
-      await onCapture(currentContent.trim())
-    } finally {
-      setIsSubmitting(false)
-      onOpenChange?.(false)
-    }
-  }, [content, isSubmitting, onCapture, onOpenChange])
+    onOpenChange?.(false)
+    setContent("")
+    onCapture(currentContent.trim()).catch(() => {})
+  }, [content, onCapture, onOpenChange])
 
   const handleEscape = useCallback(() => {
     handleClose()
@@ -97,7 +91,6 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
         onEscape={handleEscape}
         onModEnter={handleModEnter}
         placeholder="What's on your mind? Type **markdown** naturally..."
-        disabled={isSubmitting}
         onFocus={() => setIsFocused(true)}
         onBlur={() => {
           setIsFocused(false)
@@ -118,8 +111,7 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
           type="button"
           onMouseDown={(e) => e.preventDefault()}
           onClick={handleClose}
-          disabled={isSubmitting}
-          className="inline-flex items-center gap-1.5 rounded-md p-2 text-destructive/60 hover:text-destructive hover:bg-destructive/10 transition-all disabled:opacity-30 disabled:pointer-events-none"
+          className="inline-flex items-center gap-1.5 rounded-md p-2 text-destructive/60 hover:text-destructive hover:bg-destructive/10 transition-all"
         >
           <X className="size-4" />
           <ShortcutKbd hotkey={SHORTCUTS.cancelCapture.hotkeys[0]} />
@@ -128,14 +120,10 @@ export function QuickCapture({ onCapture, isOpen, onOpenChange, onClose }: Quick
           type="button"
           onMouseDown={(e) => e.preventDefault()}
           onClick={handleSubmit}
-          disabled={!content.trim() || isSubmitting}
+          disabled={!content.trim()}
           className="inline-flex items-center gap-1.5 rounded-md p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all disabled:opacity-30 disabled:pointer-events-none"
         >
-          {isSubmitting ? (
-            <Spinner className="size-4" />
-          ) : (
-            <Check className="size-4" />
-          )}
+          <Check className="size-4" />
           <ShortcutKbd hotkey={SHORTCUTS.saveCapture.hotkeys[0]} />
         </button>
       </div>
