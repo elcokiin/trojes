@@ -32,9 +32,12 @@ export function Dashboard({ user }: DashboardProps) {
     status: "inbox",
   });
 
-  const handleCapture = useCallback(async (content: string) => {
-    await createIdea(content);
-  }, [createIdea]);
+  const handleCapture = useCallback(
+    async (content: string) => {
+      await createIdea(content);
+    },
+    [createIdea],
+  );
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -43,7 +46,11 @@ export function Dashboard({ user }: DashboardProps) {
           You're offline — ideas will sync when reconnected
         </div>
       )}
-      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} user={user} />
+      <SettingsDialog
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        user={user}
+      />
       <ShortcutHelp />
 
       {isMobile ? (

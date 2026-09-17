@@ -34,3 +34,7 @@ public/swe-worker*
 
 # alchemy
 .alchemy/
+
+
+# AI 
+.opencode
