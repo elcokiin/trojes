@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Trojes — idea flow (online): capture → card render</title>
+<style>
+  :root{
+    --background:#faf7f0; --foreground:#3a322c; --card:#ffffff;
+    --primary:#4d6b41; --primary-soft:#eef2e8; --secondary:#6f9159;
+    --muted:#ece5d8; --muted-foreground:#7a6a5c;
+    --border:#d9ccb7; --destructive:#b04a3a; --accent:#b98a5e;
+    --radius:6px;
+    --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:'Inter',system-ui,-apple-system,Segoe UI,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--background); color:var(--foreground);
+    font-family:var(--sans); font-size:14px; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:32px 20px 64px}
+  header h1{font-size:22px; margin:0 0 6px; letter-spacing:-.01em}
+  header p{margin:0; color:var(--muted-foreground); max-width:70ch}
+  .legend{display:flex; flex-wrap:wrap; gap:8px; margin-top:16px}
+  .chip{
+    display:inline-flex; align-items:center; gap:6px; font-size:11.5px;
+    padding:3px 9px; border:1px solid var(--border); border-radius:999px;
+    background:var(--card); color:var(--muted-foreground);
+  }
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--primary)}
+  .dot.amber{background:var(--accent)} .dot.red{background:var(--destructive)}
+  .dot.mute{background:var(--muted-foreground)}
+
+  .grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:26px; align-items:start}
+  @media (max-width:1000px){ .grid{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:640px){ .grid{grid-template-columns:1fr} }
+
+  .stage{
+    background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+    padding:14px; position:relative; min-height:100%;
+    box-shadow:1px 1px 0 0 rgba(54,45,26,.06);
+  }
+  .stage .num{
+    position:absolute; top:-10px; left:12px; width:22px; height:22px;
+    display:grid; place-items:center; border-radius:50%; background:var(--primary);
+    color:#fff; font-size:11.5px; font-weight:600;
+  }
+  .stage h2{font-size:13.5px; margin:6px 0 3px}
+  .stage .sub{font-size:11px; color:var(--muted-foreground); margin-bottom:10px}
+  .stage ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px}
+  .stage li{font-size:12.5px; padding-left:14px; position:relative}
+  .stage li::before{content:""; position:absolute; left:2px; top:7px; width:4px;height:4px;border-radius:50%;background:var(--border)}
+  code, .file{
+    font-family:var(--mono); font-size:11px; background:var(--muted);
+    padding:1px 5px; border-radius:4px; color:#4a3f36; white-space:nowrap;
+  }
+  .file{background:var(--primary-soft); color:var(--primary); border:1px solid #dbe4d2}
+  .store{background:#fdf3e6; color:#8a5a1f; border-color:#f0dcc0; border:1px solid #f0dcc0}
+
+  .arrow{display:none}
+  @media (min-width:1001px){ .arrow{display:block} }
+  .grid-with-arrows{display:contents}
+
+  /* timeline strip */
+  .timeline{margin-top:34px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px}
+  .timeline h3{margin:0 0 14px; font-size:13.5px}
+  .track{display:grid; grid-template-columns:repeat(3,1fr); gap:0; position:relative}
+  @media (max-width:640px){ .track{grid-template-columns:1fr; gap:14px} }
+  .tick{position:relative; padding:0 12px}
+  .tick .t{font-family:var(--mono); font-size:11px; color:var(--primary); font-weight:600}
+  .tick .body{font-size:12px; margin-top:5px; color:var(--muted-foreground)}
+  .tick .card-tag{display:inline-block; margin-top:7px; font-size:11px; padding:2px 7px; border-radius:999px; border:1px solid var(--border)}
+
+  /* card anatomy */
+  .anatomy{margin-top:34px; display:grid; grid-template-columns:1.15fr 1fr; gap:22px; align-items:start}
+  @media (max-width:820px){ .anatomy{grid-template-columns:1fr} }
+  .anatomy h3{margin:0 0 12px; font-size:13.5px}
+  .anatomy .note{font-size:12px; color:var(--muted-foreground); margin:0 0 14px}
+
+  .idea-card{
+    background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+    padding:10px 40px 12px 16px; position:relative; box-shadow:1px 1px 0 0 rgba(54,45,26,.06);
+    max-width:340px;
+  }
+  .idea-card .content{font-size:12.5px}
+  .idea-card .content strong{color:var(--primary)}
+  .idea-card .meta{display:flex; align-items:center; gap:8px; margin-top:12px; font-size:11px; color:var(--muted-foreground)}
+  .idea-card .more{
+    position:absolute; bottom:9px; right:9px; width:22px;height:22px;
+    display:grid; place-items:center; border-radius:var(--radius); border:1px solid transparent; color:var(--muted-foreground)
+  }
+  .idea-card .pin{position:absolute; top:9px; right:36px; color:var(--muted-foreground); font-size:12px}
+  .idea-card .copy{position:absolute; top:9px; right:12px; color:var(--muted-foreground); font-size:12px}
+  .callout{
+    position:absolute; font-family:var(--mono); font-size:10px; color:var(--primary);
+    background:var(--primary-soft); border:1px solid #dbe4d2; border-radius:4px; padding:1px 5px;
+  }
+
+  table{width:100%; border-collapse:collapse; font-size:12px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden}
+  th,td{text-align:left; padding:8px 10px; border-bottom:1px solid var(--muted); vertical-align:top}
+  th{font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted-foreground); background:#f6f1e7}
+  tr:last-child td{border-bottom:0}
+  td code{white-space:normal}
+
+  .hint{margin-top:26px; border-left:3px solid var(--accent); background:#fdf8ef; padding:10px 14px; border-radius:0 var(--radius) var(--radius) 0; font-size:12.5px}
+  .hint b{color:#8a5a1f}
+  footer{margin-top:30px; font-size:11.5px; color:var(--muted-foreground)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Idea flow — online: capture → card render</h1>
+    <p>What happens between pressing <code>⌘/Ctrl+Enter</code> in <b>QuickCapture</b> and a new <b>IdeaCard</b> showing up in the grid. The card is rendered <b>once</b> from the Zustand store: the local row is inserted first, then replaced in place by the server row when the POST returns.</p>
+    <div class="legend">
+      <span class="chip"><span class="dot"></span>client state</span>
+      <span class="chip"><span class="dot mute"></span>IndexedDB / Zustand</span>
+      <span class="chip"><span class="dot amber"></span>network</span>
+      <span class="chip"><span class="dot red"></span>revalidation / swap</span>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <section class="stage">
+      <span class="num">1</span>
+      <h2>Capture</h2>
+      <div class="sub">keystroke → content string</div>
+      <ul>
+        <li><span class="file">components/ideas/quick-capture.tsx</span><br/>
+          <code>EditorX</code> holds <code>content</code> state. Save via Mod+Enter or the ✓ button.</li>
+        <li><code>handleSubmit()</code> clears the editor, closes it, then calls <code>onCapture(content.trim())</code> fire-and-forget.</li>
+        <li><code>Dashboard</code> / <code>IdeasList</code> pass <code>create</code> from <code>useIdeas()</code> as that handler — nothing is awaited in the UI.</li>
+      </ul>
+    </section>
+
+    <section class="stage">
+      <span class="num">2</span>
+      <h2>Optimistic local persist</h2>
+      <div class="sub">card is renderable immediately</div>
+      <ul>
+        <li><span class="file">hooks/use-ideas.ts</span> → <code>create(content)</code>. Effect runtime, <code>AppLayer</code>, resolves <code>userId</code> (session, else offline identity).</li>
+        <li><code>SaveIdeaLocally</code> <span class="file">lib/outbox/idea-repository.ts</span> → one Dexie txn writes <b>two</b> rows: <code>db.ideas</code> (<code>CachedIdea</code>, <code>isLocal:true</code>) and <code>db.outbox</code> (<code>OutboxItem</code>, <code>status:"pending"</code>).</li>
+        <li>id = <code>crypto.randomUUID()</code> — a <b>client</b> id, not the DB id.</li>
+        <li><code>addPendingIdea(idea)</code> → Zustand <span class="file store">stores/ideas-store.ts</span> inserts it into <code>ideas</code> and marks its id in <code>pendingIds</code>.</li>
+      </ul>
+    </section>
+
+    <section class="stage">
+      <span class="num">3</span>
+      <h2>Server sync</h2>
+      <div class="sub"><code>if (isOnline)</code></div>
+      <ul>
+        <li><code>POST /api/ideas</code> with <code>{ content }</code> — awaited inside the effect, errors swallowed.</li>
+        <li><span class="file">app/api/ideas/route.ts</span>: auth → <code>createIdea()</code> <span class="file">db/ideas.ts</span> → <code>201 { idea }</code>. <code>source:"web"</code>, <code>status:"inbox"</code>, <code>pinned:false</code>.</li>
+        <li>On <code>res.ok</code>: <code>MarkSynced(id)</code> deletes the Dexie idea <b>and</b> outbox row, then <code>markPendingSynced(id, serverIdea)</code> drops the local entry and inserts the server row.</li>
+        <li>No refetch is needed — the POST response carries the row, so the same card re-renders under its DB id.</li>
+      </ul>
+    </section>
+
+    <section class="stage">
+      <span class="num">4</span>
+      <h2>Merge &amp; render</h2>
+      <div class="sub">the store feeds the cards</div>
+      <ul>
+        <li><code>serverIdeas = data.ideas.map(normalizeIdea)</code> — rows pass through <span class="file">lib/ideas.ts</span>, then are <code>upsertIdeas()</code>-ed into the store.</li>
+        <li><code>selectIdeas({ ideas, pendingIds, status, search })</code> filters the store by status, drops the transient content dupe, and applies the search needle.</li>
+        <li><span class="file">components/ideas/ideas-list.tsx</span> splits into 3 columns (<code>col()</code>, <code>lib/column-layout.ts</code>), <code>useAutoAnimate</code> per column, maps <code>&lt;IdeaCard key={idea.id}&gt;</code>.</li>
+        <li><span class="file">components/ideas/idea-card.tsx</span> renders Markdown, source icon, relative date.</li>
+      </ul>
+    </section>
+
+  </div>
+
+  <div class="timeline">
+    <h3>What the user actually sees</h3>
+    <div class="track">
+      <div class="tick">
+        <div class="t">t0 — after submit</div>
+        <div class="body">Dexie write + <code>addPendingIdea</code> land before the network call resolves. Inbox already has one item.</div>
+        <span class="card-tag" style="border-color:#dbe4d2;color:var(--primary)">pending card · in pendingIds</span>
+      </div>
+      <div class="tick">
+        <div class="t">t1 — POST in flight</div>
+        <div class="body">Card shows client UUID as its <code>key</code>; content, “Just now”, and the globe (web) icon are already correct because the local row carries them.</div>
+        <span class="card-tag">same card, no visible change</span>
+      </div>
+      <div class="tick">
+        <div class="t">t2 — res.ok</div>
+        <div class="body">The local entry is replaced by the server row in the store under the new DB id. One commit, no refetch, no duplicate window.</div>
+        <span class="card-tag" style="border-color:#f0dcc0;color:#8a5a1f">server card · DB id</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="anatomy">
+    <div>
+      <h3>Where each visible part comes from</h3>
+      <table>
+        <tr><th>Part of the card</th><th>Source</th></tr>
+        <tr><td>Body text</td><td><code>&lt;ReactMarkdown&gt;</code> + <code>mdComponents</code>/<code>remarkPlugins</code> (<code>lib/markdown-components.tsx</code>)</td></tr>
+        <tr><td>Bottom-left date</td><td><code>formatRelativeDate(created_at)</code> → “Just now” under 1h</td></tr>
+        <tr><td>Source icon</td><td><code>idea.source</code> — <code>web</code> → Globe, <code>telegram</code> → MessageSquare, <code>api</code> → Globe</td></tr>
+        <tr><td>Pin button</td><td>only when <code>status === "inbox"</code>; tinted when <code>idea.pinned</code></td></tr>
+        <tr><td>Card background</td><td><code>idea.background_color</code> → <code>var(--card-color-*)</code>; new ideas are <code>null</code></td></tr>
+        <tr><td>Re-render guard</td><td><code>memo</code> comparator on id, content, status, pinned, color, tags, selected…</td></tr>
+      </table>
+    </div>
+
+    <div>
+      <h3>Anatomy of the new card</h3>
+      <p class="note">Everything below is present at t0, before the server has answered.</p>
+      <div class="idea-card">
+        <span class="pin">📌</span>
+        <span class="copy"></span>
+        <div class="content">
+          Ship **fast capture** first — the editor already renders markdown as you type.
+        </div>
+        <div class="meta">
+          <span>🌐</span>
+          <span>Just now</span>
+        </div>
+        <div class="more">⋯</div>
+        <span class="callout" style="top:-11px;left:16px">created_at = new Date().toISOString()</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint">
+    <b>Why the dupe filter still exists:</b> the local id and the server id are never equal, so identity alone can't catch a brief overlap (for example when background outbox sync lands a row that a fetch also returns). <code>selectIdeas</code> drops a pending entry whose <code>content</code> already exists on a synced row. Trade-off: two different ideas with identical text collapse into one card.
+  </div>
+
+  <footer>
+    Files in play: <code>quick-capture.tsx</code> · <code>use-ideas.ts</code> · <code>ideas-store.ts</code> · <code>outbox/idea-repository.ts</code> · <code>outbox/db.ts</code> · <code>outbox/sync.ts</code> · <code>api/ideas/route.ts</code> · <code>db/ideas.ts</code> · <code>ideas-list.tsx</code> · <code>idea-card.tsx</code>
+  </footer>
+
+</div>
+</body>
+</html>

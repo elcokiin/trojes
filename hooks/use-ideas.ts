@@ -1,16 +1,25 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
-import useSWR, { mutate } from "swr"
+import { useCallback, useEffect, useMemo } from "react"
+import useSWR from "swr"
 import { useSession } from "next-auth/react"
 import { Effect } from "effect"
 import { fetcher } from "@/lib/api-client"
 import { normalizeIdea } from "@/lib/ideas"
-import { SaveIdeaLocally, GetPendingItems, MarkSynced } from "@/lib/outbox/idea-repository"
+import { SaveIdeaLocally } from "@/lib/outbox/idea-repository"
 import { OfflineIdentity } from "@/lib/outbox/offline-identity"
 import { SyncService } from "@/lib/outbox/sync"
+import {
+  IdeasCacheController,
+  hydrateIdeasCache,
+} from "@/lib/outbox/ideas-cache-controller"
 import { AppLayer } from "@/lib/effect-runtime"
-import { useOfflineIdeasStore } from "@/stores/offline-ideas-store"
+import {
+  useIdeasStore,
+  selectIdeas,
+  ideasQueryKey,
+  type IdeasQueryState,
+} from "@/stores/ideas-store"
 import { useEffectRunEffectUnchecked } from "@/hooks/use-effect"
 import type { IdeaStatus, Idea } from "@/types/idea"
 
@@ -20,18 +29,34 @@ interface UseIdeasOptions {
   enabled?: boolean
 }
 
+const PAGE_SIZE = 50
+
 export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
   const { data: session } = useSession()
   const userId = session?.user?.id
-  const [size, setSize] = useState(1)
-  const { localIdeas, setLocalIdeas, addLocalIdea, removeLocalIdea, setIsOnline } =
-    useOfflineIdeasStore()
+
+  const queryKey = ideasQueryKey(status, search)
+  const query = useIdeasStore((s): IdeasQueryState | undefined => s.queries[queryKey])
+  const size = query?.size ?? 1
+  const hasMore = query?.hasMore ?? false
+  const queryLoaded = useIdeasStore((s) => s.loadedQueries.has(queryKey))
+
+  const storeIdeas = useIdeasStore((s) => s.ideas)
+  const pendingIds = useIdeasStore((s) => s.pendingIds)
+  const isOnline = useIdeasStore((s) => s.isOnline)
+
+  const addPendingIdea = useIdeasStore((s) => s.addPendingIdea)
+  const setIsOnline = useIdeasStore((s) => s.setIsOnline)
+  const upsertIdeas = useIdeasStore((s) => s.upsertIdeas)
+  const setQueryHasMore = useIdeasStore((s) => s.setQueryHasMore)
+  const markQueryLoaded = useIdeasStore((s) => s.markQueryLoaded)
 
   useEffectRunEffectUnchecked(
     () =>
       Effect.gen(function* () {
         const identity = yield* OfflineIdentity
         const sync = yield* SyncService
+        const cache = yield* IdeasCacheController
 
         const online = yield* identity.isOnline()
         setIsOnline(online)
@@ -44,6 +69,7 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
           catch: () => {},
         })
 
+        yield* cache.start()
         yield* sync.initSync()
       }),
     [setIsOnline],
@@ -55,66 +81,36 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
         if (!userId) return
 
         const identity = yield* OfflineIdentity
+        const cache = yield* IdeasCacheController
 
         yield* identity.setCachedUserId(userId)
 
-        const pending = yield* GetPendingItems.execute()
-        const unsynced = pending.map((item) => ({
-          id: item.id,
-          content: item.content,
-          source: "web" as Idea["source"],
-          status: "inbox" as IdeaStatus,
-          tags: null,
-          pinned: false,
-          background_color: null,
-          created_at: item.createdAt,
-          updated_at: item.createdAt,
-          deleted_at: null,
-        }))
-        setLocalIdeas(unsynced)
+        // The store's initial state comes from IndexedDB: cached ideas plus
+        // whatever the outbox still owes the server.
+        yield* cache.hydrate(userId)
       }),
-    [userId, setLocalIdeas],
+    [userId],
   )
 
   useEffect(() => {
     if (!userId) return
 
     const handleFocus = () => {
-      Effect.runPromise(
-        Effect.gen(function* () {
-          const pending = yield* GetPendingItems.execute()
-          const unsynced = pending.map((item) => ({
-            id: item.id,
-            content: item.content,
-            source: "web" as Idea["source"],
-            status: "inbox" as IdeaStatus,
-            tags: null,
-            pinned: false,
-            background_color: null,
-            created_at: item.createdAt,
-            updated_at: item.createdAt,
-            deleted_at: null,
-          }))
-          setLocalIdeas(unsynced)
-        }).pipe(Effect.catch(() => Effect.void)),
-      )
+      hydrateIdeasCache(userId).catch(() => {})
     }
 
     window.addEventListener("focus", handleFocus)
     return () => window.removeEventListener("focus", handleFocus)
-  }, [userId, setLocalIdeas])
+  }, [userId])
 
   const params = new URLSearchParams()
   if (userId) params.set("status", status)
   if (search) params.set("search", search)
-  params.set("limit", String(size * 50))
+  params.set("limit", String(size * PAGE_SIZE))
 
-  const swrKey =
-    enabled && userId ? `/api/ideas?${params.toString()}` : null
+  const swrKey = enabled && userId ? `/api/ideas?${params.toString()}` : null
 
-  const isOnline = useOfflineIdeasStore((s) => s.isOnline)
-
-  const { data, error, isLoading, isValidating } = useSWR(swrKey, fetcher, {
+  const { data, error, isLoading: isFetching, isValidating } = useSWR(swrKey, fetcher, {
     revalidateOnFocus: isOnline,
     revalidateOnReconnect: isOnline,
     onErrorRetry: (_err, _key, _config, revalidate, { retryCount }) => {
@@ -124,18 +120,49 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
     },
   })
 
-  const serverIdeas: Idea[] = (data?.ideas ?? []).map(normalizeIdea)
-  const hasMore = (data?.ideas?.length ?? 0) > size * 50
+  const serverIdeas = useMemo(
+    () => ((data?.ideas ?? []) as Record<string, unknown>[]).map(normalizeIdea),
+    [data],
+  )
+
+  // The fetch layer is transport only: its results are pushed into the store,
+  // which is what the rendered cards read from.
+  useEffect(() => {
+    if (!data) return
+    upsertIdeas(serverIdeas)
+    setQueryHasMore(queryKey, (data?.ideas?.length ?? 0) > size * PAGE_SIZE)
+    markQueryLoaded(queryKey)
+  }, [
+    data,
+    serverIdeas,
+    upsertIdeas,
+    setQueryHasMore,
+    markQueryLoaded,
+    queryKey,
+    size,
+  ])
+
+  // Keep showing the skeleton until the response has actually reached the
+  // store, otherwise the list flashes its empty state for one paint.
+  const ideas = useMemo(
+    () => selectIdeas({ ideas: storeIdeas, pendingIds, status, search }),
+    [storeIdeas, pendingIds, status, search],
+  )
+
+  // Ideas hydrated from IndexedDB are real content: render them while SWR
+  // revalidates instead of hiding them behind the skeleton. With nothing
+  // cached, the skeleton still waits for the response so the empty state
+  // cannot flash for one paint.
+  const isLoading =
+    ideas.length === 0 && (isFetching || data != null) && !queryLoaded
+
   const isLoadingMore = isValidating && size > 1
 
-  const serverIds = new Set(serverIdeas.map((i) => i.id))
-  const serverContent = new Set(serverIdeas.map((i) => i.content))
-  const mergedIdeas = [
-    ...localIdeas.filter((i) => !serverIds.has(i.id) && !serverContent.has(i.content)),
-    ...serverIdeas,
-  ].toSorted(
-    (a, b) =>
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  const setSize = useCallback(
+    (next: number | ((current: number) => number)) => {
+      useIdeasStore.getState().setQuerySize(queryKey, next)
+    },
+    [queryKey],
   )
 
   const create = useCallback(
@@ -144,35 +171,24 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
         Effect.provide(
           Effect.gen(function* () {
             const identity = yield* OfflineIdentity
+            const cache = yield* IdeasCacheController
 
             const resolvedUserId = userId || (yield* identity.resolveUserId())
             if (!resolvedUserId) return { ok: false }
 
-            const localIdea = yield* SaveIdeaLocally.execute(content, resolvedUserId)
+            // 1. durable intent in the outbox
+            const localIdea = yield* SaveIdeaLocally.execute(
+              content,
+              resolvedUserId,
+            )
 
-            addLocalIdea(localIdea as unknown as Idea)
+            // 2. store write + message for the IndexedDB controller
+            addPendingIdea(localIdea)
 
-            if (isOnline && swrKey) {
-              try {
-                const res = yield* Effect.tryPromise({
-                  try: () =>
-                    fetch("/api/ideas", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ content: localIdea.content }),
-                    }),
-                  catch: () => new Error("Network error"),
-                })
-
-                if (res.ok) {
-                  yield* MarkSynced.execute(localIdea.id)
-                  removeLocalIdea(localIdea.id)
-                  mutate(swrKey)
-                }
-              } catch {
-                // Will retry on next online event
-              }
-            }
+            // 3. local commit to disk; the controller then hands the outbox to
+            //    the sync service, which pushes it to the server (no-op while
+            //    offline). No network code lives here.
+            yield* cache.flush()
 
             return { ok: true }
           }).pipe(Effect.catch(() => Effect.succeed({ ok: false }))),
@@ -180,42 +196,25 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
         ),
       )
     },
-    [userId, isOnline, swrKey, addLocalIdea, removeLocalIdea],
+    [userId, addPendingIdea],
   )
 
   const updateStatus = useCallback(
     async (id: string, newStatus: IdeaStatus): Promise<{ ok: boolean }> => {
-      if (!swrKey) return { ok: false }
+      const store = useIdeasStore.getState()
+      const previous = store.ideas.find((i) => i.id === id)
+      if (!previous) return { ok: false }
 
-      const wasPinned = mergedIdeas.find((i) => i.id === id)?.pinned ?? false
-
-      mutate(
-        swrKey,
-        (current: { ideas: Idea[] } | undefined) => {
-          if (!current) return current
-          if (newStatus !== status) {
-            return { ...current, ideas: current.ideas.filter((i) => i.id !== id) }
-          }
-          return {
-            ...current,
-            ideas: current.ideas.map((i) =>
-              i.id === id ? { ...i, status: newStatus } : i,
-            ),
-          }
-        },
-        { revalidate: false },
-      )
-
-      if (wasPinned && newStatus !== "inbox") {
-        mutate(
-          "/api/ideas?pinned=true",
-          (current: { ideas: Idea[] } | undefined) => {
-            if (!current) return current
-            return { ...current, ideas: current.ideas.filter((i) => i.id !== id) }
-          },
-          { revalidate: false },
-        )
+      const optimistic: Idea = { ...previous, status: newStatus }
+      if (newStatus === "deleted" && !previous.deleted_at) {
+        optimistic.deleted_at = new Date().toISOString()
+      } else if (
+        (newStatus === "inbox" || newStatus === "archived") &&
+        previous.status === "deleted"
+      ) {
+        optimistic.deleted_at = null
       }
+      store.upsertIdea(optimistic)
 
       try {
         const res = await fetch(`/api/ideas/${id}`, {
@@ -224,52 +223,28 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
           body: JSON.stringify({ status: newStatus }),
         })
         if (!res.ok) {
-          mutate(swrKey)
+          store.upsertIdea(previous)
           return { ok: false }
         }
+        const payload = await res.json().catch(() => null)
+        if (payload?.idea) store.upsertIdea(normalizeIdea(payload.idea))
         return { ok: true }
       } catch (err) {
         console.error("Failed to update status:", err)
-        mutate(swrKey)
+        store.upsertIdea(previous)
         return { ok: false }
       }
     },
-    [swrKey, mergedIdeas, status],
+    [],
   )
 
   const updatePin = useCallback(
     async (id: string, pinned: boolean): Promise<{ ok: boolean }> => {
-      if (!swrKey) return { ok: false }
+      const store = useIdeasStore.getState()
+      const previous = store.ideas.find((i) => i.id === id)
+      if (!previous) return { ok: false }
 
-      mutate(
-        swrKey,
-        (current: { ideas: Idea[] } | undefined) => {
-          if (!current) return current
-          return {
-            ...current,
-            ideas: current.ideas.map((i) =>
-              i.id === id ? { ...i, pinned } : i,
-            ),
-          }
-        },
-        { revalidate: false },
-      )
-
-      mutate(
-        "/api/ideas?pinned=true",
-        (current: { ideas: Idea[] } | undefined) => {
-          if (!current) return current
-          if (pinned) {
-            const idea = mergedIdeas.find((i) => i.id === id)
-            if (idea) {
-              return { ...current, ideas: [{ ...idea, pinned }, ...current.ideas] }
-            }
-            return current
-          }
-          return { ...current, ideas: current.ideas.filter((i) => i.id !== id) }
-        },
-        { revalidate: false },
-      )
+      store.upsertIdea({ ...previous, pinned })
 
       try {
         const res = await fetch(`/api/ideas/${id}`, {
@@ -278,38 +253,28 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
           body: JSON.stringify({ pinned }),
         })
         if (!res.ok) {
-          mutate(swrKey)
-          mutate("/api/ideas?pinned=true")
+          store.upsertIdea(previous)
           return { ok: false }
         }
+        const payload = await res.json().catch(() => null)
+        if (payload?.idea) store.upsertIdea(normalizeIdea(payload.idea))
         return { ok: true }
       } catch (err) {
         console.error("Failed to update pin:", err)
-        mutate(swrKey)
-        mutate("/api/ideas?pinned=true")
+        store.upsertIdea(previous)
         return { ok: false }
       }
     },
-    [swrKey, mergedIdeas],
+    [],
   )
 
   const updateColor = useCallback(
     async (id: string, background_color: string | null): Promise<{ ok: boolean }> => {
-      if (!swrKey) return { ok: false }
+      const store = useIdeasStore.getState()
+      const previous = store.ideas.find((i) => i.id === id)
+      if (!previous) return { ok: false }
 
-      mutate(
-        swrKey,
-        (current: { ideas: Idea[] } | undefined) => {
-          if (!current) return current
-          return {
-            ...current,
-            ideas: current.ideas.map((i) =>
-              i.id === id ? { ...i, background_color } : i,
-            ),
-          }
-        },
-        { revalidate: false },
-      )
+      store.upsertIdea({ ...previous, background_color })
 
       try {
         const res = await fetch(`/api/ideas/${id}`, {
@@ -318,36 +283,28 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
           body: JSON.stringify({ background_color }),
         })
         if (!res.ok) {
-          mutate(swrKey)
+          store.upsertIdea(previous)
           return { ok: false }
         }
+        const payload = await res.json().catch(() => null)
+        if (payload?.idea) store.upsertIdea(normalizeIdea(payload.idea))
         return { ok: true }
       } catch (err) {
         console.error("Failed to update color:", err)
-        mutate(swrKey)
+        store.upsertIdea(previous)
         return { ok: false }
       }
     },
-    [swrKey],
+    [],
   )
 
   const updateContent = useCallback(
     async (id: string, content: string): Promise<{ ok: boolean }> => {
-      if (!swrKey) return { ok: false }
+      const store = useIdeasStore.getState()
+      const previous = store.ideas.find((i) => i.id === id)
+      if (!previous) return { ok: false }
 
-      mutate(
-        swrKey,
-        (current: { ideas: Idea[] } | undefined) => {
-          if (!current) return current
-          return {
-            ...current,
-            ideas: current.ideas.map((i) =>
-              i.id === id ? { ...i, content } : i,
-            ),
-          }
-        },
-        { revalidate: false },
-      )
+      store.upsertIdea({ ...previous, content })
 
       try {
         const res = await fetch(`/api/ideas/${id}`, {
@@ -356,50 +313,47 @@ export function useIdeas({ status, search, enabled = true }: UseIdeasOptions) {
           body: JSON.stringify({ content }),
         })
         if (!res.ok) {
-          mutate(swrKey)
+          store.upsertIdea(previous)
           return { ok: false }
         }
+        const payload = await res.json().catch(() => null)
+        if (payload?.idea) store.upsertIdea(normalizeIdea(payload.idea))
         return { ok: true }
       } catch (err) {
         console.error("Failed to update content:", err)
-        mutate(swrKey)
+        store.upsertIdea(previous)
         return { ok: false }
       }
     },
-    [swrKey],
+    [],
   )
 
   const permanentDelete = useCallback(
     async (id: string): Promise<{ ok: boolean }> => {
-      if (!swrKey) return { ok: false }
+      const store = useIdeasStore.getState()
+      const previous = store.ideas.find((i) => i.id === id)
+      if (!previous) return { ok: false }
 
-      mutate(
-        swrKey,
-        (current: { ideas: Idea[] } | undefined) => {
-          if (!current) return current
-          return { ...current, ideas: current.ideas.filter((i) => i.id !== id) }
-        },
-        { revalidate: false },
-      )
+      store.removeIdea(id)
 
       try {
         const res = await fetch(`/api/ideas/${id}`, { method: "DELETE" })
         if (!res.ok) {
-          mutate(swrKey)
+          store.upsertIdea(previous)
           return { ok: false }
         }
         return { ok: true }
       } catch (err) {
         console.error("Failed to delete idea:", err)
-        mutate(swrKey)
+        store.upsertIdea(previous)
         return { ok: false }
       }
     },
-    [swrKey],
+    [],
   )
 
   return {
-    ideas: mergedIdeas,
+    ideas,
     error: isOnline ? error : null,
     isLoading,
     isLoadingMore,

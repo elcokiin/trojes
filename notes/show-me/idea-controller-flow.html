@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Trojes — the idea controller: store messages → IndexedDB</title>
+<style>
+  :root{
+    --background:#faf7f0; --foreground:#3a322c; --card:#ffffff;
+    --primary:#4d6b41; --primary-soft:#eef2e8; --secondary:#6f9159;
+    --muted:#ece5d8; --muted-foreground:#7a6a5c;
+    --border:#d9ccb7; --destructive:#b04a3a; --accent:#b98a5e;
+    --radius:6px;
+    --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:'Inter',system-ui,-apple-system,Segoe UI,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--background); color:var(--foreground);
+    font-family:var(--sans); font-size:14px; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:32px 20px 64px}
+  header h1{font-size:22px; margin:0 0 6px; letter-spacing:-.01em}
+  header p{margin:0; color:var(--muted-foreground); max-width:82ch}
+  .legend{display:flex; flex-wrap:wrap; gap:8px; margin-top:16px}
+  .chip{
+    display:inline-flex; align-items:center; gap:6px; font-size:11.5px;
+    padding:3px 9px; border:1px solid var(--border); border-radius:999px;
+    background:var(--card); color:var(--muted-foreground);
+  }
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--primary)}
+  .dot.amber{background:var(--accent)} .dot.red{background:var(--destructive)}
+  .dot.mute{background:var(--muted-foreground)}
+
+  .grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:26px; align-items:start}
+  @media (max-width:1000px){ .grid{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:640px){ .grid{grid-template-columns:1fr} }
+
+  .stage{
+    background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+    padding:14px; position:relative; min-height:100%;
+    box-shadow:1px 1px 0 0 rgba(54,45,26,.06);
+  }
+  .stage .num{
+    position:absolute; top:-10px; left:12px; width:22px; height:22px;
+    display:grid; place-items:center; border-radius:50%; background:var(--primary);
+    color:#fff; font-size:11.5px; font-weight:600;
+  }
+  .stage.alt .num{background:var(--accent)}
+  .stage h2{font-size:13.5px; margin:6px 0 3px}
+  .stage .sub{font-size:11px; color:var(--muted-foreground); margin-bottom:10px}
+  .stage ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px}
+  .stage li{font-size:12.5px; padding-left:14px; position:relative}
+  .stage li::before{content:""; position:absolute; left:2px; top:7px; width:4px;height:4px;border-radius:50%;background:var(--border)}
+  .stage.hero{border-color:#c8d6bd; box-shadow:0 0 0 2px var(--primary-soft)}
+  code, .file{
+    font-family:var(--mono); font-size:11px; background:var(--muted);
+    padding:1px 5px; border-radius:4px; color:#4a3f36; white-space:nowrap;
+  }
+  .file{background:var(--primary-soft); color:var(--primary); border:1px solid #dbe4d2}
+
+  .section-head{
+    font-size:15px; margin:34px 0 12px; padding-bottom:6px;
+    border-bottom:1px dashed var(--border);
+  }
+  .section-head small{font-weight:400; color:var(--muted-foreground); font-size:12px; margin-left:8px}
+
+  .codeblock{
+    background:#2e2a25; color:#e8e2d8; border-radius:var(--radius);
+    padding:16px 18px; overflow-x:auto; font-family:var(--mono);
+    font-size:12px; line-height:1.75; margin:0;
+    box-shadow:1px 1px 0 0 rgba(54,45,26,.06);
+  }
+  .codeblock .cm{color:#8f8579; font-style:italic}
+  .codeblock .kw{color:#9fc48a}
+  .codeblock .st{color:#e0b98a}
+  .codeblock .hi{color:#f0d9a8}
+
+  .note{
+    font-size:12.5px; color:var(--muted-foreground); margin:10px 0 0;
+    padding-left:12px; border-left:2px solid var(--border); max-width:92ch;
+  }
+
+  .pipe{
+    display:flex; align-items:stretch; gap:8px; flex-wrap:wrap;
+    background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+    padding:14px; box-shadow:1px 1px 0 0 rgba(54,45,26,.06);
+  }
+  .pipe-node{
+    flex:1 1 130px; min-width:130px; background:var(--background);
+    border:1px solid var(--border); border-radius:var(--radius);
+    padding:10px; display:flex; flex-direction:column; gap:4px;
+  }
+  .pipe-node b{font-size:12.5px}
+  .pipe-node small{font-size:11px; color:var(--muted-foreground); line-height:1.4}
+  .arrow{display:grid; place-items:center; color:var(--muted-foreground); font-size:14px; flex:0 0 auto}
+  @media (max-width:820px){ .arrow{display:none} .pipe-node{flex:1 1 100%} }
+
+  .tbl{
+    width:100%; border-collapse:collapse; background:var(--card);
+    border:1px solid var(--border); border-radius:var(--radius);
+    overflow:hidden; font-size:12.5px;
+    box-shadow:1px 1px 0 0 rgba(54,45,26,.06);
+  }
+  .tbl th{
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.04em;
+    color:var(--muted-foreground); font-weight:600;
+    padding:10px 12px; background:var(--muted); border-bottom:1px solid var(--border);
+  }
+  .tbl td{padding:10px 12px; border-bottom:1px solid #efe8dc; vertical-align:top}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl td:first-child{font-weight:600}
+  .tbl-scroll{overflow-x:auto}
+
+  .callout{
+    margin-top:28px; background:var(--primary-soft); border:1px solid #dbe4d2;
+    border-left:3px solid var(--primary); border-radius:var(--radius);
+    padding:14px 16px; font-size:13px; max-width:104ch;
+  }
+  .callout strong{color:var(--primary)}
+  .callout.warn{background:#fdf3e6; border-color:#f0dcc0; border-left-color:var(--accent)}
+  .callout.warn strong{color:#8a5a1f}
+
+  pre.tree{
+    background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+    padding:16px 18px; font-family:var(--mono); font-size:12px; line-height:1.7;
+    margin:0; overflow-x:auto; box-shadow:1px 1px 0 0 rgba(54,45,26,.06);
+  }
+  pre.tree .cm{color:var(--muted-foreground)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Idea controller — how the store talks to IndexedDB</h1>
+    <p>
+      <code>ideas-cache.ts</code> and <code>ideas-cache-controller.ts</code> are the two halves of
+      one controller. The zustand store is the single source of truth; it announces every change as
+      an <code>IdeasCacheMessage</code> and never touches Dexie. The controller consumes those
+      messages, writes them in one transaction, and acks them. On boot it does the reverse: it reads
+      IndexedDB and seeds the store.
+    </p>
+    <div class="legend">
+      <span class="chip"><span class="dot"></span>Store — source of truth</span>
+      <span class="chip"><span class="dot mute"></span>Queue — messages</span>
+      <span class="chip"><span class="dot amber"></span>Controller + adapter</span>
+      <span class="chip"><span class="dot red"></span>Not persisted</span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="stage hero">
+      <div class="num">1</div>
+      <h2>Source of truth</h2>
+      <div class="sub"><span class="file">stores/ideas-store.ts</span></div>
+      <ul>
+        <li><code>ideas</code>, <code>pendingIds</code> — what cards render</li>
+        <li><code>cacheOutbox: { seq, message }[]</code> — outbound</li>
+        <li><code>ackCacheMessages(seq)</code> — drop written messages</li>
+        <li><code>hydrate()</code> — the only write that emits nothing</li>
+        <li>Knows no Dexie, no network</li>
+      </ul>
+    </div>
+    <div class="stage">
+      <div class="num">2</div>
+      <h2>The queue</h2>
+      <div class="sub">zustand state, not a real channel</div>
+      <ul>
+        <li>Every mutating action appends one message</li>
+        <li><code>seq</code> is monotonic — it is the ack token</li>
+        <li>Nothing is queued until <code>activeUserId</code> is known</li>
+        <li>Survives renders; dies with the tab</li>
+      </ul>
+    </div>
+    <div class="stage alt">
+      <div class="num">3</div>
+      <h2>Controller</h2>
+      <div class="sub"><span class="file">lib/outbox/ideas-cache-controller.ts</span></div>
+      <ul>
+        <li><code>start()</code> — one store subscription, module scope</li>
+        <li><code>flush()</code> — drain, write, ack; serialised by a semaphore</li>
+        <li>after a local write: <code>requestOutboxSync()</code> → permanent store</li>
+        <li><code>hydrate(userId)</code> — flush, then read, then seed</li>
+        <li>Owns ordering; sync owns the network</li>
+      </ul>
+    </div>
+    <div class="stage alt">
+      <div class="num">4</div>
+      <h2>Adapter</h2>
+      <div class="sub"><span class="file">lib/outbox/ideas-cache.ts</span></div>
+      <ul>
+        <li><code>applyCacheMessages()</code> — one Dexie transaction</li>
+        <li><code>readCachedIdeas(userId)</code></li>
+        <li><code>toCachedIdea</code> / <code>toIdea</code> — <code>tags</code> JSON round trip</li>
+        <li>Stateless; no subscription, no locks</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 class="section-head">Steady state <small>the pump</small></h2>
+  <pre class="codeblock"><span class="cm">// any store write: upsertIdea / upsertIdeas / removeIdea / addPendingIdea / markPendingSynced / reset</span>
+store write
+  <span class="hi">→</span> cacheOutbox.push({ seq: ++cacheSeq, message })
+  <span class="hi">→</span> zustand subscriber fires            <span class="cm">// registered once by cache.start()</span>
+  <span class="hi">→</span> Effect.runFork(flush)
+       Semaphore.withPermits(<span class="st">1</span>)             <span class="cm">// a second flush WAITS, it does not skip</span>
+         loop
+           queue      = store.cacheOutbox
+           if empty   → return
+           throughSeq = queue[last].seq
+           ApplyCacheMessages(queue.map(m))  <span class="cm">// ONE Dexie transaction</span>
+           store.ackCacheMessages(throughSeq) <span class="cm">// drop only what was written</span>
+       <span class="cm">// outside the permit</span>
+       if a local idea was persisted → requestOutboxSync()
+         <span class="cm">→ sync.ts POSTs the outbox to /api/ideas, then the store
+         //   emits `replace`, which flushes the permanent row into the cache</span>
+</pre>
+  <p class="note">
+    Messages queued while the write is in flight carry higher <code>seq</code> values, so the ack
+    leaves them for the next pass. A failed write acks nothing, so the messages are still queued —
+    the next store change re-triggers the pump.
+  </p>
+
+  <h2 class="section-head">Message contract <small>4 types, 4 store actions</small></h2>
+  <div class="tbl-scroll">
+    <table class="tbl">
+      <thead>
+        <tr><th>Message</th><th>Payload</th><th>Dexie effect</th><th>Emitted by</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>upsert</code></td>
+          <td><code>userId</code>, <code>ideas[]</code>, <code>local?</code></td>
+          <td><code>db.ideas.bulkPut(rows)</code></td>
+          <td><code>upsertIdea</code>, <code>upsertIdeas</code>, <code>addPendingIdea</code> (<code>local: true</code>)</td>
+        </tr>
+        <tr>
+          <td><code>replace</code></td>
+          <td><code>userId</code>, <code>localId</code>, <code>idea</code></td>
+          <td><code>delete(localId)</code> then <code>put(serverIdea)</code></td>
+          <td><code>markPendingSynced(localId, serverIdea)</code></td>
+        </tr>
+        <tr>
+          <td><code>remove</code></td>
+          <td><code>userId</code>, <code>ideaId</code></td>
+          <td><code>db.ideas.delete(id)</code></td>
+          <td><code>removeIdea(id)</code> (permanent delete, and the optimistic revert path)</td>
+        </tr>
+        <tr>
+          <td><code>clear</code></td>
+          <td><code>userId</code></td>
+          <td><code>where("userId").equals(…).delete()</code></td>
+          <td><code>reset()</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">
+    Order inside one transaction is load-bearing — <code>replace</code> deletes before it writes —
+    which is why the loop is sequential and <code>no-await-in-loop</code> is disabled on purpose in
+    the adapter.
+  </p>
+
+  <h2 class="section-head">Flow A <small>create — local first, then server</small></h2>
+  <pre class="codeblock">QuickCapture
+  create(content)                          <span class="cm">hooks/use-ideas.ts — no fetch in here</span>
+    SaveIdeaLocally(content, userId)       <span class="hi">── outbox row ONLY</span> <span class="cm">(durable intent)</span>
+    store.addPendingIdea(localIdea)        <span class="hi">── store write</span> + message <span class="st">#1</span> upsert(local)
+      <span class="cm">→ card renders immediately, marked pending</span>
+    cache.flush()                          <span class="hi">── local commit</span>
+      ApplyCacheMessages([#1])             <span class="cm">→ db.ideas row written by the controller</span>
+      ack(#1)
+      tap → requestOutboxSync()            <span class="hi">── local save done, now the permanent store</span>
+        syncOutbox()
+          GetPendingItems()
+          POST /api/ideas { content, client_id: localId }
+            ok  → MarkSynced(localId)          <span class="cm">→ outbox row deleted</span>
+                  store.markPendingSynced()    <span class="hi">── store write</span> + message <span class="st">#2</span> replace
+                    <span class="cm">→ local row swapped for the server row (same id)</span>
+            offline → returns before reading the outbox; stays pending
+</pre>
+  <p class="note">
+    <code>create()</code> returns once the idea is on disk — the server round trip is
+    <code>requestOutboxSync</code>'s job, triggered by the controller. There is no separate online path:
+    offline captures are the same code with <code>syncOutbox</code> no-op'ing.
+  </p>
+
+  <h2 class="section-head">Flow B <small>offline create, then reconnect</small></h2>
+  <pre class="codeblock">create(content) while <span class="st">navigator.onLine === false</span>
+  SaveIdeaLocally → db.outbox (status: <span class="st">"pending"</span>)
+  store.addPendingIdea → message upsert(local)
+  cache.flush → db.ideas row
+  tap → requestOutboxSync → syncOutbox → <span class="hi">offline: returns immediately</span>
+    <span class="cm">→ nothing marked failed, retry budget untouched</span>
+
+window <span class="st">"online"</span> → requestOutboxSync()
+  SyncService.syncOutbox()                 <span class="cm">lib/outbox/sync.ts</span>
+    GetPendingItems()                      <span class="cm">→ outbox where status === "pending"</span>
+      POST /api/ideas { content, client_id }
+        ok    → MarkSynced(id)             <span class="cm">→ outbox row deleted</span>
+                store.markPendingSynced()  <span class="hi">── store write</span> + message replace
+        401   → MarkFailed(id, "Auth error")   <span class="cm">→ no retry, cannot fix itself</span>
+        5xx / network → bounded backoff retry, then MarkFailed
+</pre>
+  <p class="note">
+    Hydration reads the outbox with <code>anyOf("pending","failed")</code>, so a failed idea keeps
+    rendering as pending instead of disappearing, and <code>outboxItemToIdea</code> rebuilds the card if
+    the <code>db.ideas</code> write never landed. <code>syncOutbox</code> still only retries
+    <code>pending</code> rows.
+  </p>
+
+  <h2 class="section-head">Flow C <small>hydrate: IndexedDB → store</small></h2>
+  <pre class="codeblock">useIdeas effect <span class="st">[userId]</span>                     <span class="cm">hooks/use-ideas.ts</span>
+  identity.setCachedUserId(userId)
+  cache.hydrate(userId)                    <span class="cm">IdeasCacheController</span>
+    flush()                                <span class="cm">← drain the queue FIRST</span>
+    ReadCachedIdeas(userId)                <span class="cm">→ every cached row for this user</span>
+    GetUnsyncedItems()                     <span class="cm">→ outbox pending + failed</span>
+    store.hydrate({ userId, ideas, unsyncedIds })
+                                           <span class="hi">── store write, NO message</span>
+      same user  → merge into whatever SWR already fetched
+      new user   → replace the list outright
+
+window <span class="st">"focus"</span> → hydrateIdeasCache(userId)  <span class="cm">same path, picks up external tabs</span>
+</pre>
+  <div class="callout">
+    <strong>Why flush before read.</strong> Anything still queued is newer than what is on disk. If
+    <code>hydrate</code> read first, the write would land afterwards and the just-read snapshot
+    would be stale — and <code>hydrate</code> would then seed the store from stale rows. The
+    semaphore is what makes "flush, then read" trustworthy: a concurrent flush waits its turn
+    instead of returning early.
+  </div>
+
+  <h2 class="section-head">Who owns what</h2>
+  <div class="tbl-scroll">
+    <table class="tbl">
+      <thead><tr><th>Piece</th><th>Owns</th><th>Deliberately knows nothing about</th></tr></thead>
+      <tbody>
+        <tr><td><span class="file">stores/ideas-store.ts</span></td><td>the list, pending set, query metadata, the message queue and its <code>seq</code></td><td>Dexie, IndexedDB, fetch</td></tr>
+        <tr><td><span class="file">ideas-cache.ts</span></td><td>message → Dexie mapping, the transaction, reads, <code>tags</code> JSON</td><td>subscriptions, locks, ordering, the store</td></tr>
+        <tr><td><span class="file">ideas-cache-controller.ts</span></td><td>subscription, write lock, ack, flush-before-read ordering</td><td>row shapes — it only calls the adapter</td></tr>
+        <tr><td><span class="file">idea-repository.ts</span></td><td>the outbox: durable local intent, <code>outboxItemToIdea</code>, mark synced/failed, pending + unsynced reads</td><td>the store's list, <code>db.ideas</code> writes</td></tr>
+        <tr><td><span class="file">sync.ts</span></td><td>POST-ing outbox rows, bounded backoff, calling the store on success, <code>requestOutboxSync()</code></td><td>IndexedDB internals, when to schedule itself</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="section-head">Not persisted <small>local-only store state</small></h2>
+  <div class="pipe">
+    <div class="pipe-node">
+      <b><code>queries</code></b>
+      <small>per-key <code>size</code> / <code>hasMore</code> — rebuilt by scrolling</small>
+    </div>
+    <div class="arrow">·</div>
+    <div class="pipe-node">
+      <b><code>loadedQueries</code></b>
+      <small>gates the skeleton; meaningless after a reload</small>
+    </div>
+    <div class="arrow">·</div>
+    <div class="pipe-node">
+      <b><code>isOnline</code></b>
+      <small>re-read from <code>navigator.onLine</code> on boot</small>
+    </div>
+    <div class="arrow">·</div>
+    <div class="pipe-node">
+      <b><code>hydrate()</code></b>
+      <small>the one write with no message — it is the read side</small>
+    </div>
+  </div>
+
+  <h2 class="section-head">Files</h2>
+  <pre class="tree">lib/outbox/
+├── db.ts                     <span class="cm"># Dexie v1: ideas + outbox tables</span>
+├── idea-repository.ts        <span class="cm"># outbox: SaveIdeaLocally, MarkSynced/Failed, reads</span>
+├── ideas-cache.ts            <span class="cm"># adapter  — messages → Dexie</span>
+├── ideas-cache-controller.ts <span class="cm"># controller — pump, lock, hydrate</span>
+├── offline-identity.ts       <span class="cm"># cached user id + navigator.onLine</span>
+└── sync.ts                   <span class="cm"># online listener → POST pending rows</span>
+stores/
+└── ideas-store.ts            <span class="cm"># source of truth + cacheOutbox</span>
+</pre>
+
+  <div class="callout">
+    <strong>Short version.</strong> The store is the only source of truth and the only writer of
+    <code>ideas</code>. It publishes typed messages; the controller applies them to IndexedDB and
+    acks by <code>seq</code>. A capture is durable as soon as its outbox row exists, and once the
+    controller has written it locally the controller asks the sync service to push it to the
+    permanent store. On boot the controller reads IndexedDB and seeds the store. Rendering never
+    reads Dexie, and persistence never reads the store's list.
+  </div>
+
+  <div class="callout warn">
+    <strong>Two things this flow needed.</strong> <code>saveIdeaLocally</code> writes only
+    <code>db.outbox</code>, so <code>db.ideas</code> has exactly one writer (the controller) and the
+    outbox row is what survives a crash mid-capture. And <code>syncItemWithRetry</code> uses a
+    <em>bounded</em> schedule — the previous <code>Effect.repeat</code> with
+    <code>Schedule.concat(recurs(n), exponential)</code> never finished, so every capture re-POSTed
+    forever, the <code>syncing</code> guard stayed stuck on, and (before <code>client_id</code> was
+    honoured) each repeat created a duplicate idea.
+  </div>
+</div>
+</body>
+</html>

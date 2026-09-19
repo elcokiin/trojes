@@ -23,3 +23,8 @@ export class SyncError extends Data.TaggedError("SyncError")<{
 export class OfflineIdentityError extends Data.TaggedError("OfflineIdentityError")<{
   readonly cause: unknown
 }> {}
+
+export class IdeasCacheError extends Data.TaggedError("IdeasCacheError")<{
+  readonly cause: unknown
+  readonly operation: string
+}> {}

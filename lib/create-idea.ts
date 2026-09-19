@@ -1,7 +1,6 @@
-import { mutate } from "swr";
+import { normalizeIdea } from "@/lib/ideas";
+import { useIdeasStore } from "@/stores/ideas-store";
 import type { Idea } from "@/types/idea";
-
-const INBOX_RE = /^\/api\/ideas\?.*status=inbox/;
 
 export async function insertIdea(content: string): Promise<Idea | null> {
   const trimmed = content.trim();
@@ -17,10 +16,9 @@ export async function insertIdea(content: string): Promise<Idea | null> {
     if (!res.ok) return null;
 
     const { idea } = await res.json();
-    return {
-      ...idea,
-      pinned: Boolean(idea.pinned),
-    };
+    const normalized = normalizeIdea(idea);
+    useIdeasStore.getState().upsertIdea(normalized);
+    return normalized;
   } catch (error) {
     console.error("Failed to create idea:", error);
     return null;
@@ -38,11 +36,5 @@ export async function createIdea(
 export async function optimisticCreateIdea(
   content: string,
 ): Promise<{ ok: boolean; idea?: Idea }> {
-  const idea = await insertIdea(content);
-  if (!idea) return { ok: false };
-
-  // Revalidate inbox lists so the new idea appears
-  mutate((key) => typeof key === "string" && INBOX_RE.test(key));
-
-  return { ok: true, idea };
+  return createIdea(content);
 }
