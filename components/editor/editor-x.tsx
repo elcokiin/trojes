@@ -268,7 +268,7 @@ export const EditorX = forwardRef<EditorXHandle, EditorXProps>(function EditorX(
         <RichTextPlugin
           contentEditable={
             <LexicalContentEditable
-              className="relative block overflow-auto px-4 py-2 focus:outline-none text-base leading-normal"
+              className="relative block h-full overflow-auto px-4 py-2 focus:outline-none text-base leading-normal"
               style={{ minHeight: "1lh" }}
               aria-placeholder={placeholder}
               onFocus={onFocus}
