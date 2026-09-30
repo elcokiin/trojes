@@ -11,7 +11,8 @@ scannable.
 - `branding/`: reusable Trojes identity elements.
 - `ideas/`: idea capture, idea cards, idea lists, and idea workflow UI.
 - `providers/`: client providers and browser-side app bootstrapping.
-- `settings/`: settings dialog sections and settings-owned controls.
+- `settings/`: the standalone `/settings` route, the settings dialog, shared
+  settings sections, and settings-owned controls.
 - `shortcuts/`: keyboard shortcut display and help surfaces.
 - `ui/`: shadcn/ui components and low-level primitives only.
 

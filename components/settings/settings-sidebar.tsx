@@ -3,13 +3,7 @@
 import { Key, Keyboard, Palette, Smartphone, User } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-
-type SettingsSection =
-  | "appearance"
-  | "keyboard"
-  | "api"
-  | "install"
-  | "account";
+import type { SettingsSection } from "@/components/settings/settings-sections";
 
 const sidebarItems = [
   {

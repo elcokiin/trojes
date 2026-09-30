@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
 import { ShortcutHelp } from "@/components/shortcuts/shortcut-help";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useMobileSettingsRoute } from "@/hooks/use-mobile-settings-route";
 import { useUIStore } from "@/stores/ui-store";
 import { useSearchStore } from "@/stores/search-store";
 import { MobileLayout } from "@/components/app/mobile-layout";
@@ -23,6 +24,7 @@ interface DashboardProps {
 
 export function Dashboard({ user }: DashboardProps) {
   const isMobile = useIsMobile();
+  useMobileSettingsRoute();
   const settingsOpen = useUIStore((s) => s.settingsOpen);
   const setSettingsOpen = useUIStore((s) => s.setSettingsOpen);
   const captureOpen = useUIStore((s) => s.captureOpen);
@@ -46,11 +48,13 @@ export function Dashboard({ user }: DashboardProps) {
           You're offline — ideas will sync when reconnected
         </div>
       )}
-      <SettingsDialog
-        open={settingsOpen}
-        onOpenChange={setSettingsOpen}
-        user={user}
-      />
+      {!isMobile && (
+        <SettingsDialog
+          open={settingsOpen}
+          onOpenChange={setSettingsOpen}
+          user={user}
+        />
+      )}
       <ShortcutHelp />
 
       {isMobile ? (

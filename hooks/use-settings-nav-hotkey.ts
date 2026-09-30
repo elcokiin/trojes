@@ -4,13 +4,7 @@ import { useMemo, useRef } from "react";
 import { useHotkeys } from "@tanstack/react-hotkeys";
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences";
 import { SHORTCUTS } from "@/lib/shortcuts";
-
-type SettingsSection =
-  | "appearance"
-  | "keyboard"
-  | "api"
-  | "install"
-  | "account";
+import type { SettingsSection } from "@/components/settings/settings-sections";
 
 /**
  * Order matches the sidebar rendering order in SettingsSidebar.

@@ -18,17 +18,9 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 import { DialogCloseButton } from "@/components/ui/custom/dialog-close-button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { SettingsHeader } from "@/components/settings/settings-header";
-import { SettingsSidebar } from "@/components/settings/settings-sidebar";
-import { SettingsAppearance } from "@/components/settings/settings-appearance";
-import { SettingsAccount } from "@/components/settings/settings-account";
-import { ApiKeysManager } from "@/components/settings/api-keys-manager";
-import { PwaInstallManager } from "@/components/settings/pwa-install-manager";
-import { SettingsKeyboard } from "@/components/settings/settings-keyboard";
-
-const SECTIONS = ["appearance", "keyboard", "api", "install", "account"] as const;
+import { SettingsPanel } from "@/components/settings/settings-panel";
+import { SECTIONS } from "@/components/settings/settings-sections";
 
 interface SettingsDialogProps {
   open?: boolean;
@@ -153,41 +145,19 @@ export function SettingsDialog({
               : "h-[min(720px,calc(100vh-2rem))] sm:max-w-4xl",
         )}
       >
-        <SettingsHeader
+        <SettingsPanel
+          activeSection={activeSection}
+          onSectionChange={setSection}
+          isMobile={isMobile}
+          isInstalled={isInstalled}
           isExpanded={isExpanded}
           setIsExpanded={setIsExpanded}
-          isMobile={isMobile}
           onClose={() => handleOpenChange(false)}
+          user={user}
         />
         {!isMobile && (
           <DialogCloseButton onClick={() => handleOpenChange(false)} />
         )}
-        <div
-          className={cn(
-            "flex min-h-0 flex-1 flex-col md:flex-row",
-            isExpanded ? "overflow-visible" : "overflow-hidden",
-          )}
-        >
-          <SettingsSidebar
-            section={activeSection}
-            onSectionChange={setSection}
-            isMobile={isMobile}
-            isInstalled={isInstalled}
-          />
-          <div className={cn("min-h-0 flex-1 bg-background", isExpanded && "min-h-dvh")}>
-            <ScrollArea className={cn("h-full", isExpanded && "h-dvh")}>
-              <section className="flex flex-col gap-6 p-6">
-                {activeSection === "appearance" && <SettingsAppearance />}
-                {!isMobile && activeSection === "keyboard" && <SettingsKeyboard />}
-                {activeSection === "api" && <ApiKeysManager />}
-                {isMobile && activeSection === "install" && !isInstalled && (
-                  <PwaInstallManager />
-                )}
-                {activeSection === "account" && <SettingsAccount user={user} />}
-              </section>
-            </ScrollArea>
-          </div>
-        </div>
       </DialogContent>
     </Dialog>
   );

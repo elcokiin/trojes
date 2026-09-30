@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useHotkeys } from "@tanstack/react-hotkeys";
 import { useUIStore } from "@/stores/ui-store";
 import type { UIStore } from "@/stores/ui-store";
 import { useQueryState, parseAsStringLiteral } from "nuqs";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useThemeToggle } from "@/hooks/use-theme-toggle";
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences";
 import { SHORTCUTS } from "@/lib/shortcuts";
@@ -44,6 +46,8 @@ export function useGlobalHotkeys() {
   const setSettingsOpen = useUIStore((s) => s.setSettingsOpen);
   const settingsOpen = useUIStore((s) => s.settingsOpen);
   const togglePinnedTray = useUIStore((s) => s.togglePinnedTray);
+  const router = useRouter();
+  const isMobile = useIsMobile();
   const { toggleTheme, resolvedTheme } = useThemeToggle();
   const [keyboardEnabled] = useShortcutPreference("trojes-keyboard-nav");
   const [settingsKeyEnabled] = useShortcutPreference(
@@ -72,7 +76,13 @@ export function useGlobalHotkeys() {
       })),
       ...SHORTCUTS.settings.hotkeys.map((hotkey) => ({
         hotkey,
-        callback: () => setSettingsOpen(!settingsOpen),
+        callback: () => {
+          if (isMobile) {
+            router.push("/settings?section=api");
+          } else {
+            setSettingsOpen(!settingsOpen);
+          }
+        },
         options: {
           enabled: settingsKeyEnabled && (noOverlays || settingsOpen),
         },

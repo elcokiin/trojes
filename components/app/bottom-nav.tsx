@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Pin, Search, Settings, X } from "lucide-react";
 import { Kbd } from "@/components/ui/kbd";
 import { useShortcutPreference } from "@/hooks/use-shortcut-preferences";
@@ -10,6 +11,7 @@ import { useUIStore } from "@/stores/ui-store";
 import { useQueryState } from "nuqs";
 
 export function BottomNav() {
+  const router = useRouter();
   const isMobile = useIsMobile();
   const [showShortcutHints] = useShortcutPreference("trojes-shortcut-hints");
   const [settingsKeyEnabled] = useShortcutPreference(
@@ -148,7 +150,7 @@ export function BottomNav() {
           </button>
           <button
             type="button"
-            onClick={() => setSettingsOpen(true)}
+            onClick={() => router.push("/settings?section=api")}
             className="flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer px-4"
           >
             <Settings className="size-4" />

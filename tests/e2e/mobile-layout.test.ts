@@ -48,4 +48,43 @@ test.describe("Mobile layout", () => {
     const tabs = page.locator('[role="tablist"]')
     await expect(tabs).toBeVisible()
   })
+
+  test("Write tile on /mobile opens the capture page", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 })
+    await page.goto("/mobile")
+    await page.waitForLoadState("networkidle")
+
+    await page.getByRole("button", { name: "Write" }).click()
+
+    await expect(page).toHaveURL(/\/mobile\/capture\?from=mobile/)
+    await expect(page.getByText("Create")).toBeVisible()
+  })
+
+  test("quick capture button on mobile dashboard opens the capture page", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 375, height: 812 })
+    const bottomNav = page.locator('[data-slot="bottom-nav"]')
+    await expect(bottomNav).toBeVisible()
+
+    await page.getByText("Capture a new idea...").click()
+
+    await expect(page).toHaveURL(/\/mobile\/capture\?from=dashboard/)
+    await expect(page.getByText("Create")).toBeVisible()
+  })
+
+  test("cancel on the capture page returns to the previous page", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 375, height: 812 })
+    await page.goto("/mobile")
+    await page.waitForLoadState("networkidle")
+
+    await page.getByRole("button", { name: "Write" }).click()
+    await expect(page).toHaveURL(/\/mobile\/capture/)
+
+    await page.getByText("Cancel").click()
+
+    await expect(page).toHaveURL(/\/mobile$/)
+  })
 })

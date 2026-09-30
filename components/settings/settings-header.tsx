@@ -14,6 +14,7 @@ interface SettingsHeaderProps {
   isExpanded: boolean;
   setIsExpanded: (expanded: boolean) => void;
   isMobile: boolean;
+  showBackButton?: boolean;
   onClose: () => void;
 }
 
@@ -21,12 +22,14 @@ export function SettingsHeader({
   isExpanded,
   setIsExpanded,
   isMobile,
+  showBackButton,
   onClose,
 }: SettingsHeaderProps) {
+  const showBack = showBackButton ?? isMobile;
   return (
     <DialogHeader className="shrink-0 border-b px-6 py-4">
       <div className="flex items-start gap-3 pr-8">
-        {isMobile ? (
+        {showBack ? (
           <Button
             variant="ghost"
             size="icon"
