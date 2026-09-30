@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
 import { ShortcutHelp } from "@/components/shortcuts/shortcut-help";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile, useIsMobileResolved } from "@/hooks/use-mobile";
 import { useMobileSettingsRoute } from "@/hooks/use-mobile-settings-route";
 import { useUIStore } from "@/stores/ui-store";
 import { useSearchStore } from "@/stores/search-store";
@@ -13,6 +13,7 @@ import { QuickCapture } from "@/components/ideas/quick-capture";
 import { useIdeas } from "@/hooks/use-ideas";
 import { BottomNav } from "@/components/app/bottom-nav";
 import { PinnedTray } from "@/components/ideas/pinned-tray";
+import { Spinner } from "@/components/ui/spinner";
 
 interface DashboardProps {
   user: {
@@ -24,6 +25,7 @@ interface DashboardProps {
 
 export function Dashboard({ user }: DashboardProps) {
   const isMobile = useIsMobile();
+  const isMobileResolved = useIsMobileResolved();
   useMobileSettingsRoute();
   const settingsOpen = useUIStore((s) => s.settingsOpen);
   const setSettingsOpen = useUIStore((s) => s.setSettingsOpen);
@@ -40,6 +42,14 @@ export function Dashboard({ user }: DashboardProps) {
     },
     [createIdea],
   );
+
+  if (!isMobileResolved) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Spinner className="size-6 text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

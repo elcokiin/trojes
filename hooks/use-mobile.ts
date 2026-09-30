@@ -2,6 +2,16 @@ import * as React from "react";
 
 const MOBILE_BREAKPOINT = 768;
 
+export function useIsMobileResolved() {
+  const [resolved, setResolved] = React.useState(false);
+
+  React.useLayoutEffect(() => {
+    setResolved(true);
+  }, []);
+
+  return resolved;
+}
+
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState(false);
 
