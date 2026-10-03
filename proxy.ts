@@ -1,10 +1,11 @@
 import { getToken } from "next-auth/jwt"
-import { NextResponse, userAgent } from "next/server"
+import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 export async function proxy(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
   const isLoggedIn = !!token
+  const isLandingPage = req.nextUrl.pathname === "/"
   const isLoginPage = req.nextUrl.pathname === "/login"
   const isAuthRoute = req.nextUrl.pathname.startsWith("/api/auth")
   const isApiRoute = req.nextUrl.pathname.startsWith("/api/ideas")
@@ -15,17 +16,15 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next()
   }
 
-  if (req.nextUrl.pathname === "/" && isLoggedIn) {
-    const { device } = userAgent(req)
-    const target = device.type === "mobile" ? "/mobile" : "/dashboard"
-    return NextResponse.redirect(new URL(target, req.url))
+  if (isLandingPage && isLoggedIn) {
+    return NextResponse.redirect(new URL("/dashboard", req.url))
   }
 
   if (isLoginPage && isLoggedIn) {
     return NextResponse.redirect(new URL("/", req.url))
   }
 
-  if (!isLoggedIn && !isLoginPage) {
+  if (!isLoggedIn && !isLoginPage && !isLandingPage) {
     return NextResponse.redirect(new URL("/login", req.url))
   }
 

@@ -2,6 +2,7 @@
 
 import { use3DButton } from "@/hooks/use-3d-button";
 import { Button } from "@/components/ui/button";
+import type { SiteLocale } from "@/lib/site-locale";
 
 export const GOOGLE_BTN_ID = "gbtn";
 export const GOOGLE_BTN_SELECTOR = `#${GOOGLE_BTN_ID}`;
@@ -37,8 +38,15 @@ function GoogleIcon() {
   );
 }
 
-export function GoogleSignInButton({ onClick }: { onClick?: () => void }) {
+export function GoogleSignInButton({
+  locale,
+  onClick,
+}: {
+  locale: SiteLocale;
+  onClick?: () => void;
+}) {
   const { btnRef, handlers } = use3DButton();
+  const label = locale === "es" ? "Continuar con Google" : "Continue with Google";
 
   return (
     <>
@@ -49,7 +57,7 @@ export function GoogleSignInButton({ onClick }: { onClick?: () => void }) {
           size="lg"
         >
           <GoogleIcon />
-          Continue with Google
+          {label}
         </Button>
       </div>
       <div className="hidden md:block">
@@ -195,6 +203,7 @@ export function GoogleSignInButton({ onClick }: { onClick?: () => void }) {
         <button
           ref={btnRef}
           id={GOOGLE_BTN_ID}
+          aria-label={label}
           onPointerDown={handlers.onPointerDown}
           onPointerUp={handlers.onPointerUp}
           onPointerMove={handlers.onPointerMove}
@@ -446,7 +455,7 @@ export function GoogleSignInButton({ onClick }: { onClick?: () => void }) {
                   fill="var(--text)"
                   textAnchor="middle"
                 >
-                  CONTINUE WITH GOOGLE
+                  {locale === "es" ? "CONTINUAR CON GOOGLE" : "CONTINUE WITH GOOGLE"}
                 </text>
               </svg>
             </span>
