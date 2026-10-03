@@ -17,6 +17,7 @@ tests/e2e/.auth/
 # Environment variables
 .env*.local
 .env.test
+.env
 
 # Common ignores
 node_modules

@@ -1,0 +1,485 @@
+.hero {
+  isolation: isolate;
+}
+
+.hero::before {
+  position: absolute;
+  z-index: -1;
+  inset: 2rem -8rem 0 36%;
+  content: "";
+  background-image: linear-gradient(to right, color-mix(in oklch, var(--border) 38%, transparent) 1px, transparent 1px), linear-gradient(to bottom, color-mix(in oklch, var(--border) 38%, transparent) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(to right, transparent, black 24%, black 78%, transparent), linear-gradient(to bottom, black 0%, transparent 82%);
+  mask-composite: intersect;
+  opacity: 0.34;
+}
+
+.hero::after {
+  position: absolute;
+  z-index: -1;
+  top: 8%;
+  right: -10rem;
+  width: 36rem;
+  height: 36rem;
+  border-radius: 50%;
+  content: "";
+  background: radial-gradient(circle, color-mix(in oklch, var(--primary) 15%, transparent), transparent 68%);
+  filter: blur(24px);
+  pointer-events: none;
+}
+
+.scene {
+  position: relative;
+  width: 100%;
+  max-width: 42rem;
+  aspect-ratio: 1.08;
+  margin-inline: auto;
+  overflow: hidden;
+  border-radius: 2rem;
+  perspective: 1000px;
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 82%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 0%, black 82%, transparent 100%);
+}
+
+.scene::before {
+  position: absolute;
+  inset: 8%;
+  border: 1px solid color-mix(in oklch, var(--primary) 14%, transparent);
+  border-radius: 50%;
+  content: "";
+  transform: rotate(-17deg) scaleY(0.76);
+}
+
+.scene::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  content: "";
+  background: radial-gradient(ellipse at 52% 50%, transparent 38%, var(--background) 89%);
+  opacity: 0.26;
+  pointer-events: none;
+}
+
+.sceneCanvas {
+  position: absolute;
+  inset: 0;
+  transform: translate3d(0, var(--scroll-y, 0px), 0);
+  transition: transform 80ms linear;
+}
+
+.orbit {
+  position: absolute;
+  top: 13%;
+  left: 10%;
+  width: 80%;
+  height: 71%;
+  border: 1px solid color-mix(in oklch, var(--primary) 26%, transparent);
+  border-radius: 50%;
+  transform: rotate(-25deg) scaleY(0.74);
+}
+
+.orbit::before,
+.orbit::after {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  content: "";
+  background: var(--primary);
+  box-shadow: 0 0 0 6px color-mix(in oklch, var(--primary) 15%, transparent), 0 0 30px color-mix(in oklch, var(--primary) 65%, transparent);
+}
+
+.orbit::before {
+  top: 11%;
+  left: 16%;
+}
+
+.orbit::after {
+  right: 9%;
+  bottom: 20%;
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  box-shadow: 0 0 0 5px color-mix(in oklch, var(--accent) 16%, transparent), 0 0 25px color-mix(in oklch, var(--accent) 55%, transparent);
+}
+
+.orbitCore {
+  position: absolute;
+  top: 26%;
+  left: 27%;
+  width: 46%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in oklch, var(--primary) 14%, transparent), transparent 68%);
+  filter: blur(2px);
+}
+
+.floatCard {
+  position: absolute;
+  z-index: 1;
+  border: 1px solid color-mix(in oklch, var(--border) 78%, transparent);
+  border-radius: 1.15rem;
+  background: color-mix(in oklch, var(--card) 91%, transparent);
+  box-shadow: 0 22px 55px -32px color-mix(in oklch, var(--foreground) 42%, transparent), 0 5px 18px -12px color-mix(in oklch, var(--foreground) 28%, transparent);
+  backdrop-filter: blur(15px);
+  color: var(--card-foreground);
+  opacity: 0;
+  transform: translateY(14px) scale(0.97);
+}
+
+.scene[data-visible="true"] .floatCard {
+  opacity: 1;
+}
+
+.cardMain {
+  top: 20%;
+  left: 9%;
+  width: min(69%, 21rem);
+  padding: 1.25rem 1.35rem 1.1rem;
+  border-color: color-mix(in oklch, var(--primary) 24%, var(--border));
+}
+
+.cardTopline,
+.cardBottomline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.57rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.greenDot,
+.orangeDot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.orangeDot {
+  background: var(--accent);
+}
+
+.cardSpark {
+  margin-left: auto;
+  color: var(--primary);
+  font-size: 1rem;
+}
+
+.cardIdea {
+  max-width: 17rem;
+  margin: 1.15rem 0 1.4rem;
+  font-size: clamp(1.1rem, 2.1vw, 1.55rem);
+  font-weight: 550;
+  line-height: 1.25;
+  letter-spacing: -0.04em;
+}
+
+.cardBottomline {
+  gap: 0.4rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid color-mix(in oklch, var(--border) 72%, transparent);
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 450;
+  letter-spacing: 0;
+}
+
+.savedIcon {
+  display: grid;
+  width: 1.05rem;
+  height: 1.05rem;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--primary) 13%, transparent);
+  color: var(--primary);
+  font-size: 0.7rem;
+}
+
+.cardQuestion {
+  top: 55%;
+  right: 5%;
+  width: min(53%, 17rem);
+  padding: 1rem 1.1rem;
+  border-color: color-mix(in oklch, var(--accent) 30%, var(--border));
+}
+
+.cardQuestion p {
+  margin: 0.9rem 0 0.8rem;
+  font-size: 1rem;
+  font-weight: 550;
+  line-height: 1.35;
+  letter-spacing: -0.025em;
+}
+
+.questionLines {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.questionLines i {
+  width: 18%;
+  height: 3px;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--primary) 40%, var(--border));
+}
+
+.questionLines i:nth-child(2) {
+  width: 30%;
+  background: color-mix(in oklch, var(--accent) 48%, var(--border));
+}
+
+.questionLines i:nth-child(3) {
+  width: 12%;
+}
+
+.cardClarity {
+  right: 13%;
+  bottom: 12%;
+  display: flex;
+  width: min(62%, 20rem);
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.85rem 1rem;
+  border-color: color-mix(in oklch, var(--primary) 20%, var(--border));
+}
+
+.clarityIcon {
+  display: grid;
+  width: 2.3rem;
+  height: 2.3rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 0.75rem;
+  background: color-mix(in oklch, var(--primary) 15%, transparent);
+  color: var(--primary);
+  font-size: 1.4rem;
+}
+
+.clarityLabel {
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+}
+
+.cardClarity p {
+  margin: 0.2rem 0 0;
+  font-size: 0.84rem;
+  font-weight: 550;
+  letter-spacing: -0.02em;
+}
+
+.orbitCaption {
+  position: absolute;
+  top: 12%;
+  right: 2%;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0;
+}
+
+.orbitCaption span {
+  width: 1.5rem;
+  height: 1px;
+  background: var(--primary);
+}
+
+.scene[data-visible="true"] .orbitCaption {
+  opacity: 0.8;
+}
+
+.scene[data-visible="true"][data-page-visible="true"] .cardMain {
+  animation: float-main 7s ease-in-out 250ms infinite;
+}
+
+.scene[data-visible="true"][data-page-visible="true"] .cardQuestion {
+  animation: float-question 8s ease-in-out 500ms infinite;
+}
+
+.scene[data-visible="true"][data-page-visible="true"] .cardClarity {
+  animation: float-clarity 6.5s ease-in-out 750ms infinite;
+}
+
+.scene[data-visible="true"][data-page-visible="true"] .orbit {
+  animation: orbit-turn 32s ease-in-out infinite alternate;
+}
+
+@keyframes float-main {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-5deg); }
+  50% { transform: translate3d(0, -11px, 0) rotate(-2deg); }
+}
+
+@keyframes float-question {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(4deg); }
+  50% { transform: translate3d(0, -9px, 0) rotate(1deg); }
+}
+
+@keyframes float-clarity {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(1deg); }
+  50% { transform: translate3d(0, -7px, 0) rotate(-1deg); }
+}
+
+@keyframes orbit-turn {
+  from { transform: rotate(-25deg) scaleY(0.74); }
+  to { transform: rotate(-12deg) scaleY(0.8); }
+}
+
+.nextPanel {
+  background-image: linear-gradient(125deg, color-mix(in oklch, var(--foreground) 97%, var(--primary)), var(--foreground) 62%, color-mix(in oklch, var(--foreground) 90%, var(--secondary)));
+}
+
+.nextGlow {
+  position: absolute;
+  top: -16rem;
+  right: -7rem;
+  width: 34rem;
+  height: 34rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in oklch, var(--primary) 31%, transparent), transparent 68%);
+  filter: blur(9px);
+}
+
+.finalPanel {
+  isolation: isolate;
+}
+
+.finalOrb {
+  position: absolute;
+  z-index: -1;
+  top: -18rem;
+  left: 50%;
+  width: 38rem;
+  height: 38rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in oklch, var(--primary) 15%, transparent), transparent 70%);
+  transform: translateX(-50%);
+}
+
+.reveal[data-reveal-ready="true"]:not([data-visible="true"]) {
+  opacity: 0;
+  transform: translateY(22px);
+}
+
+.reveal {
+  transition: opacity 650ms ease, transform 650ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.reveal[data-visible="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 1023px) {
+  .scene {
+    max-width: 37rem;
+  }
+}
+
+@media (max-width: 639px) {
+  .hero::before {
+    inset: 38% -4rem 0 0;
+    background-size: 48px 48px;
+  }
+
+  .hero::after {
+    top: 34%;
+    right: -13rem;
+    width: 28rem;
+    height: 28rem;
+  }
+
+  .scene {
+    max-width: 28rem;
+    aspect-ratio: 0.98;
+    border-radius: 1.5rem;
+  }
+
+  .cardMain {
+    top: 19%;
+    left: 5%;
+    width: 73%;
+    padding: 1rem;
+  }
+
+  .cardTopline {
+    font-size: 0.49rem;
+  }
+
+  .cardIdea {
+    margin-block: 0.9rem 1rem;
+    font-size: 1.2rem;
+  }
+
+  .cardQuestion {
+    top: 55%;
+    right: 1%;
+    width: 56%;
+    padding: 0.8rem;
+  }
+
+  .cardQuestion p {
+    margin-top: 0.7rem;
+    font-size: 0.85rem;
+  }
+
+  .cardClarity {
+    right: 9%;
+    bottom: 10%;
+    width: 65%;
+    gap: 0.6rem;
+    padding: 0.65rem 0.75rem;
+  }
+
+  .clarityIcon {
+    width: 1.9rem;
+    height: 1.9rem;
+  }
+
+  .cardClarity p {
+    font-size: 0.72rem;
+  }
+
+  .orbitCaption {
+    top: 12%;
+    right: 0;
+    font-size: 0.43rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sceneCanvas,
+  .reveal,
+  .floatCard {
+    scroll-behavior: auto;
+    transition: none !important;
+  }
+
+  .scene .floatCard {
+    opacity: 1;
+    transform: none;
+    animation: none !important;
+  }
+
+  .scene .orbit,
+  .scene .orbitCaption {
+    animation: none !important;
+  }
+
+  .reveal[data-reveal-ready="true"]:not([data-visible="true"]) {
+    opacity: 1;
+    transform: none;
+  }
+}

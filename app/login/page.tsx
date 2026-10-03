@@ -1,24 +1,23 @@
-"use client";
+import type { Metadata } from "next"
+import { cookies, headers } from "next/headers"
+import { LoginExperience } from "@/components/login/login-experience"
+import { resolveSiteLocale, SITE_LOCALE_COOKIE } from "@/lib/site-locale"
 
-import { signIn } from "next-auth/react";
-import { useMouseParallax } from "@/hooks/use-mouse-parallax";
-import { GoogleSignInButton, GOOGLE_BTN_SELECTOR } from "@/components/login/google-sign-in-button";
-import { LoginBackground } from "@/components/login/login-background";
-import { LoginSceneBackground } from "@/components/login/login-scene-background";
-import { Z } from "@/components/login/layers";
+async function getRequestLocale() {
+  const [cookieStore, requestHeaders] = await Promise.all([cookies(), headers()])
+  return resolveSiteLocale(
+    cookieStore.get(SITE_LOCALE_COOKIE)?.value,
+    requestHeaders.get("accept-language"),
+  )
+}
 
-export default function LoginPage() {
-  const mouseCoordinates = useMouseParallax({ ignoreSelector: GOOGLE_BTN_SELECTOR });
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale()
+  return locale === "es"
+    ? { title: "Iniciar sesión — Trojes" }
+    : { title: "Sign in — Trojes" }
+}
 
-  return (
-    <div className="relative h-dvh overflow-hidden">
-      <LoginBackground mouseCoordinates={mouseCoordinates} />
-      <LoginSceneBackground mouseCoordinates={mouseCoordinates} />
-      <div className={`absolute inset-0 ${Z.CONTENT} grid place-items-center p-4 -mt-5`}>
-        <GoogleSignInButton
-          onClick={() => signIn("google", { callbackUrl: "/" })}
-        />
-      </div>
-    </div>
-  );
+export default async function LoginPage() {
+  return <LoginExperience locale={await getRequestLocale()} />
 }

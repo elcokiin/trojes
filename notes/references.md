@@ -34,7 +34,10 @@ Current image subfolders:
   positioning phrase reference for copy that defines a note product by what it
   intentionally is not: not a workspace, and not a second brain. Also includes
   `fizzy-pins/`, which captures Fizzy's bottom-left pinned tray in collapsed and
-  expanded states for Trojes's desktop pinned UI.
+  expanded states for Trojes's desktop pinned UI, plus `trojes-landing/` with
+  three user-provided landing-page references for grids, bright green accents,
+  and organic hero motion. Their copy, metrics, integrations, and product claims
+  are visual inspiration only and do not describe Trojes.
 
 ### `notes/references/source-repositories/`
 
