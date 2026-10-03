@@ -62,6 +62,10 @@ export function SettingsPage({ user }: SettingsPageProps) {
     }
   }, [router]);
 
+  useEffect(() => {
+    router.prefetch("/dashboard");
+  }, [router]);
+
   useScrollLock(true);
   useSuppressGlobalHotkeys(true);
   useDialogCloseHotkey(true, handleBack);

@@ -89,15 +89,20 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user && token.sub) {
-        const email = session.user.email
-        if (email) {
-          try {
-            const userId = await runEffect(findUserIdByEmail(email))
-            if (userId) {
-              session.user.id = userId
+        const tokenUserId = typeof token.id === "string" ? token.id : undefined
+        if (tokenUserId) {
+          session.user.id = tokenUserId
+        } else {
+          const email = session.user.email
+          if (email) {
+            try {
+              const userId = await runEffect(findUserIdByEmail(email))
+              if (userId) {
+                session.user.id = userId
+              }
+            } catch (error) {
+              console.error("Error fetching user in session callback:", error)
             }
-          } catch (error) {
-            console.error("Error fetching user in session callback:", error)
           }
         }
       }
@@ -106,6 +111,17 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
+        return token
+      }
+      if (!token.id && token.email) {
+        try {
+          const userId = await runEffect(findUserIdByEmail(token.email))
+          if (userId) {
+            token.id = userId
+          }
+        } catch (error) {
+          console.error("Error backfilling token id in jwt callback:", error)
+        }
       }
       return token
     },

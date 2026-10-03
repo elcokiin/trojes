@@ -63,7 +63,7 @@ export function MobileEditor({ onCapture, onClose, overlay = true, initialConten
           onEscape={handleEscape}
           onModEnter={handleModEnter}
           placeholder="What's on your mind?..."
-          className="flex-1"
+          className="flex-1 min-h-0"
           minHeight="30dvh"
           focusOnMount
         />

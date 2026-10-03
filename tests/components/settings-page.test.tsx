@@ -4,7 +4,7 @@ import { withNuqsTestingAdapter } from "nuqs/adapters/testing"
 import { SettingsPage } from "@/components/settings/settings-page"
 
 const { routerMock } = vi.hoisted(() => ({
-  routerMock: { back: vi.fn(), push: vi.fn(), replace: vi.fn() },
+  routerMock: { back: vi.fn(), push: vi.fn(), replace: vi.fn(), prefetch: vi.fn() },
 }))
 
 vi.mock("next/navigation", () => ({

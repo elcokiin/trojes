@@ -87,4 +87,37 @@ test.describe("Mobile layout", () => {
 
     await expect(page).toHaveURL(/\/mobile$/)
   })
+
+  test("long capture text scrolls inside the editor, not over the action bar", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 375, height: 812 })
+    await page.goto("/mobile")
+    await page.waitForLoadState("networkidle")
+
+    await page.getByRole("button", { name: "Write" }).click()
+    await expect(page).toHaveURL(/\/mobile\/capture/)
+
+    const editor = page.locator('[contenteditable="true"]')
+    await editor.fill("palabra ".repeat(500))
+
+    const scrollable = await editor.evaluate(
+      (el) => el.scrollHeight > el.clientHeight,
+    )
+    expect(scrollable).toBe(true)
+
+    const covered = await page.evaluate(() => {
+      const create = Array.from(document.querySelectorAll("button")).find(
+        (b) => b.textContent?.trim() === "Create",
+      )
+      if (!create) return true
+      const rect = create.getBoundingClientRect()
+      const hit = document.elementFromPoint(
+        rect.x + rect.width / 2,
+        rect.y + rect.height / 2,
+      )
+      return hit == null || !(create === hit || create.contains(hit))
+    })
+    expect(covered).toBe(false)
+  })
 })

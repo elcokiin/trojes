@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
+import * as Effect from "effect/Effect"
 import { authOptions } from "@/lib/auth"
 import type { Session } from "next-auth"
 
@@ -165,6 +166,15 @@ describe("session callback", () => {
     expect(result.user?.id).toBeUndefined()
   })
 
+  it("skips DB lookup when token already carries user id", async () => {
+    const result = (await session(
+      sessionParams({ token: { sub: "token-sub-1", id: "uid-1" } }),
+    )) as Session
+
+    expect(result.user?.id).toBe("uid-1")
+    expect(findUserIdByEmail).not.toHaveBeenCalled()
+  })
+
   it.each([
     { desc: "session.user has no email", params: sessionParams({ session: { user: {} } }) },
     { desc: "token has no sub", params: sessionParams({ token: {} }) },
@@ -176,6 +186,10 @@ describe("session callback", () => {
 })
 
 describe("jwt callback", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it("assigns token.id from user.id", async () => {
     const result = await jwt(jwtParams())
 
@@ -186,5 +200,29 @@ describe("jwt callback", () => {
     const result = await jwt(jwtParams({ user: undefined }))
 
     expect(result.id).toBeUndefined()
+    expect(findUserIdByEmail).not.toHaveBeenCalled()
+  })
+
+  it("backfills token.id from the email lookup when missing", async () => {
+    vi.mocked(findUserIdByEmail).mockReturnValue(Effect.succeed("uid-2"))
+
+    const result = await jwt(
+      jwtParams({ token: { email: "legacy@example.com" }, user: undefined }),
+    )
+
+    expect(result.id).toBe("uid-2")
+    expect(findUserIdByEmail).toHaveBeenCalledWith("legacy@example.com")
+  })
+
+  it("keeps an existing token.id without querying the database", async () => {
+    const result = await jwt(
+      jwtParams({
+        token: { id: "uid-3", email: "legacy@example.com" },
+        user: undefined,
+      }),
+    )
+
+    expect(result.id).toBe("uid-3")
+    expect(findUserIdByEmail).not.toHaveBeenCalled()
   })
 })
