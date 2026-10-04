@@ -104,10 +104,6 @@ export function LandingPage({ initialLocale }: { initialLocale: SiteLocale }) {
       <main>
         <section className={`relative isolate mx-auto grid min-h-[calc(100svh-4.5rem)] max-w-7xl items-center gap-6 px-5 py-14 sm:px-8 sm:py-16 lg:grid-cols-[0.95fr_1.05fr] lg:gap-0 lg:px-12 lg:py-10 ${styles.hero}`}>
           <div className="relative z-10 max-w-2xl pb-4 lg:pb-12">
-            <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/80 px-3 py-1.5 font-mono text-[10px] font-semibold tracking-[0.16em] text-muted-foreground shadow-sm sm:text-xs">
-              <span className="size-1.5 rounded-full bg-primary" />
-              {copy.hero.eyebrow}
-            </p>
             <h1 className="max-w-3xl text-[clamp(3.25rem,6vw,5.7rem)] font-semibold leading-[0.94] tracking-[-0.075em] text-foreground">
               {copy.hero.title}<br />
               <span className="text-primary">{copy.hero.titleAccent}</span>
