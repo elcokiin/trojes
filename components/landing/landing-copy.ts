@@ -9,7 +9,6 @@ export const landingCopy = {
       language: "Idioma",
     },
     hero: {
-      eyebrow: "UN LUGAR PARA TUS IDEAS",
       title: "Las ideas llegan.",
       titleAccent: "La claridad se construye.",
       description:
@@ -107,7 +106,6 @@ export const landingCopy = {
       language: "Language",
     },
     hero: {
-      eyebrow: "A PLACE FOR YOUR IDEAS",
       title: "Ideas arrive.",
       titleAccent: "Clarity takes shape.",
       description:
