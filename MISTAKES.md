@@ -34,3 +34,12 @@ the context, impact, and what should be done differently next time.
   unit tests that only assert on a couple of params will not surface
   count/ordering bugs — add explicit count + tail-param assertions.
 
+
+- **Blind `replaceAll` corrupted visible copy in the one-pager (2026-10-04):**
+  While renaming the `.cta` CSS classes in `onepager-print.html` to `.ask`, a
+  `replaceAll` of the short token `cta` also rewrote the visible word
+  `Directa:` to `Direask:` (it contains the substring "cta"). Caught only
+  because a follow-up grep listed every replacement. Lesson: before a
+  `replaceAll` on a token shorter than ~6 chars, grep every occurrence first
+  and confirm each one is code, not prose; prefer replacing the fully-qualified
+  string (`.cta ` / `class="cta"`) over the bare token.

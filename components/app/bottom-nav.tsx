@@ -152,7 +152,7 @@ export function BottomNav() {
             aria-label="Settings"
             className="flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer px-4"
           >
-            <Settings className="size-4" />
+            <Settings className="size-6" />
           </Link>
         </>
       ) : (

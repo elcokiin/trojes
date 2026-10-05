@@ -162,3 +162,28 @@ or workflow that future agents should know before making changes.
   re-encodes the token and returns `Set-Cookie`. So a legacy session pays the
   lookup once per browser session, not once per navigation. Never assume a
   `jwt`-callback write survives a server-component render.
+
+- **One Pager: el HTML de impresión es un documento de altura exacta.**
+  `onepager-print.html` llena casi todo el A4 (~1106 px de 1123 en la última
+  medición; holgura ~17 px, el número cambia con cada edición); cualquier
+  línea agregada desborda a página 2 (−10 pts en Execute). Presupuesto útil:
+  una línea de texto a 9 pt/1.35 cuesta ~16 px y una columna `.col` de 355 px
+  admite ~58 caracteres por línea (pasarse = +16 px). El "presostato" principal
+  es la altura de `.shot` (hoy 19 mm): si el contenido crece, bajarla antes que
+  recortar cifras. Después de CUALQUIER
+  cambio de texto correr `bun run onepager:pdf`: valida 1 página, A4, ≤ 10 MB,
+  cuerpo ≥ 9 pt, sin desbordes ni imágenes rotas. Los ganchos `[POR COMPLETAR]`
+  siguen siendo intencionales: el equipo los rellena antes de generar el PDF
+  final y eso también cambia la altura. Las fuentes externas con enlace vivo
+  (Epoch AI, Infobip, Precedence Research, SNIES, Confecámaras) están en el HTML
+  y documentadas con URL en `onepager.md`; verificar cifras ahí antes de reusarlas.
+
+- **`onepager-print.html` puede cambiar por otra sesión a la vez.** El 2026-10-04
+  el archivo fue reescrito de forma concurrente mientras se editaba (pasó de una
+  rejilla 2–3|4–5 a tres filas 1|2, 3|4, 5|6, y los guiones largos «—» se
+  sustituyeron por paréntesis/«·»/comas). Lección: releer el archivo justo
+  antes de editar, no dar por hecho el estado de una lectura anterior, revalidar
+  con `bun run onepager:pdf` al final, y evitar guiones largos en ese archivo
+  (usar paréntesis) para no pelear con el normalizador. Si se detecta otra
+  sesión activa sobre el mismo archivo, coordinar con el usuario antes de
+  escribir.

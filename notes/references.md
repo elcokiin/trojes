@@ -53,6 +53,11 @@ Current source repository references:
   a persistent header, sidebar navigation, scrollable content, footer actions,
   and `Mod+E` expand/restore behavior. Inspect in a disposable clone; do not
   commit the repository.
+  - Live demo: https://andean-water-stress-simulator-web.vercel.app/
+    (HydroSim, "proyecto final" university project built together by Diego and
+    Lunna; cited in `onepager-print.html` / `onepager.md` section 6 as proof
+    that the founding team has already shipped together. React + Three.js +
+    Astro monorepo).
 
 - `git@github.com:rcaferati/react-awesome-button.git`: 3D button reference with
   performant CSS-only animated buttons, multi-stage click feedback, and social
