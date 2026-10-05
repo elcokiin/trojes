@@ -1098,6 +1098,53 @@
     .branch span::first-letter {
       text-transform: uppercase;
     }
+
+    /* --- mínimo 9 pt en todo el texto (regla de entrega) --- */
+    .fun-heading span,
+    .user .grid4 i,
+    .role,
+    .chips span,
+    .member p,
+    .in,
+    .tiles>div,
+    .tiles b,
+    .tiles>div.gap,
+    .member p svg {
+      font-size: 9pt !important;
+    }
+
+    .tiles>div {
+      line-height: 1.15;
+    }
+
+    .role {
+      margin-left: 1mm;
+    }
+
+    .user .grid4 div,
+    .user .grid4 div:last-child {
+      padding: .6mm 2.2mm !important;
+    }
+
+    .user .grid4 {
+      gap: 1mm;
+    }
+
+    .user .who {
+      margin-bottom: 1mm;
+    }
+
+    .w {
+      padding: .3mm 2mm;
+    }
+
+    .why {
+      gap: 1mm;
+    }
+
+    .chips span {
+      border-radius: 3mm;
+    }
   </style>
 </head>
 
@@ -1123,7 +1170,7 @@
 
     <section>
       <h2><i>1</i>Problema y oportunidad</h2>
-      <div class="cols" style="grid-template-columns: 1.4fr 1fr">
+      <div class="cols" style="grid-template-columns: 1.1fr 1fr">
         <div class="box">
           <div class="lead">
             Generas más ideas de las que ejecutas.<br />
@@ -1136,7 +1183,7 @@
               <small>no revisa sus notas</small>
             </div>
             <div>
-              <b>70%</b>
+              <b>≈70%</b>
               <div class="t"><span style="width: 70%"></span></div>
               <small>captura sus ideas de manera dispersa</small>
             </div>
@@ -1177,11 +1224,11 @@
               </text>
             </svg>
             <div>
-              <div class="n">−13×/año</div>
+              <div class="n">-13 / año</div>
               <div class="d">
-                <b>IA barata:</b> costo por nivel fijo de IA (<a
+                <b>IA barata:</b> el mismo rendimiento cuesta ~13× menos cada año (<a
                   href="https://epoch.ai/publications/the-plunging-price-of-thought" target="_blank"
-                  rel="noopener">Epoch AI, sep 2026</a>); interrogar una idea ≈ US$0,10–0,50 (est. propia).
+                  rel="noopener">Epoch AI, 22 sep 2026</a>); interrogar una idea ≈ US$0,10–0,50 (est. propia).
               </div>
             </div>
           </div>
@@ -1196,7 +1243,7 @@
             <div>
               <div class="n o">+185%</div>
               <div class="d">
-                <b>Voz masiva:</b> voz y video en Colombia, interanual (<a
+                <b>Voz y video:</b> mensajería empresarial en Colombia, interanual (<a
                   href="https://www.infobip.com/messaging-trends-report/regional-snapshot" target="_blank"
                   rel="noopener">Infobip, Messaging Trends Report 2026</a>).
               </div>
@@ -1210,7 +1257,7 @@
             <div>
               <div class="n">+18,75%</div>
               <div class="d">
-                <b>Notas con IA:</b> crecimiento anual del mercado global
+                <b>Notas con IA:</b> CAGR del mercado global
                 2026–2035 (<a href="https://www.precedenceresearch.com/ai-note-taking-market" target="_blank"
                   rel="noopener">Precedence Research, 2026</a>).
               </div>
@@ -1238,18 +1285,18 @@
               la mataría</span><span>siguiente prueba</span>
           </div>
           <p>
-            <strong>Integra WhatsApp y Telegram</strong> guardas ideas desde
+            <strong>Integra WhatsApp y Telegram:</strong> guardas ideas desde
             esos mensajes y todo queda en un
             <span class="hl">sistema centralizado: nada se pierde.</span>
           </p>
           <p>
             <strong>Veredicto:</strong> el usuario vota (pinear, mantener,
-            archivar). <strong>Privacidad:</strong> texto crudo sin salir del
-            dispositivo; open source.
+            archivar). <strong>Offline-first:</strong> las ideas se guardan primero en tu
+            dispositivo; código abierto.
           </p>
           <div class="status">
-            <b>Hoy:</b> MVP en <a href="https://trojes.app" target="_blank" rel="noopener">trojes.app</a>; la
-            IA aún no corre en producción: transcribirá, estructurará y
+            <b>Hoy:</b> MVP de captura en <a href="https://trojes.app" target="_blank" rel="noopener">trojes.app</a>; el
+            interrogatorio con IA aún no corre en producción: transcribirá, estructurará y
             recomendará, <b>no decide por ti</b>.
           </div>
         </div>
@@ -1278,7 +1325,7 @@
           <tr>
             <td>ChatGPT</td>
             <td class="n">✕</td>
-            <td class="n">✕</td>
+            <td class="y">✓</td>
             <td class="n">✕</td>
           </tr>
           <tr>
@@ -1288,7 +1335,7 @@
             <td class="n">✕</td>
           </tr>
           <tr>
-            <td>ValidatorAI (US$19,9)</td>
+            <td>ValidatorAI</td>
             <td class="n">✕</td>
             <td class="y">✓</td>
             <td class="y">✓</td>
@@ -1315,15 +1362,15 @@
             <b>TAM</b><span class="num">US$65,8M/año</span><small>1.097.365 builders</small>
           </div>
           <div class="b">
-            <b>SAM</b><span class="num">US$19,7M/año</span><small>30% digital</small>
+            <b>SAM</b><span class="num">US$19,8M/año</span><small>30% del TAM</small>
           </div>
           <div class="c">
-            <b>SOM</b><span class="num">US$197K ARR</span><small>1% paga Pro</small>
+            <b>SOM</b><span class="num">US$198K ARR</span><small>1% del SAM</small>
           </div>
         </div>
         <p class="src" style="margin: 1.4mm 0 0">
           TAM = (799.890 est. + 297.475 empresas) × US$60/año (supuesto: Pro
-          US$5/mes, sin validar). SAM y SOM: supuestos; SOM a 3 años. Fuentes:
+          US$5/mes, sin validar). SAM = 30% del TAM; SOM = 1% del SAM a 3 años (ambos supuestos). Fuentes:
           <a href="https://snies.mineducacion.gov.co/" target="_blank" rel="noopener">SNIES 2025</a>
           (econ./adm./ing.),
           <a href="https://confecamaras.org.co/estudio/dinamica-de-creacion-de-empresas-en-colombia-2024/"
@@ -1370,15 +1417,11 @@
               <div class="chips"><span><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor"
                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M8 8l-5 4 5 4M16 8l5 4-5 4" />
-                  </svg> Tecnología e IA</span><span><svg viewBox="0 0 24 24" width="11" height="11" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M2 9l10-5 10 5-10 5z" />
-                    <path d="M6 11v5c3 2 9 2 12 0v-5" />
-                  </svg> Sistemas · 10.º sem UPTC</span></div>
+                  </svg> Tecnología e IA · Sistemas, 10.º sem UPTC</span></div>
               <p><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2"
                   stroke-linecap="round" stroke-linejoin="round">
                   <path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" />
-                </svg> Hackatón de Yuno · construyó el MVP de <a href="https://trojes.app" target="_blank"
+                </svg> Hackatón de Yuno: construyó el MVP de <a href="https://trojes.app" target="_blank"
                   rel="noopener">Trojes</a>.</p>
             </div>
             <a class="in" href="https://www.linkedin.com/in/diego-tenjo/" title="LinkedIn de Diego Tenjo">in</a>
@@ -1387,15 +1430,11 @@
             <div class="avatar">LS</div>
             <div class="mb">
               <b><a href="https://www.linkedin.com/in/lunna-sosa-839a9523a/" target="_blank" rel="noopener">Lunna
-                  Sosa</a><em class="role">Producto · frontend · UX</em></b>
+                  Sosa</a><em class="role">Producto · UX</em></b>
               <div class="chips"><span><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor"
                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-6A8 8 0 1 1 21 12z" />
-                  </svg> Investigación</span><span><svg viewBox="0 0 24 24" width="11" height="11" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M2 9l10-5 10 5-10 5z" />
-                    <path d="M6 11v5c3 2 9 2 12 0v-5" />
-                  </svg> Sistemas · 10.º sem UPTC</span></div>
+                  </svg> Investigación · Sistemas, 10.º sem UPTC</span></div>
               <p><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2"
                   stroke-linecap="round" stroke-linejoin="round">
                   <path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" />
@@ -1409,8 +1448,8 @@
                 stroke-linecap="round" stroke-linejoin="round">
                 <path d="M5 15c-1.5 1-2 4-2 6 2 0 5-.5 6-2M14 4c3-1 6-1 7-1 0 1 0 4-1 7l-7 7-6-6zM15 9h.01" />
               </svg></i><b>Ya ejecutamos</b><a href="https://andean-water-stress-simulator-web.vercel.app/"
-              target="_blank" rel="noopener">HydroSim</a> y <a href="https://trojes.app" target="_blank"
-              rel="noopener">Trojes</a>.</div>
+              target="_blank" rel="noopener">HydroSim</a>, <a href="https://trojes.app" target="_blank"
+              rel="noopener">Trojes</a></div>
           <div><i><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round">
                 <path d="M13 2L4 14h7l-1 8 9-12h-7z" />
